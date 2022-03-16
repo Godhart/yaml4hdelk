@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Schematic of top</h1>
+
+<script src="js/elk.bundled.js"></script>
+<script src="js/svg.min.js"></script>
+<script src="js/hdelk.js"></script>
+
+<div id="simple_diagram"></div>
+
+<script type="text/javascript">
+
+    
+
+    var simple_graph = {
+  "label": "",
+  "type": "top",
+  "children": [
+    {
+      "id": "CLK",
+      "port": 1
+    },
+    {
+      "id": "OUT",
+      "port": 1
+    },
+    {
+      "id": "RST",
+      "port": 1
+    },
+    {
+      "id": "U1",
+      "label": "MyLabel",
+      "type": "unit1",
+      "children": [
+        {
+          "id": "U1_X1",
+          "label": "X1",
+          "type": "unit2",
+          "inPorts": [
+            {
+              "id": "IN1"
+            },
+            {
+              "id": "IN2"
+            },
+            {
+              "id": "CLK"
+            }
+          ],
+          "outPorts": [
+            {
+              "id": "OUT"
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "sources": [
+            "U1.CLK"
+          ],
+          "targets": [
+            "U1_X1.CLK"
+          ]
+        },
+        {
+          "sources": [
+            "U1.IN"
+          ],
+          "targets": [
+            "U1_X1.IN1"
+          ]
+        },
+        {
+          "sources": [
+            "U1.IN"
+          ],
+          "targets": [
+            "U1_X1.IN2"
+          ]
+        },
+        {
+          "sources": [
+            "U1_X1.OUT"
+          ],
+          "targets": [
+            "U1.OUT1"
+          ]
+        },
+        {
+          "sources": [
+            "U1_X1.OUT"
+          ],
+          "targets": [
+            "U1.OUT2"
+          ]
+        }
+      ],
+      "outPorts": [
+        {
+          "id": "OUT1"
+        },
+        {
+          "id": "OUT2"
+        }
+      ],
+      "inPorts": [
+        {
+          "id": "IN"
+        },
+        {
+          "id": "CLK"
+        }
+      ],
+      "southPorts": [
+        {
+          "id": "RST"
+        }
+      ]
+    },
+    {
+      "id": "U2",
+      "label": "U2",
+      "type": "unit2",
+      "inPorts": [
+        {
+          "id": "IN1"
+        },
+        {
+          "id": "IN2"
+        },
+        {
+          "id": "CLK"
+        }
+      ],
+      "outPorts": [
+        {
+          "id": "OUT"
+        }
+      ]
+    },
+    {
+      "id": "U3",
+      "label": "U3",
+      "inPorts": [
+        {
+          "id": "IN"
+        }
+      ],
+      "outPorts": [
+        {
+          "id": "OUT"
+        }
+      ]
+    },
+    {
+      "id": "U4",
+      "label": "U4",
+      "type": "unit1'",
+      "children": [
+        {
+          "id": "U4_X1",
+          "label": "X1",
+          "type": "unit2",
+          "children": [
+            {
+              "id": "U4_X1_U1",
+              "label": "D",
+              "inPorts": [
+                {
+                  "id": "IN"
+                },
+                {
+                  "id": "CLK"
+                }
+              ],
+              "outPorts": [
+                {
+                  "id": "OUT"
+                }
+              ]
+            },
+            {
+              "id": "U4_X1_U2",
+              "label": "+",
+              "inPorts": [
+                {
+                  "id": "A"
+                },
+                {
+                  "id": "B"
+                }
+              ],
+              "outPorts": [
+                {
+                  "id": "OUT"
+                }
+              ]
+            }
+          ],
+          "edges": [
+            {
+              "sources": [
+                "U4_X1.IN1"
+              ],
+              "targets": [
+                "U4_X1_U1.IN"
+              ]
+            },
+            {
+              "sources": [
+                "U4_X1.CLK"
+              ],
+              "targets": [
+                "U4_X1_U1.CLK"
+              ]
+            },
+            {
+              "sources": [
+                "U4_X1_U1.OUT"
+              ],
+              "targets": [
+                "U4_X1_U2.A"
+              ]
+            },
+            {
+              "sources": [
+                "U4_X1.IN2"
+              ],
+              "targets": [
+                "U4_X1_U2.B"
+              ]
+            },
+            {
+              "sources": [
+                "U4_X1_U2.OUT"
+              ],
+              "targets": [
+                "U4_X1.OUT"
+              ]
+            }
+          ],
+          "inPorts": [
+            {
+              "id": "IN1"
+            },
+            {
+              "id": "IN2"
+            },
+            {
+              "id": "CLK"
+            }
+          ],
+          "outPorts": [
+            {
+              "id": "OUT"
+            }
+          ]
+        },
+        {
+          "id": "U4_X2",
+          "label": "X2",
+          "inPorts": [
+            {
+              "id": "IN"
+            },
+            {
+              "id": "CLK"
+            }
+          ],
+          "outPorts": [
+            {
+              "id": "OUT"
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "sources": [
+            "U4.CLK"
+          ],
+          "targets": [
+            "U4_X1.CLK"
+          ]
+        },
+        {
+          "sources": [
+            "U4.CLK"
+          ],
+          "targets": [
+            "U4_X2.CLK"
+          ]
+        },
+        {
+          "sources": [
+            "U4.IN"
+          ],
+          "targets": [
+            "U4_X1.IN1"
+          ]
+        },
+        {
+          "sources": [
+            "U4.IN"
+          ],
+          "targets": [
+            "U4_X1.IN2"
+          ]
+        },
+        {
+          "sources": [
+            "U4_X1.OUT"
+          ],
+          "targets": [
+            "U4.OUT1"
+          ]
+        },
+        {
+          "sources": [
+            "U4_X1.OUT"
+          ],
+          "targets": [
+            "U4.OUT2"
+          ]
+        },
+        {
+          "sources": [
+            "U4.IN"
+          ],
+          "targets": [
+            "U4_X2.IN"
+          ]
+        },
+        {
+          "sources": [
+            "U4_X2.OUT"
+          ],
+          "targets": [
+            "U4.OUT3"
+          ]
+        }
+      ],
+      "outPorts": [
+        {
+          "id": "OUT1"
+        },
+        {
+          "id": "OUT2"
+        },
+        {
+          "id": "OUT3"
+        }
+      ],
+      "inPorts": [
+        {
+          "id": "IN"
+        },
+        {
+          "id": "CLK"
+        }
+      ],
+      "southPorts": [
+        {
+          "id": "RST"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "sources": [
+        "U2.OUT"
+      ],
+      "targets": [
+        "OUT"
+      ]
+    },
+    {
+      "sources": [
+        "U1.OUT1"
+      ],
+      "targets": [
+        "U2.IN1"
+      ]
+    },
+    {
+      "sources": [
+        "CLK"
+      ],
+      "targets": [
+        "U1.CLK"
+      ],
+      "label": "CLOCK"
+    },
+    {
+      "sources": [
+        "CLK"
+      ],
+      "targets": [
+        "U2.CLK"
+      ],
+      "label": "CLOCK"
+    },
+    {
+      "sources": [
+        "CLK"
+      ],
+      "targets": [
+        "U4.CLK"
+      ],
+      "label": "CLOCK"
+    },
+    {
+      "sources": [
+        "RST"
+      ],
+      "targets": [
+        "U1.RST"
+      ],
+      "label": "RESET"
+    },
+    {
+      "sources": [
+        "RST"
+      ],
+      "targets": [
+        "U4.RST"
+      ],
+      "label": "RESET"
+    },
+    {
+      "sources": [
+        "U1.OUT2"
+      ],
+      "targets": [
+        "U2.IN2"
+      ]
+    },
+    {
+      "sources": [
+        "U2.OUT"
+      ],
+      "targets": [
+        "U3.IN"
+      ]
+    },
+    {
+      "sources": [
+        "U3.OUT"
+      ],
+      "targets": [
+        "U1.IN"
+      ]
+    },
+    {
+      "sources": [
+        "U3.OUT"
+      ],
+      "targets": [
+        "U4.IN"
+      ]
+    }
+  ]
+}
+
+    hdelk.layout( simple_graph, "simple_diagram" );
+</script>
+
+</body>
+</html>

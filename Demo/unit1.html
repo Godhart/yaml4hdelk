@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Schematic of unit1</h1>
+
+<script src="js/elk.bundled.js"></script>
+<script src="js/svg.min.js"></script>
+<script src="js/hdelk.js"></script>
+
+<div id="simple_diagram"></div>
+
+<script type="text/javascript">
+
+    
+
+    var simple_graph = {
+  "label": "",
+  "type": "unit1",
+  "children": [
+    {
+      "id": "OUT1",
+      "port": 1
+    },
+    {
+      "id": "OUT2",
+      "port": 1
+    },
+    {
+      "id": "IN",
+      "port": 1
+    },
+    {
+      "id": "RST",
+      "port": 1
+    },
+    {
+      "id": "CLK",
+      "port": 1
+    },
+    {
+      "id": "X1",
+      "label": "X1",
+      "type": "unit2",
+      "inPorts": [
+        {
+          "id": "IN1"
+        },
+        {
+          "id": "IN2"
+        },
+        {
+          "id": "CLK"
+        }
+      ],
+      "outPorts": [
+        {
+          "id": "OUT"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "sources": [
+        "CLK"
+      ],
+      "targets": [
+        "X1.CLK"
+      ]
+    },
+    {
+      "sources": [
+        "IN"
+      ],
+      "targets": [
+        "X1.IN1"
+      ]
+    },
+    {
+      "sources": [
+        "IN"
+      ],
+      "targets": [
+        "X1.IN2"
+      ]
+    },
+    {
+      "sources": [
+        "X1.OUT"
+      ],
+      "targets": [
+        "OUT1"
+      ]
+    },
+    {
+      "sources": [
+        "X1.OUT"
+      ],
+      "targets": [
+        "OUT2"
+      ]
+    }
+  ]
+}
+
+    hdelk.layout( simple_graph, "simple_diagram" );
+</script>
+
+</body>
+</html>

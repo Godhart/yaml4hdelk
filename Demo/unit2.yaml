@@ -1,0 +1,35 @@
+# A nested unit #2
+attributes:
+  type: unit2
+# Default view for this schematic
+display:
+  "": {view: full}
+# Unit's interface
+io:
+  IN1: {}
+  IN2: {}
+  OUT: {dir: out}
+  CLK: {}
+# Unit's content - two items
+units:
+  U1:
+    label: "D"
+    unit:
+      io:
+        IN: {}
+        OUT: {dir: out}
+        CLK: {}
+  U2:
+    label: "+"
+    unit:
+      io:
+        A: {}
+        B: {}
+        OUT: {dir: out}
+# Unit's nets
+nets:
+  - [IN1, U1.IN]
+  - [CLK, U1.CLK]
+  - [U1.OUT, U2.A]
+  - [IN2, U2.B]
+  - [U2.OUT, OUT]

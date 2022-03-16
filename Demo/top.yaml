@@ -1,0 +1,88 @@
+# File with complex schematic example
+# It shouldn't be that complex in real life. It's just to show possibilities
+
+# Unit's attributes
+attributes:
+  type: top               # Type of this unit
+
+# Default view for this schematic
+display:
+  "": {view: full}
+
+# Unit's interface
+io:
+  CLK: {}                 # Clock input
+  OUT: {dir: out}         # Output
+  RST: {dir: south}       # Reset input. Would be displayed on south side
+
+# Unit's content
+units:
+  U1: # Nested unit #1
+    unit: unit1.yaml      # Unit's specification file
+    label: "MyLabel"      # Override unit's label (otherwise it would be U1)
+    nets:                 # Specify connections for this unit's ports (some connections may be specified on global level)
+      - [.OUT2, U2.IN2]   # First is source, second is destination. Source starts with `.`, so it means that it's this unit's port
+
+  U2: # Nested unit #2
+    unit: unit2.yaml      # Unit's specification file
+    nets:                 # Specify connections for this unit's ports (some connections may be specified on global level)
+      # This time net is specified via dict. `r` in the end of `src` and `dst` means that value is treated as regex
+      # And since it's regex - `.` is replaced here with `\.` to indicate that it's unit's port
+      # NOTE: no actual use of regex in here, just for example. Useful regexes in the end of this file
+      - {srcr: \.OUT, dstr: U3\.IN}
+
+  U3: # Inline nested unit
+    unit:                 # No Unit's specification file. It would be specified inline
+      io:                 # U3's interface
+        IN: {}
+        OUT: {dir: out}
+    nets:                 # Connection of U3's interface
+      - [.OUT, U1.IN]
+
+  U4: # Inline altered nested unit #1
+    unit:
+      # In case if some alterations are required to already specified by file unit
+      # Do following 'magic' (NOTE: order of `source` and `merge` nodes DOES maters):
+      # 1. use unit specification file's content as base for this unit
+      source: unit1.yaml
+      # 2. update/alter content
+      merge:
+        - attributes:     # change unit's type so everyone would know it's altered version
+            type: unit1'
+        - units:          # append new X2 unit
+            X2:
+              unit:
+                io:
+                  IN: {}
+                  OUT: {dir: out}
+                  CLK: {}
+                  # TAKE A NOTE: since there is REGEX for clock connection within original unit
+                  # CLK port of this unit would be connected without extra nets specification
+
+        - io:             # append new port
+            OUT3: {dir: out}
+        - nets:           # append nets for new unit connection
+          - [IN, X2.IN]
+          - [X2.OUT, OUT3]
+    nets: # Connection of U4's interface
+      - [U3.OUT, .IN]
+
+# Units connections also can be specified in a separate section
+nets:
+  # Via list
+  - [U2.OUT, OUT]
+
+  # Via dict
+  - {src: U1.OUT1, dst: U2.IN1}
+
+  # This is a dict with regexes for source and destination.
+  # Nets would be labeled as "CLOCK"
+  # It connects all CLK ports of nested units to CLK port of top unit
+  # NOTE: there is A space in `label: CLOCK` so it's a valid dict member
+  - {srcr: CLK, dstr: \w+\.CLK, label: CLOCK}
+
+  # This is a list with regexes for source and destination.
+  # Nets would be labeled as "RESET"
+  # It connects all RST ports of nested units to RST port of top unit
+  # NOTE: there is no space in `label:RESET` so it's scalar value (otherwise it would be a dict and would break tool)
+  - [RST, \w+\.RST, -regex, label:RESET]

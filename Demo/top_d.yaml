@@ -1,0 +1,9 @@
+# This is a file uses top.yaml as source of content
+source: top.yaml
+# And adds some customizations on how items are displayed
+display:
+  "": {view: nested}  # Allow nested view for units of root
+  U1: {view: full}    # Display content of U1
+  U2: {view: symbol}  # Show U2 only as symbol
+  U4: {view: nested}  # Allow nested view for units of U4
+  U4/X1: {view: full} # Display content of U4/X1

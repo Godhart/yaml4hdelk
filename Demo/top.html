@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Schematic of top</h1>
+
+<script src="js/elk.bundled.js"></script>
+<script src="js/svg.min.js"></script>
+<script src="js/hdelk.js"></script>
+
+<div id="simple_diagram"></div>
+
+<script type="text/javascript">
+
+    
+
+    var simple_graph = {
+  "label": "",
+  "type": "top",
+  "children": [
+    {
+      "id": "CLK",
+      "port": 1
+    },
+    {
+      "id": "OUT",
+      "port": 1
+    },
+    {
+      "id": "RST",
+      "port": 1
+    },
+    {
+      "id": "U1",
+      "label": "MyLabel",
+      "type": "unit1",
+      "outPorts": [
+        {
+          "id": "OUT1"
+        },
+        {
+          "id": "OUT2"
+        }
+      ],
+      "inPorts": [
+        {
+          "id": "IN"
+        },
+        {
+          "id": "CLK"
+        }
+      ],
+      "southPorts": [
+        {
+          "id": "RST"
+        }
+      ]
+    },
+    {
+      "id": "U2",
+      "label": "U2",
+      "type": "unit2",
+      "inPorts": [
+        {
+          "id": "IN1"
+        },
+        {
+          "id": "IN2"
+        },
+        {
+          "id": "CLK"
+        }
+      ],
+      "outPorts": [
+        {
+          "id": "OUT"
+        }
+      ]
+    },
+    {
+      "id": "U3",
+      "label": "U3",
+      "inPorts": [
+        {
+          "id": "IN"
+        }
+      ],
+      "outPorts": [
+        {
+          "id": "OUT"
+        }
+      ]
+    },
+    {
+      "id": "U4",
+      "label": "U4",
+      "type": "unit1'",
+      "outPorts": [
+        {
+          "id": "OUT1"
+        },
+        {
+          "id": "OUT2"
+        },
+        {
+          "id": "OUT3"
+        }
+      ],
+      "inPorts": [
+        {
+          "id": "IN"
+        },
+        {
+          "id": "CLK"
+        }
+      ],
+      "southPorts": [
+        {
+          "id": "RST"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "sources": [
+        "U2.OUT"
+      ],
+      "targets": [
+        "OUT"
+      ]
+    },
+    {
+      "sources": [
+        "U1.OUT1"
+      ],
+      "targets": [
+        "U2.IN1"
+      ]
+    },
+    {
+      "sources": [
+        "CLK"
+      ],
+      "targets": [
+        "U1.CLK"
+      ],
+      "label": "CLOCK"
+    },
+    {
+      "sources": [
+        "CLK"
+      ],
+      "targets": [
+        "U2.CLK"
+      ],
+      "label": "CLOCK"
+    },
+    {
+      "sources": [
+        "CLK"
+      ],
+      "targets": [
+        "U4.CLK"
+      ],
+      "label": "CLOCK"
+    },
+    {
+      "sources": [
+        "RST"
+      ],
+      "targets": [
+        "U1.RST"
+      ],
+      "label": "RESET"
+    },
+    {
+      "sources": [
+        "RST"
+      ],
+      "targets": [
+        "U4.RST"
+      ],
+      "label": "RESET"
+    },
+    {
+      "sources": [
+        "U1.OUT2"
+      ],
+      "targets": [
+        "U2.IN2"
+      ]
+    },
+    {
+      "sources": [
+        "U2.OUT"
+      ],
+      "targets": [
+        "U3.IN"
+      ]
+    },
+    {
+      "sources": [
+        "U3.OUT"
+      ],
+      "targets": [
+        "U1.IN"
+      ]
+    },
+    {
+      "sources": [
+        "U3.OUT"
+      ],
+      "targets": [
+        "U4.IN"
+      ]
+    }
+  ]
+}
+
+    hdelk.layout( simple_graph, "simple_diagram" );
+</script>
+
+</body>
+</html>
