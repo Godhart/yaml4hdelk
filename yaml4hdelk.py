@@ -4,6 +4,23 @@ import yaml
 import json
 import re
 
+_VERSION = "1.1.0"
+_USAGE = f"""
+yaml4hdelk, version {_VERSION}
+
+Run this tool like:   python {sys.argv[0]} <top_unit.yaml> [<output.html>] [<custom.js>] [no_shell]
+where
+    <top_unit.yaml> - path to top unit specification file in YAML format
+    <output.html>   - path to output file.
+                      omit "" or "-" for STDOUT output (default)
+    <custom.js>     - path to file with display customizations in JS format
+                      for details see section 'Modifying the Look and Feel' of HDElk tutorial
+                      omit "" or "-" for no customizations (default)
+    no_shell        - just type in any value to avoid generating shell around top unit
+                      with shell around top unit looks same as when it's nested (or similar at least)
+                      omit or "" to generate shell (default)
+"""
+
 
 _UNIT_KEYS = ("io", "generics", "units", "nets", "display", "attributes")
 _YAML_UNIT_ALLOWED_KEYS = (*_UNIT_KEYS, "filepath")
@@ -15,26 +32,75 @@ _VIEW_SYMBOL = "symbol"
 _VIEW_FULL = "full"
 _VIEW_NESTED = "nested"
 
+_BASE_PATH = None
+
+
+def find_file(root: str, filename: str) -> str:
+    """
+    Looks for full path by given filename within root end under
+    :param root: root to start looking from
+    :param filename: specified filename
+    :return: full file path
+    """
+    f_low = filename.lower()
+    for root, dirs, files in os.walk(_BASE_PATH):
+        fl = [fn.lower() for fn in files]
+        for fn in (f_low, f_low+".yaml", f_low+".yml"):
+            if fn in fl:
+                return os.path.join(root,fn)
+    return None
+
 
 def guess_filepath(root: str, path: str) -> str:
     """
     Guesses full file path by given path
     :param root: root to start looking from
     :param path: specified path
+    Special patterns for path:
+        If path starts with @ then it's relative to _BASE_PATH
+        If path is within angle braces < > then path should be a filename and it would be searched within _BASE_PATH
     :return: full file path
     """
+    if path[0:1] == "@":
+        if _BASE_PATH is None:
+            raise ValueError("For usage of pathes, starting with @, _BASE_PATH should be specified")
+        return os.path.join(_BASE_PATH + path)
+    if path[0:1] == "<" and path[-1:] == ">":
+        if _BASE_PATH is None:
+            raise ValueError("For usage of pathes inside angle braces i.e `<>` _BASE_PATH should be specified")
+        r = find_file(_BASE_PATH, path[1:-1])
+        if r is None:
+            raise ValueError(f"File {path} wasn't found within {_BASE_PATH}")
+        return r
     return os.path.join(root, path)  # TODO: more sophisticated guessing like libs looking (i.e "lib:unit") etc
 
 
-def _load(filepath: str) -> dict:
+def _load(filepath: str, unit: bool = False, yaml_string: str = None) -> dict:
     """
     Loads data from given yaml file
     Processes special nodes like "source" and "merge"
     :param filepath: file path
+    :param unit: loaded data is unit definition, otherwise it's treated just as structure text (YAML format)
+    :param yaml_string: if set then data is loaded from yaml_string, filepath is used as root path when referencing to other files
     :return: loaded data
     """
-    with open(filepath, "r") as f:
-        data = yaml.safe_load(f)
+    if yaml_string is None:
+        with open(filepath, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+    else:
+        data = yaml.safe_load(yaml_string)
+    # TODO: check file exists, return stub if not
+
+    if unit:
+        if "attributes" not in data:
+            data["attributes"] = {}
+        if "type" not in data["attributes"]:
+            data["attributes"]["type"] = \
+                re.sub("\.[^.]*$", "", os.path.split(filepath)[-1])
+        if "display" not in data:
+            data["display"] = {}
+        if "" not in data["display"]:
+            data["display"][""] = {"view": "full"}
 
     # Process "source" nodes
     data = _source(filepath, data)
@@ -57,6 +123,7 @@ def _source(parentpath: str, node: dict):
     for k, v in node.items():
         if k == "source":
             source_path = guess_filepath(os.path.split(parentpath)[0], v)
+            # TODO: make stub in case of error
             partial = _load(source_path)
             data = {**data, **partial}
             data["filepath"] = source_path
@@ -188,7 +255,8 @@ def _process_unit(data: dict, filepath: str, hierpath: str = "", display: dict =
 
         if isinstance(v["unit"], str):
             nested_filepath = guess_filepath(os.path.split(_filepath())[0], v["unit"])
-            v["unit"] = _load(nested_filepath)
+            v["unit"] = _load(nested_filepath, unit=True)
+            # TODO: make stub in case of error
         else:
             nested_filepath = _filepath()
 
@@ -224,16 +292,17 @@ def _get_display(hierpath: str, display: dict) -> dict:
     return this_display
 
 
-def load_unit(filepath: str, hierpath: str = "", display: dict = None, view: str = None) -> dict:
+def load_unit(filepath: str, hierpath: str = "", display: dict = None, view: str = None, yaml_string: str = None) -> dict:
     """
     Loads part/schematic description from yaml file
     :param filepath: path to file with data
     :param hierpath: path of this part in hierarchy
     :param display: display settings
     :param view: override view from display
+    :param yaml_string: if set then data is loaded from yaml_string, filepath is used as root path when referencing to other files
     :return: schematic description
     """
-    data = _load(filepath)
+    data = _load(filepath, unit=True, yaml_string=yaml_string)
     _process_unit(data, filepath, hierpath, display, view)
     return data
 
@@ -455,7 +524,16 @@ def hdelk_html(schm: dict, header: str = "Schematic", display_customizations: st
 
 
 if __name__ == "__main__":
+    if len(sys.argv) <= 1:
+        print(_USAGE)
+        exit(0)
+
+    _BASE_PATH = os.getcwd()
+
+    # First argument is file path
     filepath = sys.argv[1]
+
+    # Second argument is output target
     if len(sys.argv) > 2:
         opath = sys.argv[2]
         if opath in ("", "-"):
@@ -463,18 +541,44 @@ if __name__ == "__main__":
     else:
         opath = None
 
-    if len(sys.argv) > 3:
-        with open(sys.argv[3], "r") as f:
-            display_customizations = f.read()
+    # Third argument is display customizations
+    if len(sys.argv) > 3 and sys.argv[3] != "":
+            with open(sys.argv[3], "r") as f:
+                display_customizations = f.read()
     else:
         display_customizations = ""
 
+    # Fourth argument is for strict yaml data usage
+    if len(sys.argv) > 4 and sys.argv[4] != "":
+        # Otherwise special shell around top unit is generated
+        # to provide uniform rendering of unit neither it's top or  it's nested
+        # (default behaviour)
+        hunit = '''
+attributes:
+  type: ""
+display:
+  "": {view: nested}
+  "U1": {view: full}
+units:
+  U1:
+    unit: '''+filepath+'''
+    label: ""
+'''
+    else:
+        hunit = None
+
+    filepath = guess_filepath(_BASE_PATH, filepath)
     data = load_unit(filepath, "", {}, None)
-    schm, _ = hdelk_render(data, "", "")
+    hdata = load_unit(filepath, "", {}, None, yaml_string=hunit)
+    schm, _ = hdelk_render(hdata, "", "")
     html = hdelk_html(schm, "Schematic of " + data["attributes"].get("type", filepath), display_customizations)
 
     if opath is None:
         print(html)
     else:
-        with open(opath, "w") as f:
+        if opath == "html":
+            opath = data.get("attributes", {}).get("type", "")+".html"
+            if opath != ".html":
+                opath = os.path.join("Output", opath)
+        with open(opath, "w", encoding="utf-8") as f:
             f.write(html)
