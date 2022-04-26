@@ -4,14 +4,14 @@ import sys
 import yaml
 import json
 import re
-from yaml4elk_defs import *
+from yaml4schm_defs import *
 
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
 
 _VERSION = "2.0b.0"
 _USAGE = f"""
-yaml2schm, version {_VERSION}
+yaml4schm, version {_VERSION}
 
 Provides generation of HTML with hardware schematic from textual description in YAML format
 Uses HDElk or d3-schematic tools to generate graphics
