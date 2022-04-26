@@ -1,0 +1,47 @@
+# TODO: net groups
+# TODO: ports groups
+# TODO: generate
+# TODO: generics
+# TODO: expressions
+
+# TODO: net's traversing - [U1/X1/U1.Q, .d3] (i.e. jumping thru levels) not works (but there were examples in HDELK afar)
+
+# TODO: display control
+# --> hideChildren = display.view == symbol
+# add_missing_units
+# add_missing_ports
+# highlight_missing_ports
+# highlight_missing_units
+
+# TODO: check following net's attributes
+nets:
+  - <some common stuff>: null
+    name: null                # --> hwMeta.name
+    class: null               # --> hwMeta.cssClass
+    style: null               # --> hwMeta.cssStyle
+
+# TODO: check following unit's attributes
+attributes:
+  kind: null              # --> hwMeta.cls
+  text: "This is Top"     # --> hwMeta.bodyText
+  class: null             # --> hwMeta.cssClass
+  style: null             # --> hwMeta.cssStyle
+  props: { }               # --> properties
+  hideNC: null            # --> if true then not connected ports are hidden by default
+  # props defaults:
+  #  "org.eclipse.elk.portConstraints": "FIXED_ORDER",
+  #  "org.eclipse.elk.layered.mergeEdges": 1
+
+# TODO: check / support following io's attributes
+io:
+  <some common stuff>:
+    clk:   null               # TODO: display clock symbol
+    inv:   null               # TODO: display inversion symbol
+    order: null               # --> properties.portIndex # Assigned automatically as [<port record number> * 100]
+    autohide: null            # if true then hide not connected, if false - never hide, if null - then hide_nc of unit is used
+    hide: false               # if true then hidden no matter what
+    class: null               # --> hwMeta.cssClass
+    style: null               # --> hwMeta.cssStyle
+    connectedAsParent: null   # --> hwMeta.connectedAsParent
+    side:  null               # --> properties.portSide, if omitted then 'west' for inputs, 'east' for outputs
+    children: []
