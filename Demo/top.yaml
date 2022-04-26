@@ -11,15 +11,17 @@ display:
 
 # Unit's interface
 io:
-  CLK: {}                 # Clock input
-  OUT: {dir: out}         # Output
-  RST: {dir: south}       # Reset input. Would be displayed on south side
+  CLK: {clk:  true}           # Clock input
+  OUT: {dir:  out}            # Output
+  RST: {side: south}          # Reset input. Would be displayed on south side
+  d3: # hwMeta.name
+    dir:   out                # --> direction, 'in' if omitted
 
 # Unit's content
 units:
-  U1: # Nested unit #1
+  U1: # Nested unit #1    --> hwMeta.name
     unit: unit1.yaml      # Unit's specification file
-    label: "MyLabel"      # Override unit's label (otherwise it would be U1)
+    name: "MyLabel"       # Override unit's label (otherwise it would be U1)  --> hwMeta.name if not null
     nets:                 # Specify connections for this unit's ports (some connections may be specified on global level)
       - [.OUT2, U2.IN2]   # First is source, second is destination. Source starts with `.`, so it means that it's this unit's port
 
@@ -28,7 +30,10 @@ units:
     nets:                 # Specify connections for this unit's ports (some connections may be specified on global level)
       # This time net is specified via dict. `r` in the end of `src` and `dst` means that value is treated as regex
       # And since it's regex - `.` is replaced here with `\.` to indicate that it's unit's port
-      # NOTE: no actual use of regex in here, just for example. Useful regexes in the end of this file
+      # NOTE: Those regexes selects only single item for src and dst
+      #       BUT endpoint that are specified as regexes will NEVER add missing units/ports
+      #       so regexes could be used for this (i.e. avoiding adding unwanted missing units/ports)
+      #       besides their main purpose
       - {srcr: \.OUT, dstr: U3\.IN}
 
   U3: # Inline nested unit
@@ -48,41 +53,44 @@ units:
       # 2. update/alter content
       merge:
         - attributes:     # change unit's type so everyone would know it's altered version
-            type: unit1'
+            type: unit1'altered
         - units:          # append new X2 unit
             X2:
               unit:
                 io:
                   IN: {}
                   OUT: {dir: out}
-                  CLK: {}
+                  CLK: {clk: true}
                   # TAKE A NOTE: since there is REGEX for clock connection within original unit
                   # CLK port of this unit would be connected without extra nets specification
 
         - io:             # append new port
             OUT3: {dir: out}
         - nets:           # append nets for new unit connection
-          - [IN, X2.IN]
-          - [X2.OUT, OUT3]
+          - [.IN, X2.IN]
+          - [X2.OUT, .OUT3]
     nets: # Connection of U4's interface
       - [U3.OUT, .IN]
 
 # Units connections also can be specified in a separate section
 nets:
   # Via list
-  - [U2.OUT, OUT]
+  - [U2.OUT, .OUT]
 
   # Via dict
   - {src: U1.OUT1, dst: U2.IN1}
+  - src: U1.OUT1
+    dst: [U2.IN1, U3.IN2]     # NOTE: input IN2 would be added into U3 with this net specification
 
   # This is a dict with regexes for source and destination.
   # Nets would be labeled as "CLOCK"
   # It connects all CLK ports of nested units to CLK port of top unit
-  # NOTE: there is A space in `label: CLOCK` so it's a valid dict member
-  - {srcr: CLK, dstr: \w+\.CLK, label: CLOCK}
+  # NOTE: there is A space in `name: CLOCK` so it's a valid dict member
+  - {src: .CLK, dstr: \w+\.CLK, name: CLOCK}
 
   # This is a list with regexes for source and destination.
   # Nets would be labeled as "RESET"
   # It connects all RST ports of nested units to RST port of top unit
   # NOTE: there is no space in `label:RESET` so it's scalar value (otherwise it would be a dict and would break tool)
-  - [RST, \w+\.RST, -regex, label:RESET]
+  # NOTE: -regex makes both src and dst regex so it's necessary to escape dot ('.') to avoid unwanted matching effects
+  - [\.RST, \w+\.RST, -regex, name:RESET]

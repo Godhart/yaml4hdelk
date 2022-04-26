@@ -9,27 +9,25 @@ io:
   IN1: {}
   IN2: {}
   OUT: {dir: out}
-  CLK: {}
+  CLK: {clk: true}
 # Unit's content - two items
 units:
   U1:
-    label: "D"
+    name: "FD"
     unit:
       io:
-        IN: {}
-        OUT: {dir: out}
-        CLK: {}
+        D: {}
+        Q: {dir: out}
+        CLK: {clk: true}
   U2:
-    label: "+"
-    unit:
-      io:
-        A: {}
-        B: {}
-        OUT: {dir: out}
+    unit: <mux>
+    nets:
+      - [/.IN1, .A]  # NOTE: A is added to MUX's inputs automatically
+      - [/.IN2, .B]  # NOTE: B is added to MUX's inputs automatically
+      - [/.CLK, .S]  # NOTE: S is already within MUX's I/O
+      - [.O, /.OUT]  # NOTE: O is added to MUX's outputs automatically
 # Unit's nets
 nets:
-  - [IN1, U1.IN]
-  - [CLK, U1.CLK]
-  - [U1.OUT, U2.A]
-  - [IN2, U2.B]
-  - [U2.OUT, OUT]
+  - [.IN1, U1.D]
+  - [.CLK, U1.CLK]
+  - [U1.Q, .DBG]  # NOTE: DBG is added to top unit automatically

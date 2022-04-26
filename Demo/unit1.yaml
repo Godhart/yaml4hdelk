@@ -9,17 +9,17 @@ io:
   OUT1: {dir: out}
   OUT2: {dir: out}
   IN: {}
-  RST: {dir: south}
-  CLK: {}
+  RST: {side: south}
+  CLK: {clk:  true}
 # Unit's content - contains nested unit #2
 units:
   X1:
     unit: unit2.yaml
 # Unit's nets
 nets:
-  - {src: CLK, dstr: \w+\.CLK}
-  - {src: RST, dstr: \w+\.RST}  # NOTE: since there is no units with RST input - no nets would be drawn for this one
-  - [IN, X1.IN1]
-  - [IN, X1.IN2]
-  - [X1.OUT, OUT1]
-  - [X1.OUT, OUT2]
+  - {src: .CLK, dstr: \w+\.CLK}
+  - {src: .RST, dstr: \w+\.RST}  # NOTE: since there is no units with RST input - no nets would be drawn for this one
+  - [.IN, X1.IN1]
+  - [.IN, X1.IN2]
+  - [X1.OUT, .OUT1]
+  - [X1.OUT, .OUT2]

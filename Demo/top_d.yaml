@@ -7,3 +7,8 @@ display:
   U2: {view: symbol}  # Show U2 only as symbol
   U4: {view: nested}  # Allow nested view for units of U4
   U4/X1: {view: full} # Display content of U4/X1
+
+# TODO: display to list so it would be a set of actions
+# TODO: setting to None should clean previous value
+# TODO: VHDL configuration-like attributes alteration (i.e. nested, multilevel)
+# TODO: type based styling
