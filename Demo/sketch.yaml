@@ -1,0 +1,7 @@
+nets:
+  - [.IN1, U1.IN]
+  - [.IN2, U2.IN]
+  - [U1.OUT, U3.IN1]
+  - [U2.OUT, U3.IN2]
+  - [U3.OUT, .OUT]
+#  - [U2, U1]
