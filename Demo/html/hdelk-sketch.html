@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Schematic of sketch</h1>
+
+<script src="./js/hdelk/elk.bundled.js"></script>
+<script src="./js/hdelk/svg.min.js"></script>
+<script src="./js/hdelk/hdelk.js"></script>
+
+<div id="simple_diagram"></div>
+
+<script type="text/javascript">
+
+    
+
+    var simple_graph = {
+  "type": "sketch",
+  "id": "/",
+  "children": [
+    {
+      "label": "U1",
+      "id": "/U1",
+      "inPorts": [
+        {
+          "label": "IN",
+          "id": "/U1.IN"
+        }
+      ],
+      "outPorts": [
+        {
+          "label": "OUT",
+          "id": "/U1.OUT"
+        }
+      ]
+    },
+    {
+      "label": "U2",
+      "id": "/U2",
+      "inPorts": [
+        {
+          "label": "IN",
+          "id": "/U2.IN"
+        }
+      ],
+      "outPorts": [
+        {
+          "label": "OUT",
+          "id": "/U2.OUT"
+        }
+      ]
+    },
+    {
+      "label": "U3",
+      "id": "/U3",
+      "inPorts": [
+        {
+          "label": "IN1",
+          "id": "/U3.IN1"
+        },
+        {
+          "label": "IN2",
+          "id": "/U3.IN2"
+        }
+      ],
+      "outPorts": [
+        {
+          "label": "OUT",
+          "id": "/U3.OUT"
+        }
+      ]
+    },
+    {
+      "label": "IN1",
+      "id": "/.IN1",
+      "port": 1
+    },
+    {
+      "label": "IN2",
+      "id": "/.IN2",
+      "port": 1
+    },
+    {
+      "label": "OUT",
+      "id": "/.OUT",
+      "port": 1
+    }
+  ],
+  "edges": [
+    {
+      "sources": [
+        "/.IN1"
+      ],
+      "targets": [
+        "/U1.IN"
+      ]
+    },
+    {
+      "sources": [
+        "/.IN2"
+      ],
+      "targets": [
+        "/U2.IN"
+      ]
+    },
+    {
+      "sources": [
+        "/U1.OUT"
+      ],
+      "targets": [
+        "/U3.IN1"
+      ]
+    },
+    {
+      "sources": [
+        "/U2.OUT"
+      ],
+      "targets": [
+        "/U3.IN2"
+      ]
+    },
+    {
+      "sources": [
+        "/U3.OUT"
+      ],
+      "targets": [
+        "/.OUT"
+      ]
+    }
+  ]
+}
+
+    hdelk.layout( simple_graph, "simple_diagram" );
+</script>
+
+</body>
+</html>
