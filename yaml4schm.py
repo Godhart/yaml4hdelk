@@ -4,12 +4,13 @@ import sys
 import yaml
 import json
 import re
+import argparse
 from yaml4schm_defs import *
 
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
 
-_VERSION = "2.0b.0"
+_VERSION = "2.0b1.0"
 _USAGE = f"""
 yaml4schm, version {_VERSION}
 
@@ -35,7 +36,7 @@ where
 """
 # TODO: add custom styles
 
-_BASE_PATH = None
+_ROOT_PATH = None
 
 
 def find_file(root: str, filename: str) -> str or None:
@@ -46,7 +47,7 @@ def find_file(root: str, filename: str) -> str or None:
     :return: full file path if found otherwise None
     """
     f_low = filename.lower()
-    for root, dirs, files in os.walk(_BASE_PATH):
+    for root, dirs, files in os.walk(_ROOT_PATH):
         fl = [fn.lower() for fn in files]
         for fn in (f_low, f_low+".yaml", f_low+".yml"):
             if fn in fl:
@@ -60,20 +61,20 @@ def guess_filepath(root: str, path: str) -> str:
     :param root: root to start looking from
     :param path: specified path
     Special patterns for path:
-        If path starts with @ then it's relative to _BASE_PATH
-        If path is within angle braces < > then path should be a filename and it would be searched within _BASE_PATH
+        If path starts with @ then it's relative to _ROOT_PATH
+        If path is within angle braces < > then path should be a filename and it would be searched within _ROOT_PATH
     :return: full file path
     """
     if path[0:1] == "@":
-        if _BASE_PATH is None:
-            raise ValueError("For usage of paths, starting with `@`, _BASE_PATH should be specified")
-        return os.path.join(_BASE_PATH, path[1:])
+        if _ROOT_PATH is None:
+            raise ValueError("For usage of paths, starting with `@`, a root path should be specified")
+        return os.path.join(_ROOT_PATH, path[1:])
     if path[0:1] == "<" and path[-1:] == ">":
-        if _BASE_PATH is None:
-            raise ValueError("For usage of paths inside angle braces, i.e `<`,`>`, _BASE_PATH should be specified")
-        r = find_file(_BASE_PATH, path[1:-1])
+        if _ROOT_PATH is None:
+            raise ValueError("For usage of paths inside angle braces, i.e `<`,`>`, a root path should be specified")
+        r = find_file(_ROOT_PATH, path[1:-1])
         if r is None:
-            raise ValueError(f"File {path} wasn't found within {_BASE_PATH}")
+            raise ValueError(f"File {path} wasn't found within {_ROOT_PATH}")
         return r
     return os.path.join(root, path)  # TODO: more sophisticated guessing like libs looking (i.e "lib:unit") etc
 
@@ -1456,33 +1457,56 @@ if __name__ == "__main__":
     _SKIP_TODO = False
     _IGNORE_UNCERTAIN = False
 
-    if len(sys.argv) <= 1:
-        print(_USAGE)
-        exit(0)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("source_path",
+                        help="Path to top unit description file (YAML expected)",
+                        type=str)
+    parser.add_argument("output_path",
+                        default="",
+                        help="Path to output file. "
+                             "If '-' or empty string is specified then result is printed to STDOUT,\n"
+                             "if '@' is first char then output path = <output_path after @>/<source_file_name>.<format>",
+                        type=str)
+    parser.add_argument("-t", "--tool",
+                        choices=(TOOL_HDELK, TOOL_D3HW),
+                        default=TOOL_D3HW,
+                        dest="tool",
+                        help="Target rendering tool",
+                        type=str
+                        )
+    parser.add_argument("-f", "--format",
+                        choices=("HTML", "JSON"),
+                        default="HTML",
+                        dest="format",
+                        help="Output format",
+                        type=str)
+    parser.add_argument("-r", "--root",
+                        default=os.getcwd(),
+                        dest="root",
+                        help="Root path for units description files lookup",
+                        type=str)
+    parser.add_argument("--hdelk_custom",
+                        default="",
+                        dest="hdelk_custom",
+                        help="HDELk customizatinos file path",
+                        type=str)
+    parser.add_argument("-s", "--shell",
+                        action="store_true",
+                        dest="shell",
+                        help="If specified then shell (aka box) is generated for top unit "
+                             "and it looks same as nested units this way")
 
-    _BASE_PATH = os.getcwd()
-
-    # First argument is file path
-    filepath = sys.argv[1]
-
-    # Second argument is output target
-    if len(sys.argv) > 2:
-        opath = sys.argv[2]
-        if opath in ("", "-"):
-            opath = None
-    else:
+    args = parser.parse_args()
+    filepath = args.source_path
+    opath = args.output_path
+    if opath in ("", "-"):
         opath = None
+    oformat = args.format
+    _ROOT_PATH = args.root
+    display_customizations = args.hdelk_custom
 
-    # Third argument is display customizations
-    if len(sys.argv) > 3 and sys.argv[3] != "":
-            with open(sys.argv[3], "r") as f:
-                display_customizations = f.read()
-    else:
-        display_customizations = ""
-
-    # Fourth argument is for strict yaml data usage
-    if False or len(sys.argv) > 4 and sys.argv[4] != "":
-        # Otherwise special shell around top unit is generated
+    if args.shell:
+        # Special shell around top unit is generated
         # to provide uniform rendering of unit neither it's top or  it's nested
         # (default behaviour)
         hunit = '''
@@ -1499,23 +1523,27 @@ units:
     else:
         hunit = None
 
-    filepath = guess_filepath(_BASE_PATH, filepath)
+    filepath = guess_filepath(_ROOT_PATH, filepath)
     data = load_unit(filepath, "", "", {}, None)
     hdata = load_unit(filepath, "", "", {}, None, yaml_string=hunit)
-    tool = TOOL_D3HW  # TOOL_HDELK TOOL_D3HW
+    tool = args.tool
     schm = render_unit(tool, hdata, "", is_top=True, custom=hdata)
     connect(tool, schm, (RENDER_ADD_MISSING_UNITS, RENDER_ADD_MISSING_PORTS))
     renderer(tool, schm)
     tool_adaptation(tool, schm)
     _cleanup(schm)
-    html = tool_html(tool, schm, "Schematic of " + data["attributes"].get("type", filepath), display_customizations)
-
-    if opath is None:
-        print(html)
+    if oformat == "HTML":
+        result = tool_html(tool, schm, "Schematic of " + data["attributes"].get("type", filepath), display_customizations)
     else:
-        if opath == "html":
-            opath = data.get("attributes", {}).get("type", "")+".html"
-            if opath != ".html":
-                opath = os.path.join("Output", opath)
+        result = json.dumps(schm, indent=2)
+
+    if opath is None or opath == "":
+        print(result)
+    else:
+        if opath[:1] == "@":
+            opath = opath[1:]
+            if opath == "":
+                opath = "."
+            opath = os.path.join(opath, os.path.split(filepath)[1]+"."+oformat.lower())
         with open(opath, "w", encoding="utf-8") as f:
-            f.write(html)
+            f.write(result)
