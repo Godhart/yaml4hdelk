@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Schematic of unit1</title>
+  <script type="text/javascript" src="./js/d3hw/d3.js"></script>
+  <!-- <script type="text/javascript" src="./js/d3hw/d3.min.js"></script>  -->
+  <script type="text/javascript" src="./js/d3hw/elk.bundled.js"></script>
+  <script type="text/javascript" src="./js/d3hw/d3-hwschematic.js"></script>
+  <link href="./css/d3/d3-hwschematic.css" rel="stylesheet">
+  <style>
+  	body {
+	   margin: 0;
+    }
+  </style>
+</head>
+<body>
+    <svg id="scheme-placeholder"></svg>
+    <script>
+        // schematic rendering script
+
+        function viewport() {
+          var e = window,
+            a = 'inner';
+          if (!('innerWidth' in window)) {
+            a = 'client';
+            e = document.documentElement || document.body;
+          }
+          return {
+            width: e[a + 'Width'],
+            height: e[a + 'Height']
+          }
+        }
+
+        var width = viewport().width,
+            height = viewport().height;
+
+        var svg = d3.select("#scheme-placeholder")
+            .attr("width", width)
+            .attr("height", height);
+
+        var orig = document.body.onresize;
+        document.body.onresize = function(ev) {
+            if (orig)
+        	    orig(ev);
+
+            var w = viewport();
+            svg.attr("width", w.width);
+			      svg.attr("height", w.height);
+        }
+
+        var hwSchematic = new d3.HwSchematic(svg);
+        var zoom = d3.zoom();
+        zoom.on("zoom", function applyTransform(ev) {
+        	hwSchematic.root.attr("transform", ev.transform)
+        });
+
+        // disable zoom on doubleclick
+        // because it interferes with component expanding/collapsing
+        svg.call(zoom)
+           .on("dblclick.zoom", null)
+
+    </script>
+    <script>
+          function displayContents() {
+            var graph = {
+  "hwMeta": {
+    "cls": null,
+    "name": "/",
+    "maxId": 38
+  },
+  "hideChildren": false,
+  "properties": {
+    "org.eclipse.elk.portConstraints": "FIXED_ORDER",
+    "org.eclipse.elk.layered.mergeEdges": 1
+  },
+  "children": [
+    {
+      "hwMeta": {
+        "cls": null,
+        "isExternalPort": true,
+        "name": "/.OUT1",
+        "maxId": 8
+      },
+      "hideChildren": false,
+      "properties": {
+        "org.eclipse.elk.portConstraints": "FIXED_ORDER",
+        "org.eclipse.elk.layered.mergeEdges": 1
+      },
+      "ports": [
+        {
+          "hwMeta": {
+            "level": 0,
+            "name": "OUT1"
+          },
+          "connectedAsParent": false,
+          "properties": {
+            "side": "WEST",
+            "index": -1000
+          },
+          "children": [],
+          "id": "7",
+          "direction": "INPUT"
+        }
+      ],
+      "id": "6"
+    },
+    {
+      "hwMeta": {
+        "cls": null,
+        "isExternalPort": true,
+        "name": "/.OUT2",
+        "maxId": 10
+      },
+      "hideChildren": false,
+      "properties": {
+        "org.eclipse.elk.portConstraints": "FIXED_ORDER",
+        "org.eclipse.elk.layered.mergeEdges": 1
+      },
+      "ports": [
+        {
+          "hwMeta": {
+            "level": 0,
+            "name": "OUT2"
+          },
+          "connectedAsParent": false,
+          "properties": {
+            "side": "WEST",
+            "index": -1000
+          },
+          "children": [],
+          "id": "9",
+          "direction": "INPUT"
+        }
+      ],
+      "id": "8"
+    },
+    {
+      "hwMeta": {
+        "cls": null,
+        "isExternalPort": true,
+        "name": "/.IN",
+        "maxId": 12
+      },
+      "hideChildren": false,
+      "properties": {
+        "org.eclipse.elk.portConstraints": "FIXED_ORDER",
+        "org.eclipse.elk.layered.mergeEdges": 1
+      },
+      "ports": [
+        {
+          "hwMeta": {
+            "level": 0,
+            "name": "IN"
+          },
+          "connectedAsParent": false,
+          "properties": {
+            "side": "EAST",
+            "index": 1000
+          },
+          "children": [],
+          "id": "11",
+          "direction": "OUTPUT"
+        }
+      ],
+      "id": "10"
+    },
+    {
+      "hwMeta": {
+        "cls": null,
+        "isExternalPort": true,
+        "name": "/.RST",
+        "maxId": 14
+      },
+      "hideChildren": false,
+      "properties": {
+        "org.eclipse.elk.portConstraints": "FIXED_ORDER",
+        "org.eclipse.elk.layered.mergeEdges": 1
+      },
+      "ports": [
+        {
+          "hwMeta": {
+            "level": 0,
+            "name": "RST"
+          },
+          "connectedAsParent": false,
+          "properties": {
+            "side": "EAST",
+            "index": 1000
+          },
+          "children": [],
+          "id": "13",
+          "direction": "OUTPUT"
+        }
+      ],
+      "id": "12"
+    },
+    {
+      "hwMeta": {
+        "cls": null,
+        "isExternalPort": true,
+        "name": "/.CLK",
+        "maxId": 16
+      },
+      "hideChildren": false,
+      "properties": {
+        "org.eclipse.elk.portConstraints": "FIXED_ORDER",
+        "org.eclipse.elk.layered.mergeEdges": 1
+      },
+      "ports": [
+        {
+          "hwMeta": {
+            "level": 0,
+            "name": "CLK"
+          },
+          "connectedAsParent": false,
+          "properties": {
+            "side": "EAST",
+            "index": 1000
+          },
+          "children": [],
+          "id": "15",
+          "direction": "OUTPUT"
+        }
+      ],
+      "id": "14"
+    },
+    {
+      "hwMeta": {
+        "cls": null,
+        "name": "/X1",
+        "maxId": 38
+      },
+      "hideChildren": true,
+      "properties": {
+        "org.eclipse.elk.portConstraints": "FIXED_ORDER",
+        "org.eclipse.elk.layered.mergeEdges": 1
+      },
+      "children": [
+        {
+          "hwMeta": {
+            "cls": null,
+            "name": "/X1/U1",
+            "maxId": 33
+          },
+          "hideChildren": true,
+          "properties": {
+            "org.eclipse.elk.portConstraints": "FIXED_ORDER",
+            "org.eclipse.elk.layered.mergeEdges": 1
+          },
+          "children": [],
+          "ports": [
+            {
+              "hwMeta": {
+                "connectedAsParent": false,
+                "name": "D"
+              },
+              "id": "30",
+              "direction": "INPUT",
+              "properties": {
+                "side": "WEST",
+                "index": -1000
+              }
+            },
+            {
+              "hwMeta": {
+                "connectedAsParent": false,
+                "name": "Q"
+              },
+              "direction": "OUTPUT",
+              "id": "31",
+              "properties": {
+                "side": "EAST",
+                "index": 1000
+              }
+            },
+            {
+              "hwMeta": {
+                "connectedAsParent": false,
+                "name": "CLK"
+              },
+              "id": "32",
+              "direction": "INPUT",
+              "properties": {
+                "side": "WEST",
+                "index": -2000
+              }
+            }
+          ],
+          "edges": [],
+          "id": "29"
+        },
+        {
+          "hwMeta": {
+            "cls": "Operator",
+            "name": "MUX",
+            "maxId": 38
+          },
+          "hideChildren": true,
+          "properties": {
+            "org.eclipse.elk.portConstraints": "FIXED_ORDER",
+            "org.eclipse.elk.layered.mergeEdges": 1
+          },
+          "children": [],
+          "ports": [
+            {
+              "hwMeta": {
+                "connectedAsParent": false,
+                "name": "S"
+              },
+              "properties": {
+                "side": "SOUTH",
+                "index": -1000
+              },
+              "id": "34",
+              "direction": "INPUT"
+            },
+            {
+              "hwMeta": {
+                "connectedAsParent": false,
+                "name": "A"
+              },
+              "direction": "INPUT",
+              "id": "35",
+              "properties": {
+                "side": "WEST",
+                "index": -1000
+              }
+            },
+            {
+              "hwMeta": {
+                "connectedAsParent": false,
+                "name": "B"
+              },
+              "direction": "INPUT",
+              "id": "36",
+              "properties": {
+                "side": "WEST",
+                "index": -2000
+              }
+            },
+            {
+              "hwMeta": {
+                "connectedAsParent": false,
+                "name": "O"
+              },
+              "direction": "OUTPUT",
+              "id": "37",
+              "properties": {
+                "side": "EAST",
+                "index": 1000
+              }
+            }
+          ],
+          "edges": [],
+          "id": "33"
+        }
+      ],
+      "ports": [
+        {
+          "hwMeta": {
+            "connectedAsParent": false,
+            "name": "IN1"
+          },
+          "id": "17",
+          "direction": "INPUT",
+          "properties": {
+            "side": "WEST",
+            "index": -1000
+          }
+        },
+        {
+          "hwMeta": {
+            "connectedAsParent": false,
+            "name": "IN2"
+          },
+          "id": "18",
+          "direction": "INPUT",
+          "properties": {
+            "side": "WEST",
+            "index": -2000
+          }
+        },
+        {
+          "hwMeta": {
+            "connectedAsParent": false,
+            "name": "OUT"
+          },
+          "direction": "OUTPUT",
+          "id": "19",
+          "properties": {
+            "side": "EAST",
+            "index": 1000
+          }
+        },
+        {
+          "hwMeta": {
+            "connectedAsParent": false,
+            "name": "CLK"
+          },
+          "id": "20",
+          "direction": "INPUT",
+          "properties": {
+            "side": "WEST",
+            "index": -3000
+          }
+        },
+        {
+          "hwMeta": {
+            "connectedAsParent": false,
+            "name": "DBG"
+          },
+          "direction": "INPUT",
+          "id": "21",
+          "properties": {
+            "side": "WEST",
+            "index": -4000
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "22",
+          "sources": [
+            [
+              "16",
+              "17"
+            ]
+          ],
+          "targets": [
+            [
+              "29",
+              "30"
+            ]
+          ],
+          "hwMeta": {
+            "name": "IN1"
+          }
+        },
+        {
+          "id": "23",
+          "sources": [
+            [
+              "16",
+              "20"
+            ]
+          ],
+          "targets": [
+            [
+              "29",
+              "32"
+            ]
+          ],
+          "hwMeta": {
+            "name": "CLK"
+          }
+        },
+        {
+          "id": "24",
+          "sources": [
+            [
+              "29",
+              "31"
+            ]
+          ],
+          "targets": [
+            [
+              "16",
+              "21"
+            ]
+          ],
+          "hwMeta": {
+            "name": "DBG"
+          }
+        },
+        {
+          "id": "25",
+          "sources": [
+            [
+              "16",
+              "17"
+            ]
+          ],
+          "targets": [
+            [
+              "33",
+              "35"
+            ]
+          ],
+          "hwMeta": {
+            "name": "IN1"
+          }
+        },
+        {
+          "id": "26",
+          "sources": [
+            [
+              "16",
+              "18"
+            ]
+          ],
+          "targets": [
+            [
+              "33",
+              "36"
+            ]
+          ],
+          "hwMeta": {
+            "name": "IN2"
+          }
+        },
+        {
+          "id": "27",
+          "sources": [
+            [
+              "16",
+              "20"
+            ]
+          ],
+          "targets": [
+            [
+              "33",
+              "34"
+            ]
+          ],
+          "hwMeta": {
+            "name": "CLK"
+          }
+        },
+        {
+          "id": "28",
+          "sources": [
+            [
+              "33",
+              "37"
+            ]
+          ],
+          "targets": [
+            [
+              "16",
+              "19"
+            ]
+          ],
+          "hwMeta": {
+            "name": "OUT"
+          }
+        }
+      ],
+      "id": "16"
+    }
+  ],
+  "ports": [],
+  "edges": [
+    {
+      "id": "1",
+      "sources": [
+        [
+          "14",
+          "15"
+        ]
+      ],
+      "targets": [
+        [
+          "16",
+          "20"
+        ]
+      ],
+      "hwMeta": {
+        "name": ".CLK"
+      }
+    },
+    {
+      "id": "2",
+      "sources": [
+        [
+          "10",
+          "11"
+        ]
+      ],
+      "targets": [
+        [
+          "16",
+          "17"
+        ]
+      ],
+      "hwMeta": {
+        "name": ".IN"
+      }
+    },
+    {
+      "id": "3",
+      "sources": [
+        [
+          "10",
+          "11"
+        ]
+      ],
+      "targets": [
+        [
+          "16",
+          "18"
+        ]
+      ],
+      "hwMeta": {
+        "name": ".IN"
+      }
+    },
+    {
+      "id": "4",
+      "sources": [
+        [
+          "16",
+          "19"
+        ]
+      ],
+      "targets": [
+        [
+          "6",
+          "7"
+        ]
+      ],
+      "hwMeta": {
+        "name": ".OUT1"
+      }
+    },
+    {
+      "id": "5",
+      "sources": [
+        [
+          "16",
+          "19"
+        ]
+      ],
+      "targets": [
+        [
+          "8",
+          "9"
+        ]
+      ],
+      "hwMeta": {
+        "name": ".OUT2"
+      }
+    }
+  ],
+  "id": "0"
+};
+            if (graph.hwMeta && graph.hwMeta.name)
+                 document.title = graph.hwMeta.name; <!-- #TODO: use proper field for title -->
+            // load the data and render the elements
+            hwSchematic.bindData(graph);
+          }
+
+          displayContents();
+    </script>
+</body>
+</html>

@@ -4,9 +4,9 @@
 
 <h1>Schematic of unit2</h1>
 
-<script src="js/elk.bundled.js"></script>
-<script src="js/svg.min.js"></script>
-<script src="js/hdelk.js"></script>
+<script src="./js/hdelk/elk.bundled.js"></script>
+<script src="./js/hdelk/svg.min.js"></script>
+<script src="./js/hdelk/hdelk.js"></script>
 
 <div id="simple_diagram"></div>
 
@@ -15,99 +15,138 @@
     
 
     var simple_graph = {
-  "label": "",
   "type": "unit2",
+  "id": "/",
   "children": [
     {
-      "id": "IN1",
+      "label": "IN1",
+      "id": "/.IN1",
       "port": 1
     },
     {
-      "id": "IN2",
+      "label": "IN2",
+      "id": "/.IN2",
       "port": 1
     },
     {
-      "id": "OUT",
+      "label": "OUT",
+      "id": "/.OUT",
       "port": 1
     },
     {
-      "id": "CLK",
+      "label": "CLK",
+      "id": "/.CLK",
       "port": 1
     },
     {
-      "id": "U1",
-      "label": "D",
+      "label": "FD",
+      "id": "/U1",
+      "children": [],
       "inPorts": [
         {
-          "id": "IN"
+          "label": "D",
+          "id": "/U1.D"
         },
         {
-          "id": "CLK"
+          "label": "CLK",
+          "id": "/U1.CLK"
         }
       ],
       "outPorts": [
         {
-          "id": "OUT"
+          "label": "Q",
+          "id": "/U1.Q"
         }
       ]
     },
     {
-      "id": "U2",
-      "label": "+",
+      "type": "mux",
+      "id": "/U2",
+      "children": [],
+      "southPorts": [
+        {
+          "label": "S",
+          "id": "/U2.S"
+        }
+      ],
       "inPorts": [
         {
-          "id": "A"
+          "label": "A",
+          "id": "/U2.A"
         },
         {
-          "id": "B"
+          "label": "B",
+          "id": "/U2.B"
         }
       ],
       "outPorts": [
         {
-          "id": "OUT"
+          "label": "O",
+          "id": "/U2.O"
         }
       ]
+    },
+    {
+      "label": "DBG",
+      "id": "/.DBG",
+      "port": 1
     }
   ],
   "edges": [
     {
       "sources": [
-        "IN1"
+        "/.IN1"
       ],
       "targets": [
-        "U1.IN"
+        "/U1.D"
       ]
     },
     {
       "sources": [
-        "CLK"
+        "/.CLK"
       ],
       "targets": [
-        "U1.CLK"
+        "/U1.CLK"
       ]
     },
     {
       "sources": [
-        "U1.OUT"
+        "/U1.Q"
       ],
       "targets": [
-        "U2.A"
+        "/.DBG"
       ]
     },
     {
       "sources": [
-        "IN2"
+        "/.IN1"
       ],
       "targets": [
-        "U2.B"
+        "/U2.A"
       ]
     },
     {
       "sources": [
-        "U2.OUT"
+        "/.IN2"
       ],
       "targets": [
-        "OUT"
+        "/U2.B"
+      ]
+    },
+    {
+      "sources": [
+        "/.CLK"
+      ],
+      "targets": [
+        "/U2.S"
+      ]
+    },
+    {
+      "sources": [
+        "/U2.O"
+      ],
+      "targets": [
+        "/.OUT"
       ]
     }
   ]

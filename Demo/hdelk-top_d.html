@@ -2,11 +2,11 @@
 <html>
 <body>
 
-<h1>Schematic of top</h1>
+<h1>Schematic of top_d</h1>
 
-<script src="js/elk.bundled.js"></script>
-<script src="js/svg.min.js"></script>
-<script src="js/hdelk.js"></script>
+<script src="./js/hdelk/elk.bundled.js"></script>
+<script src="./js/hdelk/svg.min.js"></script>
+<script src="./js/hdelk/hdelk.js"></script>
 
 <div id="simple_diagram"></div>
 
@@ -15,188 +15,83 @@
     
 
     var simple_graph = {
-  "label": "",
-  "type": "top",
+  "type": "top_d",
+  "id": "/",
   "children": [
     {
-      "id": "CLK",
+      "label": "CLK",
+      "id": "/.CLK",
       "port": 1
     },
     {
-      "id": "OUT",
+      "label": "OUT",
+      "id": "/.OUT",
       "port": 1
     },
     {
-      "id": "RST",
+      "label": "RST",
+      "id": "/.RST",
       "port": 1
     },
     {
-      "id": "U1",
-      "label": "MyLabel",
+      "label": "d3",
+      "id": "/.d3",
+      "port": 1
+    },
+    {
       "type": "unit1",
+      "label": "MyLabel",
+      "id": "/U1",
       "children": [
         {
-          "id": "U1_X1",
-          "label": "X1",
           "type": "unit2",
-          "inPorts": [
-            {
-              "id": "IN1"
-            },
-            {
-              "id": "IN2"
-            },
-            {
-              "id": "CLK"
-            }
-          ],
-          "outPorts": [
-            {
-              "id": "OUT"
-            }
-          ]
-        }
-      ],
-      "edges": [
-        {
-          "sources": [
-            "U1.CLK"
-          ],
-          "targets": [
-            "U1_X1.CLK"
-          ]
-        },
-        {
-          "sources": [
-            "U1.IN"
-          ],
-          "targets": [
-            "U1_X1.IN1"
-          ]
-        },
-        {
-          "sources": [
-            "U1.IN"
-          ],
-          "targets": [
-            "U1_X1.IN2"
-          ]
-        },
-        {
-          "sources": [
-            "U1_X1.OUT"
-          ],
-          "targets": [
-            "U1.OUT1"
-          ]
-        },
-        {
-          "sources": [
-            "U1_X1.OUT"
-          ],
-          "targets": [
-            "U1.OUT2"
-          ]
-        }
-      ],
-      "outPorts": [
-        {
-          "id": "OUT1"
-        },
-        {
-          "id": "OUT2"
-        }
-      ],
-      "inPorts": [
-        {
-          "id": "IN"
-        },
-        {
-          "id": "CLK"
-        }
-      ],
-      "southPorts": [
-        {
-          "id": "RST"
-        }
-      ]
-    },
-    {
-      "id": "U2",
-      "label": "U2",
-      "type": "unit2",
-      "inPorts": [
-        {
-          "id": "IN1"
-        },
-        {
-          "id": "IN2"
-        },
-        {
-          "id": "CLK"
-        }
-      ],
-      "outPorts": [
-        {
-          "id": "OUT"
-        }
-      ]
-    },
-    {
-      "id": "U3",
-      "label": "U3",
-      "inPorts": [
-        {
-          "id": "IN"
-        }
-      ],
-      "outPorts": [
-        {
-          "id": "OUT"
-        }
-      ]
-    },
-    {
-      "id": "U4",
-      "label": "U4",
-      "type": "unit1'",
-      "children": [
-        {
-          "id": "U4_X1",
-          "label": "X1",
-          "type": "unit2",
+          "id": "/U1/X1",
           "children": [
             {
-              "id": "U4_X1_U1",
-              "label": "D",
+              "label": "FD",
+              "id": "/U1/X1/U1",
+              "children": [],
               "inPorts": [
                 {
-                  "id": "IN"
+                  "label": "D",
+                  "id": "/U1/X1/U1.D"
                 },
                 {
-                  "id": "CLK"
+                  "label": "CLK",
+                  "id": "/U1/X1/U1.CLK"
                 }
               ],
               "outPorts": [
                 {
-                  "id": "OUT"
+                  "label": "Q",
+                  "id": "/U1/X1/U1.Q"
                 }
               ]
             },
             {
-              "id": "U4_X1_U2",
-              "label": "+",
+              "type": "mux",
+              "id": "/U1/X1/U2",
+              "children": [],
+              "southPorts": [
+                {
+                  "label": "S",
+                  "id": "/U1/X1/U2.S"
+                }
+              ],
               "inPorts": [
                 {
-                  "id": "A"
+                  "label": "A",
+                  "id": "/U1/X1/U2.A"
                 },
                 {
-                  "id": "B"
+                  "label": "B",
+                  "id": "/U1/X1/U2.B"
                 }
               ],
               "outPorts": [
                 {
-                  "id": "OUT"
+                  "label": "O",
+                  "id": "/U1/X1/U2.O"
                 }
               ]
             }
@@ -204,76 +99,83 @@
           "edges": [
             {
               "sources": [
-                "U4_X1.IN1"
+                "/U1/X1.IN1"
               ],
               "targets": [
-                "U4_X1_U1.IN"
+                "/U1/X1/U1.D"
               ]
             },
             {
               "sources": [
-                "U4_X1.CLK"
+                "/U1/X1.CLK"
               ],
               "targets": [
-                "U4_X1_U1.CLK"
+                "/U1/X1/U1.CLK"
               ]
             },
             {
               "sources": [
-                "U4_X1_U1.OUT"
+                "/U1/X1/U1.Q"
               ],
               "targets": [
-                "U4_X1_U2.A"
+                "/U1/X1.DBG"
               ]
             },
             {
               "sources": [
-                "U4_X1.IN2"
+                "/U1/X1.IN1"
               ],
               "targets": [
-                "U4_X1_U2.B"
+                "/U1/X1/U2.A"
               ]
             },
             {
               "sources": [
-                "U4_X1_U2.OUT"
+                "/U1/X1.IN2"
               ],
               "targets": [
-                "U4_X1.OUT"
+                "/U1/X1/U2.B"
+              ]
+            },
+            {
+              "sources": [
+                "/U1/X1.CLK"
+              ],
+              "targets": [
+                "/U1/X1/U2.S"
+              ]
+            },
+            {
+              "sources": [
+                "/U1/X1/U2.O"
+              ],
+              "targets": [
+                "/U1/X1.OUT"
               ]
             }
           ],
           "inPorts": [
             {
-              "id": "IN1"
+              "label": "IN1",
+              "id": "/U1/X1.IN1"
             },
             {
-              "id": "IN2"
+              "label": "IN2",
+              "id": "/U1/X1.IN2"
             },
             {
-              "id": "CLK"
+              "label": "CLK",
+              "id": "/U1/X1.CLK"
+            },
+            {
+              "label": "DBG",
+              "id": "/U1/X1.DBG"
             }
           ],
           "outPorts": [
             {
-              "id": "OUT"
-            }
-          ]
-        },
-        {
-          "id": "U4_X2",
-          "label": "X2",
-          "inPorts": [
-            {
-              "id": "IN"
-            },
-            {
-              "id": "CLK"
-            }
-          ],
-          "outPorts": [
-            {
-              "id": "OUT"
+              "label": "OUT",
+              "id": "/U1/X1.OUT"
             }
           ]
         }
@@ -281,91 +183,483 @@
       "edges": [
         {
           "sources": [
-            "U4.CLK"
+            "/U1.CLK"
           ],
           "targets": [
-            "U4_X1.CLK"
+            "/U1/X1.CLK"
           ]
         },
         {
           "sources": [
-            "U4.CLK"
+            "/U1.IN"
           ],
           "targets": [
-            "U4_X2.CLK"
+            "/U1/X1.IN1"
           ]
         },
         {
           "sources": [
-            "U4.IN"
+            "/U1.IN"
           ],
           "targets": [
-            "U4_X1.IN1"
+            "/U1/X1.IN2"
           ]
         },
         {
           "sources": [
-            "U4.IN"
+            "/U1/X1.OUT"
           ],
           "targets": [
-            "U4_X1.IN2"
+            "/U1.OUT1"
           ]
         },
         {
           "sources": [
-            "U4_X1.OUT"
+            "/U1/X1.OUT"
           ],
           "targets": [
-            "U4.OUT1"
-          ]
-        },
-        {
-          "sources": [
-            "U4_X1.OUT"
-          ],
-          "targets": [
-            "U4.OUT2"
-          ]
-        },
-        {
-          "sources": [
-            "U4.IN"
-          ],
-          "targets": [
-            "U4_X2.IN"
-          ]
-        },
-        {
-          "sources": [
-            "U4_X2.OUT"
-          ],
-          "targets": [
-            "U4.OUT3"
+            "/U1.OUT2"
           ]
         }
       ],
       "outPorts": [
         {
-          "id": "OUT1"
+          "label": "OUT1",
+          "id": "/U1.OUT1"
         },
         {
-          "id": "OUT2"
-        },
-        {
-          "id": "OUT3"
+          "label": "OUT2",
+          "id": "/U1.OUT2"
         }
       ],
       "inPorts": [
         {
-          "id": "IN"
+          "label": "IN",
+          "id": "/U1.IN"
         },
         {
-          "id": "CLK"
+          "label": "CLK",
+          "id": "/U1.CLK"
         }
       ],
       "southPorts": [
         {
-          "id": "RST"
+          "label": "RST",
+          "id": "/U1.RST"
+        }
+      ]
+    },
+    {
+      "type": "unit2",
+      "id": "/U2",
+      "children": [
+        {
+          "label": "FD",
+          "id": "/U2/U1",
+          "children": [],
+          "inPorts": [
+            {
+              "label": "D",
+              "id": "/U2/U1.D"
+            },
+            {
+              "label": "CLK",
+              "id": "/U2/U1.CLK"
+            }
+          ],
+          "outPorts": [
+            {
+              "label": "Q",
+              "id": "/U2/U1.Q"
+            }
+          ]
+        },
+        {
+          "type": "mux",
+          "id": "/U2/U2",
+          "children": [],
+          "southPorts": [
+            {
+              "label": "S",
+              "id": "/U2/U2.S"
+            }
+          ],
+          "inPorts": [
+            {
+              "label": "A",
+              "id": "/U2/U2.A"
+            },
+            {
+              "label": "B",
+              "id": "/U2/U2.B"
+            }
+          ],
+          "outPorts": [
+            {
+              "label": "O",
+              "id": "/U2/U2.O"
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "sources": [
+            "/U2.IN1"
+          ],
+          "targets": [
+            "/U2/U1.D"
+          ]
+        },
+        {
+          "sources": [
+            "/U2.CLK"
+          ],
+          "targets": [
+            "/U2/U1.CLK"
+          ]
+        },
+        {
+          "sources": [
+            "/U2/U1.Q"
+          ],
+          "targets": [
+            "/U2.DBG"
+          ]
+        },
+        {
+          "sources": [
+            "/U2.IN1"
+          ],
+          "targets": [
+            "/U2/U2.A"
+          ]
+        },
+        {
+          "sources": [
+            "/U2.IN2"
+          ],
+          "targets": [
+            "/U2/U2.B"
+          ]
+        },
+        {
+          "sources": [
+            "/U2.CLK"
+          ],
+          "targets": [
+            "/U2/U2.S"
+          ]
+        },
+        {
+          "sources": [
+            "/U2/U2.O"
+          ],
+          "targets": [
+            "/U2.OUT"
+          ]
+        }
+      ],
+      "inPorts": [
+        {
+          "label": "IN1",
+          "id": "/U2.IN1"
+        },
+        {
+          "label": "IN2",
+          "id": "/U2.IN2"
+        },
+        {
+          "label": "CLK",
+          "id": "/U2.CLK"
+        },
+        {
+          "label": "DBG",
+          "id": "/U2.DBG"
+        }
+      ],
+      "outPorts": [
+        {
+          "label": "OUT",
+          "id": "/U2.OUT"
+        }
+      ]
+    },
+    {
+      "id": "/U3",
+      "children": [],
+      "inPorts": [
+        {
+          "label": "IN",
+          "id": "/U3.IN"
+        },
+        {
+          "label": "IN2",
+          "id": "/U3.IN2"
+        }
+      ],
+      "outPorts": [
+        {
+          "label": "OUT",
+          "id": "/U3.OUT"
+        }
+      ]
+    },
+    {
+      "type": "unit1'altered",
+      "id": "/U4",
+      "children": [
+        {
+          "type": "unit2",
+          "id": "/U4/X1",
+          "children": [
+            {
+              "label": "FD",
+              "id": "/U4/X1/U1",
+              "children": [],
+              "inPorts": [
+                {
+                  "label": "D",
+                  "id": "/U4/X1/U1.D"
+                },
+                {
+                  "label": "CLK",
+                  "id": "/U4/X1/U1.CLK"
+                }
+              ],
+              "outPorts": [
+                {
+                  "label": "Q",
+                  "id": "/U4/X1/U1.Q"
+                }
+              ]
+            },
+            {
+              "type": "mux",
+              "id": "/U4/X1/U2",
+              "children": [],
+              "southPorts": [
+                {
+                  "label": "S",
+                  "id": "/U4/X1/U2.S"
+                }
+              ],
+              "inPorts": [
+                {
+                  "label": "A",
+                  "id": "/U4/X1/U2.A"
+                },
+                {
+                  "label": "B",
+                  "id": "/U4/X1/U2.B"
+                }
+              ],
+              "outPorts": [
+                {
+                  "label": "O",
+                  "id": "/U4/X1/U2.O"
+                }
+              ]
+            }
+          ],
+          "edges": [
+            {
+              "sources": [
+                "/U4/X1.IN1"
+              ],
+              "targets": [
+                "/U4/X1/U1.D"
+              ]
+            },
+            {
+              "sources": [
+                "/U4/X1.CLK"
+              ],
+              "targets": [
+                "/U4/X1/U1.CLK"
+              ]
+            },
+            {
+              "sources": [
+                "/U4/X1/U1.Q"
+              ],
+              "targets": [
+                "/U4/X1.DBG"
+              ]
+            },
+            {
+              "sources": [
+                "/U4/X1.IN1"
+              ],
+              "targets": [
+                "/U4/X1/U2.A"
+              ]
+            },
+            {
+              "sources": [
+                "/U4/X1.IN2"
+              ],
+              "targets": [
+                "/U4/X1/U2.B"
+              ]
+            },
+            {
+              "sources": [
+                "/U4/X1.CLK"
+              ],
+              "targets": [
+                "/U4/X1/U2.S"
+              ]
+            },
+            {
+              "sources": [
+                "/U4/X1/U2.O"
+              ],
+              "targets": [
+                "/U4/X1.OUT"
+              ]
+            }
+          ],
+          "inPorts": [
+            {
+              "label": "IN1",
+              "id": "/U4/X1.IN1"
+            },
+            {
+              "label": "IN2",
+              "id": "/U4/X1.IN2"
+            },
+            {
+              "label": "CLK",
+              "id": "/U4/X1.CLK"
+            },
+            {
+              "label": "DBG",
+              "id": "/U4/X1.DBG"
+            }
+          ],
+          "outPorts": [
+            {
+              "label": "OUT",
+              "id": "/U4/X1.OUT"
+            }
+          ]
+        },
+        {
+          "id": "/U4/X2",
+          "children": [],
+          "inPorts": [
+            {
+              "label": "IN",
+              "id": "/U4/X2.IN"
+            },
+            {
+              "label": "CLK",
+              "id": "/U4/X2.CLK"
+            }
+          ],
+          "outPorts": [
+            {
+              "label": "OUT",
+              "id": "/U4/X2.OUT"
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "sources": [
+            "/U4.CLK"
+          ],
+          "targets": [
+            "/U4/X1.CLK"
+          ]
+        },
+        {
+          "sources": [
+            "/U4.CLK"
+          ],
+          "targets": [
+            "/U4/X2.CLK"
+          ]
+        },
+        {
+          "sources": [
+            "/U4.IN"
+          ],
+          "targets": [
+            "/U4/X1.IN1"
+          ]
+        },
+        {
+          "sources": [
+            "/U4.IN"
+          ],
+          "targets": [
+            "/U4/X1.IN2"
+          ]
+        },
+        {
+          "sources": [
+            "/U4/X1.OUT"
+          ],
+          "targets": [
+            "/U4.OUT1"
+          ]
+        },
+        {
+          "sources": [
+            "/U4/X1.OUT"
+          ],
+          "targets": [
+            "/U4.OUT2"
+          ]
+        },
+        {
+          "sources": [
+            "/U4.IN"
+          ],
+          "targets": [
+            "/U4/X2.IN"
+          ]
+        },
+        {
+          "sources": [
+            "/U4/X2.OUT"
+          ],
+          "targets": [
+            "/U4.OUT3"
+          ]
+        }
+      ],
+      "outPorts": [
+        {
+          "label": "OUT1",
+          "id": "/U4.OUT1"
+        },
+        {
+          "label": "OUT2",
+          "id": "/U4.OUT2"
+        },
+        {
+          "label": "OUT3",
+          "id": "/U4.OUT3"
+        }
+      ],
+      "inPorts": [
+        {
+          "label": "IN",
+          "id": "/U4.IN"
+        },
+        {
+          "label": "CLK",
+          "id": "/U4.CLK"
+        }
+      ],
+      "southPorts": [
+        {
+          "label": "RST",
+          "id": "/U4.RST"
         }
       ]
     }
@@ -373,95 +667,111 @@
   "edges": [
     {
       "sources": [
-        "U2.OUT"
+        "/U2.OUT"
       ],
       "targets": [
-        "OUT"
+        "/.OUT"
       ]
     },
     {
       "sources": [
-        "U1.OUT1"
+        "/U1.OUT1"
       ],
       "targets": [
-        "U2.IN1"
+        "/U2.IN1"
       ]
     },
     {
       "sources": [
-        "CLK"
+        "/U1.OUT1"
       ],
       "targets": [
-        "U1.CLK"
+        "/U2.IN1"
+      ]
+    },
+    {
+      "sources": [
+        "/U1.OUT1"
+      ],
+      "targets": [
+        "/U3.IN2"
+      ]
+    },
+    {
+      "sources": [
+        "/.CLK"
+      ],
+      "targets": [
+        "/U1.CLK"
       ],
       "label": "CLOCK"
     },
     {
       "sources": [
-        "CLK"
+        "/.CLK"
       ],
       "targets": [
-        "U2.CLK"
+        "/U2.CLK"
       ],
       "label": "CLOCK"
     },
     {
       "sources": [
-        "CLK"
+        "/.CLK"
       ],
       "targets": [
-        "U4.CLK"
+        "/U4.CLK"
       ],
       "label": "CLOCK"
     },
     {
       "sources": [
-        "RST"
+        "/.RST"
       ],
       "targets": [
-        "U1.RST"
+        "/U1.RST"
       ],
       "label": "RESET"
     },
     {
       "sources": [
-        "RST"
+        "/.RST"
       ],
       "targets": [
-        "U4.RST"
+        "/U4.RST"
       ],
       "label": "RESET"
     },
     {
       "sources": [
-        "U1.OUT2"
+        "/U1.OUT2"
       ],
       "targets": [
-        "U2.IN2"
+        "/U2.IN2"
       ]
     },
     {
       "sources": [
-        "U2.OUT"
+        "/U2.OUT"
       ],
       "targets": [
-        "U3.IN"
+        "/U3.IN"
       ]
     },
     {
       "sources": [
-        "U3.OUT"
+        "/U3.OUT"
       ],
       "targets": [
-        "U1.IN"
+        "/U1.IN"
       ]
     },
     {
       "sources": [
-        "U3.OUT"
+        "/U3.OUT"
       ],
       "targets": [
-        "U4.IN"
+        "/U4.IN"
       ]
     }
   ]

@@ -4,9 +4,9 @@
 
 <h1>Schematic of unit1</h1>
 
-<script src="js/elk.bundled.js"></script>
-<script src="js/svg.min.js"></script>
-<script src="js/hdelk.js"></script>
+<script src="./js/hdelk/elk.bundled.js"></script>
+<script src="./js/hdelk/svg.min.js"></script>
+<script src="./js/hdelk/hdelk.js"></script>
 
 <div id="simple_diagram"></div>
 
@@ -15,47 +15,167 @@
     
 
     var simple_graph = {
-  "label": "",
   "type": "unit1",
+  "id": "/",
   "children": [
     {
-      "id": "OUT1",
+      "label": "OUT1",
+      "id": "/.OUT1",
       "port": 1
     },
     {
-      "id": "OUT2",
+      "label": "OUT2",
+      "id": "/.OUT2",
       "port": 1
     },
     {
-      "id": "IN",
+      "label": "IN",
+      "id": "/.IN",
       "port": 1
     },
     {
-      "id": "RST",
+      "label": "RST",
+      "id": "/.RST",
       "port": 1
     },
     {
-      "id": "CLK",
+      "label": "CLK",
+      "id": "/.CLK",
       "port": 1
     },
     {
-      "id": "X1",
-      "label": "X1",
       "type": "unit2",
+      "id": "/X1",
+      "children": [
+        {
+          "label": "FD",
+          "id": "/X1/U1",
+          "children": [],
+          "inPorts": [
+            {
+              "label": "D",
+              "id": "/X1/U1.D"
+            },
+            {
+              "label": "CLK",
+              "id": "/X1/U1.CLK"
+            }
+          ],
+          "outPorts": [
+            {
+              "label": "Q",
+              "id": "/X1/U1.Q"
+            }
+          ]
+        },
+        {
+          "type": "mux",
+          "id": "/X1/U2",
+          "children": [],
+          "southPorts": [
+            {
+              "label": "S",
+              "id": "/X1/U2.S"
+            }
+          ],
+          "inPorts": [
+            {
+              "label": "A",
+              "id": "/X1/U2.A"
+            },
+            {
+              "label": "B",
+              "id": "/X1/U2.B"
+            }
+          ],
+          "outPorts": [
+            {
+              "label": "O",
+              "id": "/X1/U2.O"
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "sources": [
+            "/X1.IN1"
+          ],
+          "targets": [
+            "/X1/U1.D"
+          ]
+        },
+        {
+          "sources": [
+            "/X1.CLK"
+          ],
+          "targets": [
+            "/X1/U1.CLK"
+          ]
+        },
+        {
+          "sources": [
+            "/X1/U1.Q"
+          ],
+          "targets": [
+            "/X1.DBG"
+          ]
+        },
+        {
+          "sources": [
+            "/X1.IN1"
+          ],
+          "targets": [
+            "/X1/U2.A"
+          ]
+        },
+        {
+          "sources": [
+            "/X1.IN2"
+          ],
+          "targets": [
+            "/X1/U2.B"
+          ]
+        },
+        {
+          "sources": [
+            "/X1.CLK"
+          ],
+          "targets": [
+            "/X1/U2.S"
+          ]
+        },
+        {
+          "sources": [
+            "/X1/U2.O"
+          ],
+          "targets": [
+            "/X1.OUT"
+          ]
+        }
+      ],
       "inPorts": [
         {
-          "id": "IN1"
+          "label": "IN1",
+          "id": "/X1.IN1"
         },
         {
-          "id": "IN2"
+          "label": "IN2",
+          "id": "/X1.IN2"
         },
         {
-          "id": "CLK"
+          "label": "CLK",
+          "id": "/X1.CLK"
+        },
+        {
+          "label": "DBG",
+          "id": "/X1.DBG"
         }
       ],
       "outPorts": [
         {
-          "id": "OUT"
+          "label": "OUT",
+          "id": "/X1.OUT"
         }
       ]
     }
@@ -63,42 +183,42 @@
   "edges": [
     {
       "sources": [
-        "CLK"
+        "/.CLK"
       ],
       "targets": [
-        "X1.CLK"
+        "/X1.CLK"
       ]
     },
     {
       "sources": [
-        "IN"
+        "/.IN"
       ],
       "targets": [
-        "X1.IN1"
+        "/X1.IN1"
       ]
     },
     {
       "sources": [
-        "IN"
+        "/.IN"
       ],
       "targets": [
-        "X1.IN2"
+        "/X1.IN2"
       ]
     },
     {
       "sources": [
-        "X1.OUT"
+        "/X1.OUT"
       ],
       "targets": [
-        "OUT1"
+        "/.OUT1"
       ]
     },
     {
       "sources": [
-        "X1.OUT"
+        "/X1.OUT"
       ],
       "targets": [
-        "OUT2"
+        "/.OUT2"
       ]
     }
   ]
