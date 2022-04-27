@@ -19,9 +19,9 @@ are in `Demo` folder.
 * Schematic as a code
 * YAML (is better for humans than JSON in an original tool)
 * Schematics could be organized into multiple files and then used
-  * as separate units
-  * as a part of another schematic
-* Multiple files allows code reuse and making complex schematics simple
+  * as nested units
+  * as a part of another schematic (expanded in place)
+* Multiple files allows code reuse and makes complex schematics simple
 * Regexes for simplified multipoint connections description such as
   CLOCK, RESET, CE etc.
 * Control view of schematic
@@ -42,10 +42,10 @@ are in `Demo` folder.
 * Version control and changes review friendly
 * Place any sort of comments along schematic description as you require -
   no need to wipe them off before printing
-* Along with original tool you'll get unification for schematics representation
+* Along with original rendering tool you'll get unification for schematics representation
   (though someone may find it's boring), so updating schematics after styles
   change is easy
-* More than picture with `d3-hwschematic`
+* More than picture with `d3-hwschematic` - interactive browsing
 
 # Current state
 
