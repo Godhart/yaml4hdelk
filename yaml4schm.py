@@ -10,29 +10,13 @@ from yaml4schm_defs import *
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
 
-_VERSION = "2.0b1.0"
-_USAGE = f"""
+_VERSION = "2.0b1.1"
+_INFO = f"""
 yaml4schm, version {_VERSION}
 
-Provides generation of HTML with hardware schematic from textual description in YAML format
+Provides generation of HTML with hardware schematic from textual description
+in YAML format.
 Uses HDElk or d3-schematic tools to generate graphics
-
-Run this tool like:   python {sys.argv[0]} <top_unit.yaml> [<output.html>] [<custom.js>] [no_shell] [<tool>]
-where
-    <top_unit.yaml> - path to top unit specification file in YAML format
-                      nested units and data may be specified in outer YAML files and refered from top unit's YAML,
-                      see docs for details
-    <output.html>   - path to output file.
-                      if set to "html" then output file path would be same as top unit file
-                      with extra '.html' extension.
-                      omit or set to "" or "-" for STDOUT output (default)
-    <custom.js>     - path to file with display customizations in JS format
-                      for details see section 'Modifying the Look and Feel' of HDElk tutorial
-                      omit or set to "" or "-" for no customizations (default)
-    no_shell        - just type in any value to avoid generating shell around top unit
-                      with shell around top unit looks same as when it's nested (or similar at least)
-                      omit or set to or "" to generate shell (default)
-    <tool>          - specify tool
 """
 # TODO: add custom styles
 
@@ -1458,7 +1442,16 @@ if __name__ == "__main__":
     _IGNORE_UNCERTAIN = False
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--version",
+                        action="version",
+                        version=_VERSION,
+                        help="Print version of this tool")
+    parser.add_argument("-i", "--info",
+                        action="version",
+                        version=_INFO,
+                        help="Print short info about this tool")
     parser.add_argument("source_path",
+                        default="",
                         help="Path to top unit description file (YAML expected)",
                         type=str)
     parser.add_argument("output_path",
@@ -1488,14 +1481,13 @@ if __name__ == "__main__":
     parser.add_argument("--hdelk_custom",
                         default="",
                         dest="hdelk_custom",
-                        help="HDELk customizatinos file path",
+                        help="HDELk customizations file path",
                         type=str)
     parser.add_argument("-s", "--shell",
                         action="store_true",
                         dest="shell",
                         help="If specified then shell (aka box) is generated for top unit "
-                             "and it looks same as nested units this way")
-
+                             "and it would look same as nested units")
     args = parser.parse_args()
     filepath = args.source_path
     opath = args.output_path
