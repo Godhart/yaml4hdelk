@@ -1,6 +1,5 @@
 import copy
 import os
-import sys
 import yaml
 import json
 import re
@@ -10,7 +9,7 @@ from yaml4schm_defs import *
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
 
-_VERSION = "2.0b1.1"
+_VERSION = "2.0b1.2"
 _INFO = f"""
 yaml4schm, version {_VERSION}
 
