@@ -1,0 +1,83 @@
+#!/bin/python ../yaml4schm.py operators.yaml @html
+display:
+  "": {view: nested}
+units:
+  LogicGates:
+    unit:
+      io:
+        A:    {}
+        B:    {}
+        C:    {}
+        D:    {}
+        O1:   {dir: out}
+        O2:   {dir: out}
+        O3:   {dir: out}
+        O4:   {dir: out}
+        O5:   {dir: out}
+        O6:   {dir: out}
+        O7:   {dir: out}
+      units:
+        NOT:  {unit: <NOT>,   nets: [[/.A, .A],            [.O, /.O1]]}
+        OR:   {unit: <OR>,    nets: [[/.A, .A], [/.B, .B], [.O, /.O2]]}
+        XOR:  {unit: <XOR>,   nets: [[/.A, .A], [/.B, .B], [.O, /.O3]]}
+        NAND: {unit: <NAND>,  nets: [[/.A, .A], [/.B, .B], [.O, /.O4]]}
+        NOR:  {unit: <NOR>,   nets: [[/.A, .A], [/.B, .B], [.O, /.O5]]}
+        XNOR: {unit: <NXOR>,  nets: [[/.A, .A], [/.B, .B], [.O, /.O6]]}
+        AND:  {unit: <AND>,   nets: [[/.A, .A], [/.B, .B], [.O, /.O7], [/.C, .C], [/.D, .D] ]}
+  Arith:
+    unit:
+      io:
+        A:    {}
+        B:    {}
+        O:    {dir: out}
+      units:
+        ADD:  {unit: <ADD>}
+        SUB:  {unit: <SUB>}
+        MUL:  {unit: <MUL>}
+        DIV:  {unit: <DIV>}
+  Compare:
+    unit:
+      io:
+        A:    {}
+        B:    {}
+        O:    {dir: out}
+      units:
+        EQ:   {unit: <EQ>}
+        NE:   {unit: <NE>}
+        GE:   {unit: <GE>}
+        GT:   {unit: <GT>}
+        LE:   {unit: <LE>}
+        LT:   {unit: <LT>}
+  DataFLow:
+    unit:
+      io:
+        I0:   {}
+        I1:   {}
+        I2:   {}
+        I3:   {}
+        S:    {}
+        O:    {dir: out}
+        CLK:  {}
+        D:    {}
+        CE:   {}
+        Q:    {dir: out}
+      units:
+        MUX:  {unit: <MUX>, nets: [[/.I0, .I0], [/.I1, .I1], [/.I2, .I2], [/.I3, .I3], [/.S, .S], [.O, MO.I0]]}
+        MUX2: {unit: <MUX^>, nets: [[/.I0, .I0], [/.I1, .I1], [/.I2, .I2], [/.I3, .I3], [/.S, .S], [.O, MO.I1]]}
+        FF:   {unit: <FF>,  nets: [[/.CLK, .CLK], [/.D, .D], [/.CE, .CE], [.Q, /.Q]]}
+        LMUX: {unit: <LATCHED_MUX>, nets: [[/.I0, .I0], [/.I1, .I1], [/.I2, .I2], [/.I3, .I3], [/.S, .S], [.O, MO.I2]]}
+        MO:   {unit: <MUX>, nets: [[.O, /.O]]}
+  Buses:
+    unit:
+      io:
+        I0:   {}
+        I1:   {}
+        I2:   {}
+        I3:   {}
+        O0:   {dir: out}
+        O1:   {dir: out}
+        O2:   {dir: out}
+        O3:   {dir: out}
+      units:
+        CON:  {unit: <CONCAT>, nets: [[/.I0, ".[0]"], [/.I1, ".[1]"], [/.I2, ".[2]"], [/.I3, ".[3]"]]}
+        SLI:  {unit: <SLICE>,  nets: [["CON.O[3:0]", ".I[3:0]"],    [".[0]", /.O0], [".[1]", /.O1], [".[2]", /.O2], [".[3]", /.O3], ]}
