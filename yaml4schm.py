@@ -9,7 +9,7 @@ from yaml4schm_defs import *
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
 
-_VERSION = "2.0b1.2"
+_VERSION = "2.0b1.3"
 _INFO = f"""
 yaml4schm, version {_VERSION}
 
@@ -1042,7 +1042,7 @@ def _connect_net(tool, scope, unit, net_data):
                 "targets": trg,
                 **net,
             }
-            if autoname and (len(src) == 1 or len(trg==1)):
+            if autoname and (len(src) == 1 or len(trg)==1):
                 home_unit = _rndr(net_data, "unit_id")
                 if len(src) == 1:
                     name = re.sub(r"-port_pin$", "", src[0][1])
@@ -1058,6 +1058,8 @@ def _connect_net(tool, scope, unit, net_data):
                     name = re.sub(r"-pin_port$", "", trg[0][1])
                 if home_unit is not None:
                     name = name[len(_ext_id(home_unit)):]
+                if name[:1] == ".":
+                    name = name[1:]
                 net_instance["hwMeta"]["name"] = name
 
             root_edges.append(net_instance)
