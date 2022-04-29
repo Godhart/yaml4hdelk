@@ -1,0 +1,5 @@
+attributes:
+  d3hw_name: "MUX"
+  kind: Operator
+io:
+  S: {side: north}
