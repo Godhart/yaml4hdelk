@@ -9,7 +9,7 @@ from yaml4schm_defs import *
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
 
-_VERSION = "2.0b1.3"
+_VERSION = "2.0b1.4"
 _INFO = f"""
 yaml4schm, version {_VERSION}
 
@@ -1536,7 +1536,11 @@ units:
         if opath[:1] == "@":
             opath = opath[1:]
             if opath == "":
-                opath = "."
-            opath = os.path.join(opath, os.path.split(filepath)[1]+"."+oformat.lower())
+                opath = "./"
+            opath = os.path.join(
+                opath,
+                re.sub(r"\.[^.]+$", "", os.path.split(filepath)[1])  # Remove initial file extension
+                +"."+oformat.lower()                                 # Add target format extension
+            )
         with open(opath, "w", encoding="utf-8") as f:
             f.write(result)
