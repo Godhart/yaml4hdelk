@@ -1,0 +1,18 @@
+attributes:
+  type: DPRAM
+io:
+  P1_ADDR:  {}
+  P1_D:     {}
+  P1_WE:    {}
+  P1_EN:    {}
+  P1_Q:     {dir: out}
+  P1_CLK:   {}
+
+  P2_ADDR:  {}
+  P2_D:     {}
+  P2_WE:    {}
+  P2_EN:    {}
+  P2_Q:     {dir: out}
+  P2_CLK:   {}
+# units:
+#   X: {unit: {}}

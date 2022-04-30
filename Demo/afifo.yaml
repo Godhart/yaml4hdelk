@@ -1,0 +1,105 @@
+attributes:
+  type: afifo
+
+io:
+  WD:     {}
+  WE:     {}
+  FULL:   {dir: out, side: west}
+  OVF:    {dir: out, side: west}
+  WCOUNT: {dir: out, side: west}
+  WCLK:   {clk: True}
+
+  RD:     {dir: out}
+  RE:     {}
+  EMPTY:  {dir: out}
+  UNF:    {dir: out}
+  RCOUNT: {dir: out}
+  RCLK:   {clk: True, side: east}
+
+  AINIT:  {side: south}
+
+units:
+  RAM:
+    unit: <DPRAM>
+    nets: [[/.WCLK, .P1_CLK], [/.RCLK, .P2_CLK]]
+
+  WPTR:
+    unit: <CNT>
+    nets: [[/.WCLK, .CLK]]
+
+  RPTR:
+    unit: <CNT>
+    nets: [[/.RCLK, .CLK]]
+
+  WCDC:
+    unit: <CDC_GREY>
+    nets: [[/.WCLK, .CLK1], [/.RCLK, .CLK2]]
+
+  RCDC:
+    unit: <CDC_GREY>
+    nets: [[/.RCLK, .CLK1], [/.WCLK, .CLK2]]
+
+  RSTCDC:
+    unit: {io: {RSTI: {}, CLK1: {clk: True}, CLK2: {clk: True}, RSTO1: {dir: out}, RSTO2: {dir: out}}}
+    text: CDC for RESET
+    nets: [[/.WCLK, .CLK1], [/.RCLK, .CLK2]]
+
+  WARB:
+    unit:
+      io:
+        WPTR:   {}
+        RPTR:   {}
+        REQ:    {}
+        CEO:    {dir: out}
+        FULL:   {dir: out}
+        OVF:    {dir: out}
+        COUNT:  {dir: out}
+        RST:    {side: south}
+        CLK:    {}
+    nets: [[/.WCLK, .CLK]]
+
+  RARB:
+    unit:
+      io:
+        WPTR:   {}
+        RPTR:   {}
+        REQ:    {}
+        CEO:    {dir: out}
+        EMPTY:  {dir: out}
+        UNF:    {dir: out}
+        COUNT:  {dir: out}
+        RST:    {side: south}
+        CLK:    {}
+    nets: [[/.RCLK, .CLK]]
+
+
+nets:
+  - [.WD            , RAM.P1_D]
+  - [RAM.P2_Q     , .RD]
+
+  - [WPTR.Q       , RAM.P1_ADDR]
+  - [RPTR.Q       , RAM.P2_ADDR]
+
+  - [WPTR.Q       , WCDC.IN]
+  - [WCDC.OUT     , RARB.WPTR]
+
+  - [RPTR.Q       , RCDC.IN]
+  - [RCDC.OUT     , WARB.RPTR]
+
+  - [.AINIT         , RSTCDC.RSTI]
+  - [RSTCDC.RSTO1 , [WARB.RST, WPTR.RST]]
+  - [RSTCDC.RSTO2 , [RARB.RST, RPTR.RST]]
+
+  - [.WE            , WARB.REQ]
+  - [WPTR.Q       , WARB.WPTR]
+  - [WARB.FULL    , .FULL]
+  - [WARB.OVF     , .OVF]
+  - [WARB.COUNT   , .WCOUNT]
+  - [WARB.CEO     , [WPTR.CE, RAM.P1_EN, RAM.P1_WE]]
+
+  - [.RE            , RARB.REQ]
+  - [RPTR.Q       , RARB.RPTR]
+  - [RARB.EMPTY   , .EMPTY]
+  - [RARB.UNF     , .UNF]
+  - [RARB.COUNT   , .RCOUNT]
+  - [RARB.CEO     , [RPTR.CE, RAM.P2_EN]]
