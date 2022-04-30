@@ -1,3 +1,12 @@
 attributes:
   d3hw_name: "FF"
   kind: Operator
+io:
+  CLK:  {}
+  D:    {}
+  Q:    {dir: out}
+  CE:   {}
+  R:    {side: south}
+  CLR:  {side: south}
+  S:    {side: north}
+  PRE:  {side: north}
