@@ -9,7 +9,7 @@ from yaml4schm_defs import *
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
 
-_VERSION = "2.0b2.0"
+_VERSION = "2.0b2.1"
 _INFO = f"""
 yaml4schm, version {_VERSION}
 
@@ -1009,7 +1009,6 @@ def _connect_net(tool, scope, unit, net_data):
 
         src = []
         trg = []
-        home_unit = None
         for _, _, source in sources:
             if tool != TOOL_D3HW or _rndr(source, "is_port") is not True:
                 src.append([re.sub(r"\..*", "", source["id"]), source["id"]])
@@ -1025,49 +1024,68 @@ def _connect_net(tool, scope, unit, net_data):
         if len(src) == 0 or len(trg) == 0:
             return
 
-        if "edges" not in root:
-            root["edges"] = []
-        root_edges = root["edges"]
-
         # TODO: increase net references on ports (required to use auto_hide later)
 
-        if tool == TOOL_D3HW:
-            net_instance = {
-                "id": net_id,
-                "sources": src,
-                "targets": trg,
-                **net,
-            }
-            if autoname and (len(src) == 1 or len(trg)==1):
-                home_unit = _rndr(net_data, "unit_id")
-                if len(src) == 1:
-                    name = re.sub(r"-port_pin$", "", src[0][1])
-                    if len(trg) == 1:
-                        alt_name = re.sub(r"-port_pin$", "", trg[0][1])
-                    else:
-                        alt_name = None
-                    if alt_name is not None \
-                    and name[len(home_unit):len(home_unit)+1] != "." \
-                    and alt_name[len(home_unit):len(home_unit)+1] == ".":
-                        name = alt_name
-                else:
-                    name = re.sub(r"-pin_port$", "", trg[0][1])
-                if home_unit is not None:
-                    name = name[len(_ext_id(home_unit)):]
-                if name[:1] == ".":
-                    name = name[1:]
-                net_instance["hwMeta"]["name"] = name
+        # "_nets_" is a dict to gather all merge all nets with same sources into one
+        if "_nets_" not in root:
+            root["_nets_"] = {}
+        nets = root["_nets_"]
 
-            root_edges.append(net_instance)
+        # key is sorted sources list
+        net_key = tuple([tuple(v) for v in sorted(src)])
+
+        if net_key not in nets:
+            # init net data
+            nets[net_key] = {"sources": src, "targets": [], **net}
+
+            if tool == TOOL_D3HW:
+                # add id
+                nets[net_key]["id"] = net_id
+                # autoname net if this is D3HW
+                if autoname and (len(src) == 1 or len(trg) == 1):
+                    home_unit = _rndr(net_data, "unit_id")
+                    if len(src) == 1:
+                        name = re.sub(r"-port_pin$", "", src[0][1])
+                        if len(trg) == 1:
+                            alt_name = re.sub(r"-port_pin$", "", trg[0][1])
+                        else:
+                            alt_name = None
+                        if alt_name is not None \
+                            and name[len(home_unit):len(home_unit) + 1] != "." \
+                            and alt_name[len(home_unit):len(home_unit) + 1] == ".":
+                            name = alt_name
+                    else:
+                        name = re.sub(r"-pin_port$", "", trg[0][1])
+                    if home_unit is not None:
+                        name = name[len(_ext_id(home_unit)):]
+                    if name[:1] == ".":
+                        name = name[1:]
+                    nets[net_key]["hwMeta"]["name"] = name
+        else:
+            pass
+
+        nets[net_key]["targets"] += trg
+
+
+def _nets_to_edges(tool, unit):
+
+    for v in unit.get("_nets_", {}).values():
+        if "edges" not in unit:
+            unit["edges"] = []
+
+        if tool == TOOL_D3HW:
+            unit["edges"].append(v)
 
         if tool == TOOL_HDELK:
-            for _, sid in src:
-                for _, tid in trg:
-                    root_edges.append({
+            for _, sid in v["sources"]:
+                for _, tid in v["targets"]:
+                    unit["edges"].append({
+                        **v,
                         "sources": [sid],
                         "targets": [tid],
-                        **net,
                     })
+    for u in unit.get("children", []):
+        _nets_to_edges(tool, u)
 
 
 def connect(tool: str, top_unit: dict, options: tuple or list) -> None:
@@ -1094,6 +1112,9 @@ def connect(tool: str, top_unit: dict, options: tuple or list) -> None:
 
     # Walk thru nets again - connect as necessary
     _connect_nets(tool, top_scope)
+
+    # Transforms nets data into edges
+    _nets_to_edges(tool, top_unit)
 
 
 def _connect_nets(tool, starting_scope):
