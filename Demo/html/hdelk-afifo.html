@@ -824,14 +824,6 @@
         },
         {
           "sources": [
-            "//RPTR.Q"
-          ],
-          "targets": [
-            "//RAM.P2_ADDR"
-          ]
-        },
-        {
-          "sources": [
             "//WPTR.Q"
           ],
           "targets": [
@@ -840,10 +832,18 @@
         },
         {
           "sources": [
-            "//WCDC.OUT"
+            "//WPTR.Q"
           ],
           "targets": [
-            "//RARB.WPTR"
+            "//WARB.WPTR"
+          ]
+        },
+        {
+          "sources": [
+            "//RPTR.Q"
+          ],
+          "targets": [
+            "//RAM.P2_ADDR"
           ]
         },
         {
@@ -852,6 +852,22 @@
           ],
           "targets": [
             "//RCDC.IN"
+          ]
+        },
+        {
+          "sources": [
+            "//RPTR.Q"
+          ],
+          "targets": [
+            "//RARB.RPTR"
+          ]
+        },
+        {
+          "sources": [
+            "//WCDC.OUT"
+          ],
+          "targets": [
+            "//RARB.WPTR"
           ]
         },
         {
@@ -912,14 +928,6 @@
         },
         {
           "sources": [
-            "//WPTR.Q"
-          ],
-          "targets": [
-            "//WARB.WPTR"
-          ]
-        },
-        {
-          "sources": [
             "//WARB.FULL"
           ],
           "targets": [
@@ -976,14 +984,6 @@
         },
         {
           "sources": [
-            "//RPTR.Q"
-          ],
-          "targets": [
-            "//RARB.RPTR"
-          ]
-        },
-        {
-          "sources": [
             "//RARB.EMPTY"
           ],
           "targets": [
@@ -1032,14 +1032,6 @@
         },
         {
           "sources": [
-            "//.RCLK"
-          ],
-          "targets": [
-            "//RAM.P2_CLK"
-          ]
-        },
-        {
-          "sources": [
             "//.WCLK"
           ],
           "targets": [
@@ -1048,34 +1040,10 @@
         },
         {
           "sources": [
-            "//.RCLK"
-          ],
-          "targets": [
-            "//RPTR.CLK"
-          ]
-        },
-        {
-          "sources": [
             "//.WCLK"
           ],
           "targets": [
             "//WCDC.CLK1"
-          ]
-        },
-        {
-          "sources": [
-            "//.RCLK"
-          ],
-          "targets": [
-            "//WCDC.CLK2"
-          ]
-        },
-        {
-          "sources": [
-            "//.RCLK"
-          ],
-          "targets": [
-            "//RCDC.CLK1"
           ]
         },
         {
@@ -1096,18 +1064,50 @@
         },
         {
           "sources": [
-            "//.RCLK"
-          ],
-          "targets": [
-            "//RSTCDC.CLK2"
-          ]
-        },
-        {
-          "sources": [
             "//.WCLK"
           ],
           "targets": [
             "//WARB.CLK"
+          ]
+        },
+        {
+          "sources": [
+            "//.RCLK"
+          ],
+          "targets": [
+            "//RAM.P2_CLK"
+          ]
+        },
+        {
+          "sources": [
+            "//.RCLK"
+          ],
+          "targets": [
+            "//RPTR.CLK"
+          ]
+        },
+        {
+          "sources": [
+            "//.RCLK"
+          ],
+          "targets": [
+            "//WCDC.CLK2"
+          ]
+        },
+        {
+          "sources": [
+            "//.RCLK"
+          ],
+          "targets": [
+            "//RCDC.CLK1"
+          ]
+        },
+        {
+          "sources": [
+            "//.RCLK"
+          ],
+          "targets": [
+            "//RSTCDC.CLK2"
           ]
         },
         {

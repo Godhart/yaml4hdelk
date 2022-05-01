@@ -105,10 +105,26 @@
             },
             {
               "sources": [
+                "/U1/X1.IN1"
+              ],
+              "targets": [
+                "/U1/X1/U2.A"
+              ]
+            },
+            {
+              "sources": [
                 "/U1/X1.CLK"
               ],
               "targets": [
                 "/U1/X1/U1.CLK"
+              ]
+            },
+            {
+              "sources": [
+                "/U1/X1.CLK"
+              ],
+              "targets": [
+                "/U1/X1/U2.S"
               ]
             },
             {
@@ -121,26 +137,10 @@
             },
             {
               "sources": [
-                "/U1/X1.IN1"
-              ],
-              "targets": [
-                "/U1/X1/U2.A"
-              ]
-            },
-            {
-              "sources": [
                 "/U1/X1.IN2"
               ],
               "targets": [
                 "/U1/X1/U2.B"
-              ]
-            },
-            {
-              "sources": [
-                "/U1/X1.CLK"
-              ],
-              "targets": [
-                "/U1/X1/U2.S"
               ]
             },
             {
@@ -309,10 +309,26 @@
         },
         {
           "sources": [
+            "/U2.IN1"
+          ],
+          "targets": [
+            "/U2/U2.A"
+          ]
+        },
+        {
+          "sources": [
             "/U2.CLK"
           ],
           "targets": [
             "/U2/U1.CLK"
+          ]
+        },
+        {
+          "sources": [
+            "/U2.CLK"
+          ],
+          "targets": [
+            "/U2/U2.S"
           ]
         },
         {
@@ -325,26 +341,10 @@
         },
         {
           "sources": [
-            "/U2.IN1"
-          ],
-          "targets": [
-            "/U2/U2.A"
-          ]
-        },
-        {
-          "sources": [
             "/U2.IN2"
           ],
           "targets": [
             "/U2/U2.B"
-          ]
-        },
-        {
-          "sources": [
-            "/U2.CLK"
-          ],
-          "targets": [
-            "/U2/U2.S"
           ]
         },
         {
@@ -466,10 +466,26 @@
             },
             {
               "sources": [
+                "/U4/X1.IN1"
+              ],
+              "targets": [
+                "/U4/X1/U2.A"
+              ]
+            },
+            {
+              "sources": [
                 "/U4/X1.CLK"
               ],
               "targets": [
                 "/U4/X1/U1.CLK"
+              ]
+            },
+            {
+              "sources": [
+                "/U4/X1.CLK"
+              ],
+              "targets": [
+                "/U4/X1/U2.S"
               ]
             },
             {
@@ -482,26 +498,10 @@
             },
             {
               "sources": [
-                "/U4/X1.IN1"
-              ],
-              "targets": [
-                "/U4/X1/U2.A"
-              ]
-            },
-            {
-              "sources": [
                 "/U4/X1.IN2"
               ],
               "targets": [
                 "/U4/X1/U2.B"
-              ]
-            },
-            {
-              "sources": [
-                "/U4/X1.CLK"
-              ],
-              "targets": [
-                "/U4/X1/U2.S"
               ]
             },
             {
@@ -593,6 +593,14 @@
         },
         {
           "sources": [
+            "/U4.IN"
+          ],
+          "targets": [
+            "/U4/X2.IN"
+          ]
+        },
+        {
+          "sources": [
             "/U4/X1.OUT"
           ],
           "targets": [
@@ -605,14 +613,6 @@
           ],
           "targets": [
             "/U4.OUT2"
-          ]
-        },
-        {
-          "sources": [
-            "/U4.IN"
-          ],
-          "targets": [
-            "/U4/X2.IN"
           ]
         },
         {
@@ -663,6 +663,14 @@
       ],
       "targets": [
         "/.OUT"
+      ]
+    },
+    {
+      "sources": [
+        "/U2.OUT"
+      ],
+      "targets": [
+        "/U3.IN"
       ]
     },
     {
@@ -740,14 +748,6 @@
       ],
       "targets": [
         "/U2.IN2"
-      ]
-    },
-    {
-      "sources": [
-        "/U2.OUT"
-      ],
-      "targets": [
-        "/U3.IN"
       ]
     },
     {
