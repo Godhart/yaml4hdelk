@@ -1,6 +1,6 @@
 #!/bin/python ../yaml4schm.py operators.yaml @html
 display:
-  "": {view: nested}
+  ".*": {view: nested}
 units:
   LogicGates:
     unit:
