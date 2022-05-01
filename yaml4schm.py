@@ -9,7 +9,7 @@ from yaml4schm_defs import *
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
 
-_VERSION = "2.0b1.4"
+_VERSION = "2.0b2.0"
 _INFO = f"""
 yaml4schm, version {_VERSION}
 
@@ -520,10 +520,8 @@ def render_unit(tool: str, data: dict, hierpath: str = "",
         _rndr_set(result, "hidden", True)
         return result
 
-    # Tool specific
-    if tool == TOOL_D3HW:
-        if display.get("view", VIEW_SYMBOL) == VIEW_SYMBOL:
-            result["hideChildren"] = True
+    if tool == TOOL_D3HW and display.get("view", VIEW_SYMBOL) == VIEW_SYMBOL:
+        _rndr_set(result, "hide_content", True)
 
     childs = result["children"] = []
     _rndr_set(result, "is_unit", True)
@@ -531,11 +529,6 @@ def render_unit(tool: str, data: dict, hierpath: str = "",
     # Add ports
     for k, v in data["io"].items():
         _add_port(tool, result, hierpath+"."+k, k, v, reverse=hierpath == "/")
-
-    # Tool specific
-    if tool == TOOL_D3HW:
-        if display.get("view", VIEW_SYMBOL) == VIEW_SYMBOL:
-            result["hideChildren"] = True
 
     # Add subunits
     if True:
@@ -566,6 +559,9 @@ def render_unit(tool: str, data: dict, hierpath: str = "",
             _rndr_set(net, "unit_id", result["id"])
             # Append net to list
             nets.append(net)
+
+    if len(childs) == 0:
+        del result["children"]
 
     return result
 
@@ -892,8 +888,8 @@ def _add_port(tool, unit, port_id, port_name, port_custom, reverse=False):
             unit["children"] = []
         unit["children"].append(port)
     else:
-        port = {}
-        attributes = copy.deepcopy(IO_DEFAULTS[tool])
+        port = copy.deepcopy(IO_DEFAULTS[tool])
+        attributes = {}
         _to_target(port_custom, attributes, YAML_IO_KEYS)
         attributes["name"] = port_name
         _map_attributes(port, attributes, YAML_IO_REMAP[tool])
@@ -1178,7 +1174,20 @@ def _d3hw_adaptation_unit(unit):
         unit["hwMeta"]["name"] = unit["id"]
     for u in unit.get("children", []):
         _d3hw_adaptation_unit(u)
-    # TODO: name nets connected to the input ports
+
+
+def _d3hw_hide_content(unit):
+
+    if _rndr(unit, "hide_content"):
+        if "children" in unit:
+            unit["_children"] = unit["children"]
+            del unit["children"]
+        if "edges" in unit:
+            unit["_edges"] = unit["edges"]
+            del unit["edges"]
+
+    for u in unit.get("children", []):
+        _d3hw_hide_content(u)
 
 
 def _d3hw_adaptation_port(unit):
@@ -1295,6 +1304,7 @@ def d3hw_adaptation(data):
     id_counter = [0]
     _d3hw_id_map(data, id_map, id_counter, is_unit=True)
     _d3hw_id_sub(data, id_map, is_unit=True)
+    _d3hw_hide_content(data)
 
 
 def tool_html(tool: str, schm: dict, header: str = "Schematic", display_customizations: str = "") -> str:
@@ -1425,7 +1435,7 @@ def d3hw_html(schm: dict, header: str = "Schematic", display_customizations: str
           function displayContents() {{
             var graph = {json.dumps(schm, indent=2)};
             if (graph.hwMeta && graph.hwMeta.name)
-                 document.title = graph.hwMeta.name; <!-- #TODO: use proper field for title -->
+                 document.title = graph.hwMeta.name; // #TODO: use proper field for title
             // load the data and render the elements
             hwSchematic.bindData(graph);
           }}

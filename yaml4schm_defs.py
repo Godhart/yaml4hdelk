@@ -98,15 +98,13 @@ UNIT_DEFAULTS = {
     TOOL_D3HW: {
         "hwMeta": {
             "cls": None,
+            "children": [],
         },
-        "hideChildren": False,
         "properties": {
             "org.eclipse.elk.portConstraints": "FIXED_ORDER",
             "org.eclipse.elk.layered.mergeEdges": 1,
         },
-        "children": [],
         "ports": [],
-        "edges": [],
     }
 }
 
@@ -176,11 +174,10 @@ IO_DEFAULTS = {
     },
     TOOL_D3HW: {
         "hwMeta": {
-            "level": 0,  # TODO: WTF? not in docs but this were in examples
+            # "level": 0,  # TODO: WTF? not in docs but this were in examples
         },
         "connectedAsParent": False,
         "properties": {},
-        "children": [],
     }
 }
 
