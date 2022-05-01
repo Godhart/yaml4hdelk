@@ -26,18 +26,22 @@ units:
   WPTR:
     unit: <CNT>
     nets: [[/.WCLK, .CLK]]
+    text: "Click to Expand"
 
   RPTR:
     unit: <CNT>
     nets: [[/.RCLK, .CLK]]
+    text: "Click to Expand"
 
   WCDC:
     unit: <CDC_GREY>
     nets: [[/.WCLK, .CLK1], [/.RCLK, .CLK2]]
+    text: "Click to Expand"
 
   RCDC:
     unit: <CDC_GREY>
     nets: [[/.RCLK, .CLK1], [/.WCLK, .CLK2]]
+    text: "Click to Expand"
 
   RSTCDC:
     unit: {io: {RSTI: {}, CLK1: {clk: True}, CLK2: {clk: True}, RSTO1: {dir: out}, RSTO2: {dir: out}}}
