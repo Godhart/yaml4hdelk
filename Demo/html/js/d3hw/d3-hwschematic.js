@@ -322,6 +322,11 @@
     				}
     			});
 
+    		// works
+    		node.each((d) => {
+                console.log(d.hwMeta.children);
+    		});
+
     		// spot node body text
     		node.append("text")
     			.call(this.renderTextLines.bind(this));
@@ -558,7 +563,7 @@
     }
 
 
-    var OR_SHAPE_PATH = "M3,0 A30 25 0 0 1 3,25 A30 25 0 0 0 33,12.5 A30 25 0 0 0 3,0 z";
+    var OR_SHAPE_PATH = "M3,0 A30 25 0 0 1 3,25 A30 25 0 0 0 33,12.5 A30 25 0 0 0 3,0";
     /**
      * Draw a OR gate symbol
      */
@@ -1115,28 +1120,6 @@
 
     function renderLinks(root, edges) {
         var junctionPoints = [];
-
-        var link = root.selectAll(".link")
-          .data(edges)
-          .enter()
-          .append("path")
-          .attr("class", "link")
-          .attr("d", function(d) {
-              if (!d.sections) {
-                  d._svgPath = "";
-                  return "";
-              }
-              if (d.bendpoints || d.sections.length > 1) {
-                  throw new Error("NotImplemented");
-              }
-              if(d.junctionPoints)
-                  d.junctionPoints.forEach(function (jp) {
-                      junctionPoints.push(jp);
-                  });
-              d._svgPath = section2svgPath(d.sections[0]);
-              return d._svgPath;
-          });
-
         var linkWrap = root.selectAll(".link-wrap")
           .data(edges)
           .enter()
@@ -1161,6 +1144,27 @@
     	           return d.hwMeta.cssStyle
                }
           })
+          .attr("d", function(d) {
+              if (!d.sections) {
+                  d._svgPath = "";
+                  return "";
+              }
+              if (d.bendpoints || d.sections.length > 1) {
+                  throw new Error("NotImplemented");
+              }
+              if(d.junctionPoints)
+                  d.junctionPoints.forEach(function (jp) {
+                      junctionPoints.push(jp);
+                  });
+              d._svgPath = section2svgPath(d.sections[0]);
+              return d._svgPath;
+          });
+
+        var link = root.selectAll(".link")
+          .data(edges)
+          .enter()
+          .append("path")
+          .attr("class", "link")
           .attr("d", function(d) {
               return d._svgPath;
           });
@@ -1208,32 +1212,20 @@
     		var e = eList[ei];
     		var isHyperEdge = typeof e.sources !== "undefined";
     		if (isHyperEdge) {
-    		    if (e.sources.length == 1 && e.targets.length == 1) {
-        		    var src = e.sources[0];
-                    var dst = e.targets[0];
-                    e.source = src[0];
-                    e.sourcePort = src[1];
-                    e.target = dst[0];
-                    e.targetPort = dst[1];
-                    delete e.sources;
-                    delete e.targets;
-                    newEdges.push(e);
-    		    } else {
-        			for (var s = 0; s < e.sources.length; s++) {
-        				var src = e.sources[s];
-        				for (var t = 0; t < e.targets.length; t++) {
-        					var dst = e.targets[t];
-        					idOffset += 1;
-        					newEdges.push({
-        						"hwMeta": { "parent": e },
-        						"id": "" + idOffset,
-        						"source": src[0],
-        						"sourcePort": src[1],
-        						"target": dst[0],
-        						"targetPort": dst[1],
-        					});
-        				}
-        			}
+    			for (var s = 0; s < e.sources.length; s++) {
+    				var src = e.sources[s];
+    				for (var t = 0; t < e.targets.length; t++) {
+    					var dst = e.targets[t];
+    					idOffset += 1;
+    					newEdges.push({
+    						"hwMeta": { "parent": e },
+    						"id": "" + idOffset,
+    						"source": src[0],
+    						"sourcePort": src[1],
+    						"target": dst[0],
+    						"targetPort": dst[1],
+    					});
+    				}
     			}
     		} else {
     			newEdges.push(e);
@@ -1296,8 +1288,7 @@
     }
     function expandPorts(node) {
     	var portlist = [];
-    	if (node.ports)
-        	node.ports.forEach(function (port) {expandPorts4port(port, portlist);});
+    	node.ports.forEach(function (port) {expandPorts4port(port, portlist);});
     	//node.hwMeta.parent = parent;
     	node.ports = portlist;
     	(node.children || node._children || []).forEach(function(n) {
@@ -1808,13 +1799,13 @@
          */
         _applyLayout() {
             var root = this.root;
-            
+
             var node = root.selectAll(".node")
-            .data(this._nodes)
-            .enter()
-            .append("g");
+                .data(this._nodes)
+                .enter()
+                .append("g");
             this.nodeRenderers.render(root, node);
-            
+
             var _this = this;
             node.on("click", function(ev, d) {
                 var [children, nextFocusTarget] = toggleHideChildren(d);
@@ -1831,9 +1822,8 @@
                         // Error while applying of layout
                         throw e;
                     }
-                    );
-                });
-                
+                );
+            });
             this._applyLayoutLinks();
         }
 
