@@ -26,7 +26,6 @@
         {
           "type": "DPRAM",
           "id": "//RAM",
-          "children": [],
           "inPorts": [
             {
               "label": "P1_ADDR",
@@ -87,7 +86,6 @@
             {
               "type": "ff",
               "id": "//WPTR/FDRE",
-              "children": [],
               "inPorts": [
                 {
                   "label": "CLK",
@@ -132,7 +130,6 @@
             {
               "type": "add",
               "id": "//WPTR/ADD",
-              "children": [],
               "inPorts": [
                 {
                   "label": "A",
@@ -151,14 +148,12 @@
               ]
             },
             {
-              "type": "1",
               "label": "",
               "id": "//WPTR/ONE",
-              "children": [],
               "outPorts": [
                 {
-                  "label": "O",
-                  "id": "//WPTR/ONE.O"
+                  "label": "1",
+                  "id": "//WPTR/ONE.1"
                 }
               ]
             }
@@ -182,7 +177,7 @@
             },
             {
               "sources": [
-                "//WPTR/ONE.O"
+                "//WPTR/ONE.1"
               ],
               "targets": [
                 "//WPTR/ADD.B"
@@ -255,7 +250,6 @@
             {
               "type": "ff",
               "id": "//RPTR/FDRE",
-              "children": [],
               "inPorts": [
                 {
                   "label": "CLK",
@@ -300,7 +294,6 @@
             {
               "type": "add",
               "id": "//RPTR/ADD",
-              "children": [],
               "inPorts": [
                 {
                   "label": "A",
@@ -319,14 +312,12 @@
               ]
             },
             {
-              "type": "1",
               "label": "",
               "id": "//RPTR/ONE",
-              "children": [],
               "outPorts": [
                 {
-                  "label": "O",
-                  "id": "//RPTR/ONE.O"
+                  "label": "1",
+                  "id": "//RPTR/ONE.1"
                 }
               ]
             }
@@ -350,7 +341,7 @@
             },
             {
               "sources": [
-                "//RPTR/ONE.O"
+                "//RPTR/ONE.1"
               ],
               "targets": [
                 "//RPTR/ADD.B"
@@ -423,7 +414,6 @@
             {
               "type": "bin2grey",
               "id": "//WCDC/B2G",
-              "children": [],
               "inPorts": [
                 {
                   "label": "BIN",
@@ -440,7 +430,6 @@
             {
               "type": "FF->FF",
               "id": "//WCDC/CDC",
-              "children": [],
               "inPorts": [
                 {
                   "label": "IN",
@@ -467,7 +456,6 @@
             {
               "type": "grey2bin",
               "id": "//WCDC/G2B",
-              "children": [],
               "inPorts": [
                 {
                   "label": "GREY",
@@ -562,7 +550,6 @@
             {
               "type": "bin2grey",
               "id": "//RCDC/B2G",
-              "children": [],
               "inPorts": [
                 {
                   "label": "BIN",
@@ -579,7 +566,6 @@
             {
               "type": "FF->FF",
               "id": "//RCDC/CDC",
-              "children": [],
               "inPorts": [
                 {
                   "label": "IN",
@@ -606,7 +592,6 @@
             {
               "type": "grey2bin",
               "id": "//RCDC/G2B",
-              "children": [],
               "inPorts": [
                 {
                   "label": "GREY",
@@ -696,7 +681,6 @@
         },
         {
           "id": "//RSTCDC",
-          "children": [],
           "inPorts": [
             {
               "label": "RSTI",
@@ -724,7 +708,6 @@
         },
         {
           "id": "//WARB",
-          "children": [],
           "inPorts": [
             {
               "label": "WPTR",
@@ -770,7 +753,6 @@
         },
         {
           "id": "//RARB",
-          "children": [],
           "inPorts": [
             {
               "label": "WPTR",

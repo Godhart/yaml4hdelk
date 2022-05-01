@@ -66,23 +66,25 @@
             var graph = {
   "hwMeta": {
     "cls": null,
+    "children": [],
     "name": "/",
     "maxId": 27
   },
-  "hideChildren": false,
   "properties": {
     "org.eclipse.elk.portConstraints": "FIXED_ORDER",
     "org.eclipse.elk.layered.mergeEdges": 1
   },
+  "ports": [],
+  "id": "0",
   "children": [
     {
       "hwMeta": {
         "cls": null,
+        "children": [],
         "isExternalPort": true,
         "name": "/.IN1",
         "maxId": 10
       },
-      "hideChildren": false,
       "properties": {
         "org.eclipse.elk.portConstraints": "FIXED_ORDER",
         "org.eclipse.elk.layered.mergeEdges": 1
@@ -90,7 +92,6 @@
       "ports": [
         {
           "hwMeta": {
-            "level": 0,
             "name": "IN1"
           },
           "connectedAsParent": false,
@@ -98,7 +99,6 @@
             "side": "EAST",
             "index": 1000
           },
-          "children": [],
           "id": "9",
           "direction": "OUTPUT"
         }
@@ -108,11 +108,11 @@
     {
       "hwMeta": {
         "cls": null,
+        "children": [],
         "isExternalPort": true,
         "name": "/.IN2",
         "maxId": 12
       },
-      "hideChildren": false,
       "properties": {
         "org.eclipse.elk.portConstraints": "FIXED_ORDER",
         "org.eclipse.elk.layered.mergeEdges": 1
@@ -120,7 +120,6 @@
       "ports": [
         {
           "hwMeta": {
-            "level": 0,
             "name": "IN2"
           },
           "connectedAsParent": false,
@@ -128,7 +127,6 @@
             "side": "EAST",
             "index": 1000
           },
-          "children": [],
           "id": "11",
           "direction": "OUTPUT"
         }
@@ -138,11 +136,11 @@
     {
       "hwMeta": {
         "cls": null,
+        "children": [],
         "isExternalPort": true,
         "name": "/.OUT",
         "maxId": 14
       },
-      "hideChildren": false,
       "properties": {
         "org.eclipse.elk.portConstraints": "FIXED_ORDER",
         "org.eclipse.elk.layered.mergeEdges": 1
@@ -150,7 +148,6 @@
       "ports": [
         {
           "hwMeta": {
-            "level": 0,
             "name": "OUT"
           },
           "connectedAsParent": false,
@@ -158,7 +155,6 @@
             "side": "WEST",
             "index": -1000
           },
-          "children": [],
           "id": "13",
           "direction": "INPUT"
         }
@@ -168,11 +164,11 @@
     {
       "hwMeta": {
         "cls": null,
+        "children": [],
         "isExternalPort": true,
         "name": "/.CLK",
         "maxId": 16
       },
-      "hideChildren": false,
       "properties": {
         "org.eclipse.elk.portConstraints": "FIXED_ORDER",
         "org.eclipse.elk.layered.mergeEdges": 1
@@ -180,7 +176,6 @@
       "ports": [
         {
           "hwMeta": {
-            "level": 0,
             "name": "CLK"
           },
           "connectedAsParent": false,
@@ -188,7 +183,6 @@
             "side": "EAST",
             "index": 1000
           },
-          "children": [],
           "id": "15",
           "direction": "OUTPUT"
         }
@@ -198,74 +192,71 @@
     {
       "hwMeta": {
         "cls": null,
+        "children": [],
         "name": "/U1",
         "maxId": 20
       },
-      "hideChildren": true,
       "properties": {
         "org.eclipse.elk.portConstraints": "FIXED_ORDER",
         "org.eclipse.elk.layered.mergeEdges": 1
       },
-      "children": [],
       "ports": [
         {
           "hwMeta": {
-            "connectedAsParent": false,
             "name": "D"
           },
-          "id": "17",
-          "direction": "INPUT",
+          "connectedAsParent": false,
           "properties": {
             "side": "WEST",
             "index": -1000
-          }
+          },
+          "id": "17",
+          "direction": "INPUT"
         },
         {
           "hwMeta": {
-            "connectedAsParent": false,
             "name": "Q"
           },
-          "direction": "OUTPUT",
-          "id": "18",
+          "connectedAsParent": false,
           "properties": {
             "side": "EAST",
             "index": 1000
-          }
+          },
+          "direction": "OUTPUT",
+          "id": "18"
         },
         {
           "hwMeta": {
-            "connectedAsParent": false,
             "name": "CLK"
           },
-          "id": "19",
-          "direction": "INPUT",
+          "connectedAsParent": false,
           "properties": {
             "side": "WEST",
             "index": -2000
-          }
+          },
+          "id": "19",
+          "direction": "INPUT"
         }
       ],
-      "edges": [],
       "id": "16"
     },
     {
       "hwMeta": {
         "cls": "Operator",
+        "children": [],
         "name": "MUX",
         "maxId": 25
       },
-      "hideChildren": true,
       "properties": {
         "org.eclipse.elk.portConstraints": "FIXED_ORDER",
         "org.eclipse.elk.layered.mergeEdges": 1
       },
-      "children": [],
       "ports": [
         {
           "hwMeta": {
-            "connectedAsParent": false,
             "name": "S"
           },
+          "connectedAsParent": false,
           "properties": {
             "side": "SOUTH",
             "index": -1000
@@ -275,52 +266,51 @@
         },
         {
           "hwMeta": {
-            "connectedAsParent": false,
             "name": "A"
           },
-          "direction": "INPUT",
-          "id": "22",
+          "connectedAsParent": false,
           "properties": {
             "side": "WEST",
             "index": -1000
-          }
+          },
+          "direction": "INPUT",
+          "id": "22"
         },
         {
           "hwMeta": {
-            "connectedAsParent": false,
             "name": "B"
           },
-          "direction": "INPUT",
-          "id": "23",
+          "connectedAsParent": false,
           "properties": {
             "side": "WEST",
             "index": -2000
-          }
+          },
+          "direction": "INPUT",
+          "id": "23"
         },
         {
           "hwMeta": {
-            "connectedAsParent": false,
             "name": "O"
           },
-          "direction": "OUTPUT",
-          "id": "24",
+          "connectedAsParent": false,
           "properties": {
             "side": "EAST",
             "index": 1000
-          }
+          },
+          "direction": "OUTPUT",
+          "id": "24"
         }
       ],
-      "edges": [],
       "id": "20"
     },
     {
       "hwMeta": {
         "cls": null,
+        "children": [],
         "isExternalPort": true,
         "name": "/.DBG",
         "maxId": 27
       },
-      "hideChildren": false,
       "properties": {
         "org.eclipse.elk.portConstraints": "FIXED_ORDER",
         "org.eclipse.elk.layered.mergeEdges": 1
@@ -328,7 +318,6 @@
       "ports": [
         {
           "hwMeta": {
-            "level": 0,
             "name": "DBG"
           },
           "connectedAsParent": false,
@@ -336,7 +325,6 @@
             "side": "WEST",
             "index": -1000
           },
-          "children": [],
           "id": "26",
           "direction": "INPUT"
         }
@@ -344,7 +332,6 @@
       "id": "25"
     }
   ],
-  "ports": [],
   "edges": [
     {
       "id": "1",
@@ -361,7 +348,7 @@
         ]
       ],
       "hwMeta": {
-        "name": ".IN1"
+        "name": "IN1"
       }
     },
     {
@@ -379,7 +366,7 @@
         ]
       ],
       "hwMeta": {
-        "name": ".CLK"
+        "name": "CLK"
       }
     },
     {
@@ -397,7 +384,7 @@
         ]
       ],
       "hwMeta": {
-        "name": ".DBG"
+        "name": "DBG"
       }
     },
     {
@@ -415,7 +402,7 @@
         ]
       ],
       "hwMeta": {
-        "name": ".IN1"
+        "name": "IN1"
       }
     },
     {
@@ -433,7 +420,7 @@
         ]
       ],
       "hwMeta": {
-        "name": ".IN2"
+        "name": "IN2"
       }
     },
     {
@@ -451,7 +438,7 @@
         ]
       ],
       "hwMeta": {
-        "name": ".CLK"
+        "name": "CLK"
       }
     },
     {
@@ -469,14 +456,13 @@
         ]
       ],
       "hwMeta": {
-        "name": ".OUT"
+        "name": "OUT"
       }
     }
-  ],
-  "id": "0"
+  ]
 };
             if (graph.hwMeta && graph.hwMeta.name)
-                 document.title = graph.hwMeta.name; <!-- #TODO: use proper field for title -->
+                 document.title = graph.hwMeta.name; // #TODO: use proper field for title
             // load the data and render the elements
             hwSchematic.bindData(graph);
           }
