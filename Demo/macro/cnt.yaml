@@ -9,11 +9,11 @@ io:
 units:
   FDRE:   {unit: <FF>}
   ADD:  {unit: <ADD>}
-  ONE:  {unit: {attributes: {type: "1"}}, text: "1", name: ""}
+  ONE:  {unit: {}, name: ""}
 nets:
 - [FDRE.Q, .Q]
 - [FDRE.Q,  ADD.A]
-- [ONE.O,   ADD.B]
+- [ONE.1,   ADD.B]
 - [ADD.O,   FDRE.D]
 - [.CE,     FDRE.CE]
 - [.RST,    FDRE.R]
