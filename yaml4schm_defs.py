@@ -67,7 +67,7 @@ YAML_UNIT_ATTRIBUTES_REMAP = {
     TOOL_HDELK: {
         **COMMON_REMAP,
         "type": ("type", ),
-        "name": ("label", ),
+        "name": (("label", ), (RNDR, "name"), ),
         "color": ("color", ),
         "highlight": ("highlight", ),
         "text": (RNDR, "unit_text"),
@@ -78,6 +78,7 @@ YAML_UNIT_ATTRIBUTES_REMAP = {
     },
     TOOL_D3HW: {
         **COMMON_REMAP,
+        "name": (RNDR, "name"),
         "d3hw_name": ("hwMeta", "name"),
         "kind": ("hwMeta", "cls"),
         "color": (RNDR, "color"),
@@ -120,6 +121,7 @@ YAML_IO_ALLOWED = {
     "type": None,                       # TODO: typing can be used for compatibility checks and RTL code generation
     "bus": None,
     "clk": (None, True, False),
+    "gate": (None, True, False),
     "inv": (None, True, False),
     "hide": (None, True, False),        # TODO: list with rendering tools in which PIN should be hidden
     "show": None,                       # TODO: list with rendering tools in which UNIT should be shown
@@ -135,7 +137,7 @@ YAML_IO_ALLOWED = {
 YAML_IO_REMAP = {
     TOOL_HDELK: {
         **COMMON_REMAP,
-        "name": ("label", ),
+        "name": (("label", ), (RNDR, "name"), ),
         "dir": (RNDR, "pin_dir"),
         "side": (RNDR, "pin_side"),
         "color": ("color",),
@@ -143,6 +145,7 @@ YAML_IO_REMAP = {
         "type": (RNDR, "pin_type"),
         "bus": (RNDR, "pin_bus"),
         "clk": (RNDR, "pin_clk"),
+        "gate": (RNDR, "pin_gate"),
         "inv": (RNDR, "pin_inv"),
         "hide": (RNDR, "pin_hide"),
         "show": (RNDR, "pin_show"),
@@ -150,7 +153,7 @@ YAML_IO_REMAP = {
     },
     TOOL_D3HW: {
         **COMMON_REMAP,
-        "name": ("hwMeta", "name"),
+        "name": (("hwMeta", "name"), (RNDR, "name"), ),
         "dir": ("direction", ),
         "side": ("properties", "side"),
         "color": (RNDR, "color"),
@@ -158,6 +161,7 @@ YAML_IO_REMAP = {
         "type": (RNDR, "pin_type"),
         "bus": (RNDR, "pin_bus"),
         "clk": (RNDR, "pin_clk"),
+        "gate": (RNDR, "pin_gate"),
         "inv": (RNDR, "pin_inv"),
         "hide": (RNDR, "pin_hide"),
         "show": (RNDR, "pin_show"),
@@ -210,7 +214,7 @@ YAML_NET_REMAP = {
         "dst": (RNDR, NET_DST),
         "srcr": (RNDR, NET_SRCR),
         "dstr": (RNDR, NET_DSTR),
-        "name": ("label", ),
+        "name": (("label", ), (RNDR, "name"),),
         "text": (RNDR, "net_text"),
         "bus": ("bus", ),
         "color": ("color", ),
@@ -225,7 +229,7 @@ YAML_NET_REMAP = {
         "dst": (RNDR, NET_DST),
         "srcr": (RNDR, NET_SRCR),
         "dstr": (RNDR, NET_DSTR),
-        "name": ("hwMeta", "name"),
+        "name": (("hwMeta", "name"), (RNDR, "name"),),
         "text": (RNDR, "net_text"),
         "bus": (RNDR, "net_bus"),
         "color": (RNDR, "color"),
@@ -251,6 +255,13 @@ VIEW_NONE = "none"
 VIEW_SYMBOL = "symbol"
 VIEW_FULL = "full"
 VIEW_NESTED = "nested"
+
+PIN_INV_PREFIX = None
+PIN_INV_SUFFIX = "#"
+PIN_GATE_HIGH = u"\u2A05"
+PIN_GATE_LOW = u"\u2A06"
+PIN_CLK_RISE = u"\u25B7"  # Alternatives: "/" u"\u2191"  u"\u25B7"  u"\u2B06"  u"\u2197"  u"\u21D1"
+PIN_CLK_FALL = u"\u25B6"  # Alternatives: "\\" u"\u2193"  u"\u25B6"  u"\u2B07"  u"\u2198"  u"\u21D3"
 
 # TODO: RENDER_OPTIONS to VIEW options (i.e do it per scope)
 RENDER_ADD_MISSING_PORTS = 1            # Adds missing ports onto schematic (those that are mensionned on nets)

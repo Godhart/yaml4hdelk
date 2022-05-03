@@ -9,7 +9,7 @@ from yaml4schm_defs import *
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
 
-_VERSION = "2.0b2.1"
+_VERSION = "2.0b3.0"
 _INFO = f"""
 yaml4schm, version {_VERSION}
 
@@ -438,9 +438,14 @@ def _map_attribute(node: dict, keys: list or tuple, value) -> None:
     if len(keys) == 1:
         node[keys[0]] = value
     else:
-        if keys[0] not in node:
-            node[keys[0]] = {}
-        _map_attribute(node[keys[0]], keys[1:], value)
+        if isinstance(keys[0], (list, tuple)):
+            assert all(isinstance(k, (list, tuple)) for k in keys), "Something went wrong"
+            for k in keys:
+                _map_attribute(node, k, value)
+        else:
+            if keys[0] not in node:
+                node[keys[0]] = {}
+            _map_attribute(node[keys[0]], keys[1:], value)
 
 
 def _map_attributes(data: dict, attributes: dict, keys_map: dict) -> None:
@@ -858,9 +863,10 @@ def _add_port(tool, unit, port_id, port_name, port_custom, reverse=False):
         port = copy.deepcopy(UNIT_DEFAULTS[tool])
         attributes = {"name": port_name}
         _to_target(port_custom, attributes, YAML_UNIT_KEYS + YAML_IO_KEYS)  # Exclude keys both of UNIT and IO
+        _pin_attrs_to_name(tool, attributes)
+        port_name = attributes["name"]
         _map_attributes(port, attributes,
                         YAML_UNIT_ATTRIBUTES_REMAP[tool])  # Use UNIT's attributes mapping, not IO's
-
         for k in ("children", "edges"):
             if k in port:
                 del port[k]
@@ -889,9 +895,10 @@ def _add_port(tool, unit, port_id, port_name, port_custom, reverse=False):
         unit["children"].append(port)
     else:
         port = copy.deepcopy(IO_DEFAULTS[tool])
-        attributes = {}
+        attributes = {"name": port_name}
         _to_target(port_custom, attributes, YAML_IO_KEYS)
-        attributes["name"] = port_name
+        _pin_attrs_to_name(tool, attributes)
+        port_name = attributes["name"]
         _map_attributes(port, attributes, YAML_IO_REMAP[tool])
         port["id"] = port_id
         if reverse:
@@ -900,6 +907,33 @@ def _add_port(tool, unit, port_id, port_name, port_custom, reverse=False):
             unit["ports"] = []
         unit["ports"].append(port)
     return port
+
+
+def _pin_attrs_to_name(tool, attributes):
+    """
+    Translates port attributes like inversion, clock, edge into starting symbol of pin name
+    :param attributes:
+    :return:
+    """
+    if attributes.get("inv", False) is True:
+        if PIN_INV_PREFIX is not None and attributes["name"][:len(PIN_INV_PREFIX)] != PIN_INV_PREFIX:
+            attributes["name"] = PIN_INV_PREFIX + attributes["name"]
+        if PIN_INV_SUFFIX is not None and attributes["name"][-len(PIN_INV_SUFFIX):] != PIN_INV_SUFFIX:
+            attributes["name"] += PIN_INV_SUFFIX
+    if tool == TOOL_D3HW:
+        if attributes.get("clk", False) is True \
+        or attributes.get("gate", False) is True:
+            if (PIN_INV_PREFIX is None or attributes["name"][:len(PIN_INV_PREFIX)] == PIN_INV_PREFIX) \
+            and (PIN_INV_SUFFIX is None or attributes["name"][-len(PIN_INV_SUFFIX):] == PIN_INV_SUFFIX):
+                if attributes.get("clk", False) is True:
+                    attributes["name"] = attributes["name"] + PIN_CLK_FALL
+                else:
+                    attributes["name"] = attributes["name"] + PIN_GATE_LOW
+            else:
+                if attributes.get("clk", False) is True:
+                    attributes["name"] = attributes["name"] + PIN_CLK_RISE
+                else:
+                    attributes["name"] = attributes["name"] + PIN_GATE_HIGH
 
 
 def _add_missing_ports(scope, traverse, recurse) -> None:
@@ -1009,16 +1043,24 @@ def _connect_net(tool, scope, unit, net_data):
 
         src = []
         trg = []
+        src_name = None
+        trg_name = None
         for _, _, source in sources:
+            src_name = _rndr(source, "name")
             if tool != TOOL_D3HW or _rndr(source, "is_port") is not True:
+                # Common case
                 src.append([re.sub(r"\..*", "", source["id"]), source["id"]])
             else:
+                # Case for top's ports for D3HW
                 src.append([source["id"], source["id"]+"-port_pin"])
 
             for _, _, target in targets:
+                trg_name = _rndr(target, "name")
                 if tool != TOOL_D3HW or _rndr(target, "is_port") is not True:
+                    # Common case
                     trg.append([re.sub(r"\..*", "", target["id"]), target["id"]])
                 else:
+                    # Case for top's ports for D3HW
                     trg.append([target["id"], target["id"]+"-port_pin"])
 
         if len(src) == 0 or len(trg) == 0:
@@ -1045,21 +1087,39 @@ def _connect_net(tool, scope, unit, net_data):
                 if autoname and (len(src) == 1 or len(trg) == 1):
                     home_unit = _rndr(net_data, "unit_id")
                     if len(src) == 1:
-                        name = re.sub(r"-port_pin$", "", src[0][1])
+                        # By default - if there is single source pin then it's name is used to name the net
+                        name = src_name
+                        name_id = re.sub(r"-port_pin$", "", src[0][1])
                         if len(trg) == 1:
-                            alt_name = re.sub(r"-port_pin$", "", trg[0][1])
+                            # If there is single target pin then it's name should be used
+                            # if it's root's pin for it's scope
+                            alt_name = trg_name
+                            alt_id = re.sub(r"-port_pin$", "", trg[0][1])
                         else:
                             alt_name = None
+                            alt_id = None
                         if alt_name is not None \
-                            and name[len(home_unit):len(home_unit) + 1] != "." \
-                            and alt_name[len(home_unit):len(home_unit) + 1] == ".":
+                            and name_id[len(home_unit):len(home_unit) + 1] != "." \
+                            and alt_id[len(home_unit):len(home_unit) + 1] == ".":
+                            # This is case when single target pin is scope's root's pin
                             name = alt_name
+                            name_id = alt_id
                     else:
-                        name = re.sub(r"-pin_port$", "", trg[0][1])
+                        # If there is multiple sources pins and single target pin
+                        # then target pin's name is used to name the net
+                        name = trg_name
+                        name_id = re.sub(r"-pin_port$", "", trg[0][1])
                     if home_unit is not None:
-                        name = name[len(_ext_id(home_unit)):]
-                    if name[:1] == ".":
-                        name = name[1:]
+                        name_id = name_id[len(home_unit):]
+                    name_id = re.sub(r"\..*$", "", name_id)
+                    if name_id[:1] == "/":
+                        name_id = name_id[1:]
+                    if name[-1] in (PIN_GATE_HIGH, PIN_GATE_LOW, PIN_CLK_RISE, PIN_CLK_FALL):
+                        name = name[:-1]
+                    if len(name_id) > 0:
+                        name = name_id + "." + name
+                    # if name[:1] == ".":
+                    #     name = name[1:]
                     nets[net_key]["hwMeta"]["name"] = name
         else:
             pass
