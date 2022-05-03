@@ -79,6 +79,7 @@ YAML_UNIT_ATTRIBUTES_REMAP = {
     TOOL_D3HW: {
         **COMMON_REMAP,
         "name": (RNDR, "name"),
+        "type": (RNDR, "type"),
         "d3hw_name": ("hwMeta", "name"),
         "kind": ("hwMeta", "cls"),
         "color": (RNDR, "color"),
