@@ -148,12 +148,80 @@
               ]
             },
             {
-              "label": "",
-              "id": "//WPTR/ONE",
+              "type": "not",
+              "id": "//WPTR/INV",
+              "inPorts": [
+                {
+                  "label": "I",
+                  "id": "//WPTR/INV.I"
+                }
+              ],
+              "outPorts": [
+                {
+                  "label": "O",
+                  "id": "//WPTR/INV.O"
+                }
+              ]
+            },
+            {
+              "type": "const",
+              "label": "CONST",
+              "id": "//WPTR/CONST",
               "outPorts": [
                 {
                   "label": "1",
-                  "id": "//WPTR/ONE.1"
+                  "id": "//WPTR/CONST.1"
+                }
+              ]
+            },
+            {
+              "type": "const",
+              "label": "CONST2",
+              "id": "//WPTR/CONST2",
+              "outPorts": [
+                {
+                  "label": "MAX",
+                  "id": "//WPTR/CONST2.MAX"
+                }
+              ]
+            },
+            {
+              "type": "eq",
+              "id": "//WPTR/CMP",
+              "inPorts": [
+                {
+                  "label": "A",
+                  "id": "//WPTR/CMP.A"
+                },
+                {
+                  "label": "B",
+                  "id": "//WPTR/CMP.B"
+                }
+              ],
+              "outPorts": [
+                {
+                  "label": "O",
+                  "id": "//WPTR/CMP.O"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "id": "//WPTR/CEO",
+              "inPorts": [
+                {
+                  "label": "A",
+                  "id": "//WPTR/CEO.A"
+                },
+                {
+                  "label": "B",
+                  "id": "//WPTR/CEO.B"
+                }
+              ],
+              "outPorts": [
+                {
+                  "label": "O",
+                  "id": "//WPTR/CEO.O"
                 }
               ]
             }
@@ -177,7 +245,15 @@
             },
             {
               "sources": [
-                "//WPTR/ONE.1"
+                "//WPTR/FDRE.Q"
+              ],
+              "targets": [
+                "//WPTR/CMP.A"
+              ]
+            },
+            {
+              "sources": [
+                "//WPTR/CONST.1"
               ],
               "targets": [
                 "//WPTR/ADD.B"
@@ -189,7 +265,8 @@
               ],
               "targets": [
                 "//WPTR/FDRE.D"
-              ]
+              ],
+              "label": "NEXT"
             },
             {
               "sources": [
@@ -201,10 +278,18 @@
             },
             {
               "sources": [
+                "//WPTR.CE"
+              ],
+              "targets": [
+                "//WPTR/CEO.B"
+              ]
+            },
+            {
+              "sources": [
                 "//WPTR.RST"
               ],
               "targets": [
-                "//WPTR/FDRE.R"
+                "//WPTR/INV.I"
               ]
             },
             {
@@ -213,6 +298,40 @@
               ],
               "targets": [
                 "//WPTR/FDRE.CLK"
+              ]
+            },
+            {
+              "sources": [
+                "//WPTR/INV.O"
+              ],
+              "targets": [
+                "//WPTR/FDRE.R"
+              ],
+              "label": "RST"
+            },
+            {
+              "sources": [
+                "//WPTR/CONST2.MAX"
+              ],
+              "targets": [
+                "//WPTR/CMP.B"
+              ]
+            },
+            {
+              "sources": [
+                "//WPTR/CMP.O"
+              ],
+              "targets": [
+                "//WPTR/CEO.A"
+              ],
+              "label": "Q_is_MAX"
+            },
+            {
+              "sources": [
+                "//WPTR/CEO.O"
+              ],
+              "targets": [
+                "//WPTR.CEO"
               ]
             }
           ],
@@ -234,11 +353,9 @@
             {
               "label": "CLK",
               "id": "//WPTR.CLK"
-            }
-          ],
-          "southPorts": [
+            },
             {
-              "label": "RST",
+              "label": "RST#",
               "id": "//WPTR.RST"
             }
           ]
@@ -312,12 +429,80 @@
               ]
             },
             {
-              "label": "",
-              "id": "//RPTR/ONE",
+              "type": "not",
+              "id": "//RPTR/INV",
+              "inPorts": [
+                {
+                  "label": "I",
+                  "id": "//RPTR/INV.I"
+                }
+              ],
+              "outPorts": [
+                {
+                  "label": "O",
+                  "id": "//RPTR/INV.O"
+                }
+              ]
+            },
+            {
+              "type": "const",
+              "label": "CONST",
+              "id": "//RPTR/CONST",
               "outPorts": [
                 {
                   "label": "1",
-                  "id": "//RPTR/ONE.1"
+                  "id": "//RPTR/CONST.1"
+                }
+              ]
+            },
+            {
+              "type": "const",
+              "label": "CONST2",
+              "id": "//RPTR/CONST2",
+              "outPorts": [
+                {
+                  "label": "MAX",
+                  "id": "//RPTR/CONST2.MAX"
+                }
+              ]
+            },
+            {
+              "type": "eq",
+              "id": "//RPTR/CMP",
+              "inPorts": [
+                {
+                  "label": "A",
+                  "id": "//RPTR/CMP.A"
+                },
+                {
+                  "label": "B",
+                  "id": "//RPTR/CMP.B"
+                }
+              ],
+              "outPorts": [
+                {
+                  "label": "O",
+                  "id": "//RPTR/CMP.O"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "id": "//RPTR/CEO",
+              "inPorts": [
+                {
+                  "label": "A",
+                  "id": "//RPTR/CEO.A"
+                },
+                {
+                  "label": "B",
+                  "id": "//RPTR/CEO.B"
+                }
+              ],
+              "outPorts": [
+                {
+                  "label": "O",
+                  "id": "//RPTR/CEO.O"
                 }
               ]
             }
@@ -341,7 +526,15 @@
             },
             {
               "sources": [
-                "//RPTR/ONE.1"
+                "//RPTR/FDRE.Q"
+              ],
+              "targets": [
+                "//RPTR/CMP.A"
+              ]
+            },
+            {
+              "sources": [
+                "//RPTR/CONST.1"
               ],
               "targets": [
                 "//RPTR/ADD.B"
@@ -353,7 +546,8 @@
               ],
               "targets": [
                 "//RPTR/FDRE.D"
-              ]
+              ],
+              "label": "NEXT"
             },
             {
               "sources": [
@@ -365,10 +559,18 @@
             },
             {
               "sources": [
+                "//RPTR.CE"
+              ],
+              "targets": [
+                "//RPTR/CEO.B"
+              ]
+            },
+            {
+              "sources": [
                 "//RPTR.RST"
               ],
               "targets": [
-                "//RPTR/FDRE.R"
+                "//RPTR/INV.I"
               ]
             },
             {
@@ -377,6 +579,40 @@
               ],
               "targets": [
                 "//RPTR/FDRE.CLK"
+              ]
+            },
+            {
+              "sources": [
+                "//RPTR/INV.O"
+              ],
+              "targets": [
+                "//RPTR/FDRE.R"
+              ],
+              "label": "RST"
+            },
+            {
+              "sources": [
+                "//RPTR/CONST2.MAX"
+              ],
+              "targets": [
+                "//RPTR/CMP.B"
+              ]
+            },
+            {
+              "sources": [
+                "//RPTR/CMP.O"
+              ],
+              "targets": [
+                "//RPTR/CEO.A"
+              ],
+              "label": "Q_is_MAX"
+            },
+            {
+              "sources": [
+                "//RPTR/CEO.O"
+              ],
+              "targets": [
+                "//RPTR.CEO"
               ]
             }
           ],
@@ -398,11 +634,9 @@
             {
               "label": "CLK",
               "id": "//RPTR.CLK"
-            }
-          ],
-          "southPorts": [
+            },
             {
-              "label": "RST",
+              "label": "RST#",
               "id": "//RPTR.RST"
             }
           ]
@@ -683,26 +917,26 @@
           "id": "//RSTCDC",
           "inPorts": [
             {
-              "label": "RSTI",
-              "id": "//RSTCDC.RSTI"
-            },
-            {
               "label": "CLK1",
               "id": "//RSTCDC.CLK1"
             },
             {
               "label": "CLK2",
               "id": "//RSTCDC.CLK2"
+            },
+            {
+              "label": "CLRI#",
+              "id": "//RSTCDC.CLRI"
             }
           ],
           "outPorts": [
             {
-              "label": "RSTO1",
-              "id": "//RSTCDC.RSTO1"
+              "label": "CLRO1#",
+              "id": "//RSTCDC.CLRO1"
             },
             {
-              "label": "RSTO2",
-              "id": "//RSTCDC.RSTO2"
+              "label": "CLRO2#",
+              "id": "//RSTCDC.CLRO2"
             }
           ]
         },
@@ -724,12 +958,16 @@
             {
               "label": "CLK",
               "id": "//WARB.CLK"
+            },
+            {
+              "label": "CLR#",
+              "id": "//WARB.CLR"
             }
           ],
           "outPorts": [
             {
-              "label": "CEO",
-              "id": "//WARB.CEO"
+              "label": "WE",
+              "id": "//WARB.WE"
             },
             {
               "label": "FULL",
@@ -742,12 +980,6 @@
             {
               "label": "COUNT",
               "id": "//WARB.COUNT"
-            }
-          ],
-          "southPorts": [
-            {
-              "label": "RST",
-              "id": "//WARB.RST"
             }
           ]
         },
@@ -769,12 +1001,20 @@
             {
               "label": "CLK",
               "id": "//RARB.CLK"
+            },
+            {
+              "label": "CLR#",
+              "id": "//RARB.CLR"
             }
           ],
           "outPorts": [
             {
-              "label": "CEO",
-              "id": "//RARB.CEO"
+              "label": "RE",
+              "id": "//RARB.RE"
+            },
+            {
+              "label": "VALID",
+              "id": "//RARB.VALID"
             },
             {
               "label": "EMPTY",
@@ -787,12 +1027,6 @@
             {
               "label": "COUNT",
               "id": "//RARB.COUNT"
-            }
-          ],
-          "southPorts": [
-            {
-              "label": "RST",
-              "id": "//RARB.RST"
             }
           ]
         }
@@ -883,20 +1117,20 @@
             "//.AINIT"
           ],
           "targets": [
-            "//RSTCDC.RSTI"
+            "//RSTCDC.CLRI"
           ]
         },
         {
           "sources": [
-            "//RSTCDC.RSTO1"
+            "//RSTCDC.CLRO1"
           ],
           "targets": [
-            "//WARB.RST"
+            "//WARB.CLR"
           ]
         },
         {
           "sources": [
-            "//RSTCDC.RSTO1"
+            "//RSTCDC.CLRO1"
           ],
           "targets": [
             "//WPTR.RST"
@@ -904,15 +1138,15 @@
         },
         {
           "sources": [
-            "//RSTCDC.RSTO2"
+            "//RSTCDC.CLRO2"
           ],
           "targets": [
-            "//RARB.RST"
+            "//RARB.CLR"
           ]
         },
         {
           "sources": [
-            "//RSTCDC.RSTO2"
+            "//RSTCDC.CLRO2"
           ],
           "targets": [
             "//RPTR.RST"
@@ -952,7 +1186,7 @@
         },
         {
           "sources": [
-            "//WARB.CEO"
+            "//WARB.WE"
           ],
           "targets": [
             "//WPTR.CE"
@@ -960,7 +1194,7 @@
         },
         {
           "sources": [
-            "//WARB.CEO"
+            "//WARB.WE"
           ],
           "targets": [
             "//RAM.P1_EN"
@@ -968,7 +1202,7 @@
         },
         {
           "sources": [
-            "//WARB.CEO"
+            "//WARB.WE"
           ],
           "targets": [
             "//RAM.P1_WE"
@@ -1008,7 +1242,7 @@
         },
         {
           "sources": [
-            "//RARB.CEO"
+            "//RARB.RE"
           ],
           "targets": [
             "//RPTR.CE"
@@ -1016,10 +1250,18 @@
         },
         {
           "sources": [
-            "//RARB.CEO"
+            "//RARB.RE"
           ],
           "targets": [
             "//RAM.P2_EN"
+          ]
+        },
+        {
+          "sources": [
+            "//RARB.VALID"
+          ],
+          "targets": [
+            "//.VALID"
           ]
         },
         {
@@ -1157,6 +1399,10 @@
           "id": "//.RD"
         },
         {
+          "label": "VALID",
+          "id": "//.VALID"
+        },
+        {
           "label": "EMPTY",
           "id": "//.EMPTY"
         },
@@ -1177,7 +1423,7 @@
       ],
       "southPorts": [
         {
-          "label": "AINIT",
+          "label": "AINIT#",
           "id": "//.AINIT"
         }
       ]
