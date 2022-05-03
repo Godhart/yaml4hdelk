@@ -4,4 +4,4 @@ nets:
   - [U1.OUT, U3.IN1]
   - [U2.OUT, U3.IN2]
   - [U3.OUT, .OUT]
-#  - [U2, U1]
+#  - [U2, U1]   # NOTE: such connection is possible but may look ugly in D3HW

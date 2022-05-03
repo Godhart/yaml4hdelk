@@ -2,7 +2,7 @@ attributes:
   d3hw_name: "FF"
   kind: Operator
 io:
-  CLK:  {}
+  CLK:  {clk: True}
   D:    {}
   Q:    {dir: out}
   CE:   {}

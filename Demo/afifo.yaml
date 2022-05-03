@@ -10,13 +10,14 @@ io:
   WCLK:   {clk: True}
 
   RD:     {dir: out}
+  VALID:  {dir: out}
   RE:     {}
   EMPTY:  {dir: out}
   UNF:    {dir: out}
   RCOUNT: {dir: out}
   RCLK:   {clk: True, side: east}
 
-  AINIT:  {side: south}
+  AINIT:  {inv: True, side: south}
 
 units:
   RAM:
@@ -44,7 +45,13 @@ units:
     text: "Click to Expand"
 
   RSTCDC:
-    unit: {io: {RSTI: {}, CLK1: {clk: True}, CLK2: {clk: True}, RSTO1: {dir: out}, RSTO2: {dir: out}}}
+    unit:
+      io:
+        CLK1: {clk: True}
+        CLK2: {clk: True}
+        CLRI: {inv: True}
+        CLRO1: {inv: True, dir: out}
+        CLRO2: {inv: True, dir: out}
     text: CDC for RESET
     nets: [[/.WCLK, .CLK1], [/.RCLK, .CLK2]]
 
@@ -54,12 +61,12 @@ units:
         WPTR:   {}
         RPTR:   {}
         REQ:    {}
-        CEO:    {dir: out}
+        WE:     {dir: out}
         FULL:   {dir: out}
         OVF:    {dir: out}
         COUNT:  {dir: out}
-        RST:    {side: south}
-        CLK:    {}
+        CLK:    {clk: True}
+        CLR:    {inv: True} #, side: south}
     nets: [[/.WCLK, .CLK]]
 
   RARB:
@@ -68,17 +75,18 @@ units:
         WPTR:   {}
         RPTR:   {}
         REQ:    {}
-        CEO:    {dir: out}
+        RE:     {dir: out}
+        VALID:  {dir: out}
         EMPTY:  {dir: out}
         UNF:    {dir: out}
         COUNT:  {dir: out}
-        RST:    {side: south}
-        CLK:    {}
+        CLK:    {clk: True}
+        CLR:    {inv: True} #, side: south}
     nets: [[/.RCLK, .CLK]]
 
 
 nets:
-  - [.WD            , RAM.P1_D]
+  - [.WD          , RAM.P1_D]
   - [RAM.P2_Q     , .RD]
 
   - [WPTR.Q       , RAM.P1_ADDR]
@@ -90,20 +98,21 @@ nets:
   - [RPTR.Q       , RCDC.IN]
   - [RCDC.OUT     , WARB.RPTR]
 
-  - [.AINIT         , RSTCDC.RSTI]
-  - [RSTCDC.RSTO1 , [WARB.RST, WPTR.RST]]
-  - [RSTCDC.RSTO2 , [RARB.RST, RPTR.RST]]
+  - [.AINIT       , RSTCDC.CLRI]
+  - [RSTCDC.CLRO1 , [WARB.CLR, WPTR.RST]]
+  - [RSTCDC.CLRO2 , [RARB.CLR, RPTR.RST]]
 
-  - [.WE            , WARB.REQ]
+  - [.WE          , WARB.REQ]
   - [WPTR.Q       , WARB.WPTR]
   - [WARB.FULL    , .FULL]
   - [WARB.OVF     , .OVF]
   - [WARB.COUNT   , .WCOUNT]
-  - [WARB.CEO     , [WPTR.CE, RAM.P1_EN, RAM.P1_WE]]
+  - [WARB.WE      , [WPTR.CE, RAM.P1_EN, RAM.P1_WE]]
 
-  - [.RE            , RARB.REQ]
+  - [.RE          , RARB.REQ]
   - [RPTR.Q       , RARB.RPTR]
   - [RARB.EMPTY   , .EMPTY]
   - [RARB.UNF     , .UNF]
   - [RARB.COUNT   , .RCOUNT]
-  - [RARB.CEO     , [RPTR.CE, RAM.P2_EN]]
+  - [RARB.RE      , [RPTR.CE, RAM.P2_EN]]
+  - [RARB.VALID   , .VALID]

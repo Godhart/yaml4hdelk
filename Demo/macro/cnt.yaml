@@ -5,16 +5,26 @@ io:
   CE: {}
   CEO: {dir: out}
   CLK: {clk: True}
-  RST: {side: south}
+  RST: {inv: True} #, side: south}
 units:
   FDRE:   {unit: <FF>}
-  ADD:  {unit: <ADD>}
-  ONE:  {unit: {}, name: ""}
+  ADD:    {unit: <ADD>}
+  INV:    {unit: <NOT>}
+  CONST:  {unit: <CONST>, name: "CONST"}
+  CONST2: {unit: <CONST>, name: "CONST2"}
+  CMP:    {unit: <EQ>}
+  CEO:    {unit: <AND>}
 nets:
 - [FDRE.Q, .Q]
 - [FDRE.Q,  ADD.A]
-- [ONE.1,   ADD.B]
-- [ADD.O,   FDRE.D]
+- [CONST.1, ADD.B]
+- [ADD.O,   FDRE.D,   name:NEXT]
 - [.CE,     FDRE.CE]
-- [.RST,    FDRE.R]
+- [.RST,    INV.I]
 - [.CLK,    FDRE.CLK]
+- [INV.O,   FDRE.R,   name:RST]
+- [FDRE.Q,  CMP.A]
+- [CONST2.MAX, CMP.B]
+- [CMP.O,   CEO.A,    name:Q_is_MAX]
+- [.CE,     CEO.B]
+- [CEO.O,   .CEO]
