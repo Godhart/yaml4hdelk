@@ -8,15 +8,12 @@ io:
 units:
     B2G:
       unit: {attributes: {type: bin2grey}}
-      text: bin2grey
       nets: [[/.IN, .BIN], [.GREY, CDC.IN]]
     CDC:
       unit:
         attributes: {type: FF->FF}
         io: {IN: {}, CLK1: {clk: True}, OUT: {dir: out}, CLK2: {clk: True, side: east}}
-      text: FF->FF
       nets: [[/.CLK1, .CLK1], [/.CLK2, .CLK2]]
     G2B:
       unit: {attributes: {type: grey2bin}}
-      text: grey2bin
       nets: [[CDC.OUT, .GREY], [.BIN, /.OUT]]
