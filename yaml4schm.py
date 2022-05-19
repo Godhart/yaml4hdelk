@@ -9,7 +9,7 @@ from yaml4schm_defs import *
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
 
-_VERSION = "2.0b4.0"
+_VERSION = "2.0b5.0"
 _INFO = f"""
 yaml4schm, version {_VERSION}
 
@@ -71,6 +71,7 @@ def _load(filepath: str, unit: bool = False, yaml_string: str = None) -> dict:
     :param yaml_string: if set then data is loaded from yaml_string, filepath is used as root path when referencing to other files
     :return: loaded data
     """
+    # TODO: input filter to separate data from it's surroundings
     if yaml_string is None:
         with open(filepath, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
@@ -543,7 +544,7 @@ def render_unit(tool: str, data: dict, hierpath: str = "",
                 if tool == TOOL_HDELK and data["display"].get("view", VIEW_SYMBOL) == VIEW_SYMBOL:
                     pass  # TODO: create stubs for all nested units and set them to be hidden
                 if "nets" in v:
-                    _check_all_allowed(v["nets"], YAML_NET_ALLOWED, "TODO: get filepath by hierarhy", part_hierpath, "nets")
+                    _check_all_allowed(v["nets"], YAML_NET_ALLOWED, "TODO: get filepath by hierarchy", part_hierpath, "nets")
                     # TODO: make sure at least one endpoint is referred to this unit (contains . in the beginning)
                 subunit = render_unit(tool, v["unit"], part_hierpath, False, v)
                 if subunit is not None:
@@ -811,10 +812,11 @@ def _walk_endpoints(scope, allow_regex=False, recurse=False, want_net=False):
             _walk_endpoints(s, allow_regex, recurse, want_net)  # TODO: why recursion doesn't works
 
 
-def _add_missing_units(scope, recurse) -> None:
+def _add_missing_units(tool, scope, recurse) -> None:
     """
     Walk thru scope nets, add units to scope if referred units are not found
     (non regex src/dst of nets are used)
+    :param tool: target rendering tool
     :param scope:
     :param recurse: True to recurse into nested scopes
     :return:
@@ -846,7 +848,7 @@ def _add_missing_units(scope, recurse) -> None:
             scope["items"][id] = missing  # TODO: use add to scope?
     if recurse:
         for s in scope["scopes"].values():
-            _add_missing_units(s, recurse)
+            _add_missing_units(tool, s, recurse)
 
 
 def _add_port(tool, unit, port_id, port_name, port_custom, reverse=False):
@@ -936,10 +938,11 @@ def _pin_attrs_to_name(tool, attributes):
                     attributes["name"] = attributes["name"] + PIN_GATE_HIGH
 
 
-def _add_missing_ports(scope, traverse, recurse) -> None:
+def _add_missing_ports(tool, scope, traverse, recurse) -> None:
     """
     Walk thru scope nets, add units to scope if referred units are not found
     (non regex src/dst of nets are used)
+    :param tool: schematic rendering tool
     :param scope:
     :param traverse: True to look for missing ports within nested scopes
     :param recurse: True to recurse into nested scopes
@@ -948,7 +951,7 @@ def _add_missing_ports(scope, traverse, recurse) -> None:
     for _, ref_unit, ep_kind, ep in _walk_endpoints(scope, allow_regex=False):
         if ep[0] == ".":
             # If it's short from (without unit specification)
-            # take id straight from the unit fow which enpoint is specified
+            # take id straight from the unit fow which endpoint is specified
             unit = ref_unit
             if ref_unit == scope["root"]:
                 local_id = ""
@@ -986,7 +989,7 @@ def _add_missing_ports(scope, traverse, recurse) -> None:
 
     if recurse:
         for s in scope["scopes"].values():
-            _add_missing_ports(s, traverse, recurse)
+            _add_missing_ports(tool, s, traverse, recurse)
 
 
 def _connect_net(tool, scope, unit, net_data):
@@ -1164,11 +1167,11 @@ def connect(tool: str, top_unit: dict, options: tuple or list) -> None:
 
     # Walk thru nets, add missing units
     if RENDER_ADD_MISSING_UNITS in options:
-        _add_missing_units(top_scope, recurse=True)
+        _add_missing_units(tool, top_scope, recurse=True)
 
     # Walt thru nets, add missing ports if necessary
     if RENDER_ADD_MISSING_PORTS in options:
-        _add_missing_ports(top_scope, traverse=True, recurse=True)
+        _add_missing_ports(tool, top_scope, traverse=True, recurse=True)
 
     # Walk thru nets again - connect as necessary
     _connect_nets(tool, top_scope)
@@ -1187,17 +1190,17 @@ def _connect_nets(tool, starting_scope):
         _connect_nets(tool, scope)
 
 
-def _cleanup(data):
+def cleanup(data):
     if isinstance(data, list):
         for d in data:
-            _cleanup(d)
+            cleanup(d)
     elif isinstance(data, dict):
         keys = list(data.keys())
         for k in keys:
             if k[:1] == "_" and k[-1:] == "_":
                 del data[k]
         for v in data.values():
-            _cleanup(v)
+            cleanup(v)
 
 
 def renderer(tool, data):
@@ -1595,7 +1598,7 @@ if __name__ == "__main__":
     if args.shell:
         # Special shell around top unit is generated
         # to provide uniform rendering of unit neither it's top or  it's nested
-        # (default behaviour)
+        # (default behavior)
         hunit = '''
 attributes:
   type: ""
@@ -1618,7 +1621,7 @@ units:
     connect(tool, schm, (RENDER_ADD_MISSING_UNITS, RENDER_ADD_MISSING_PORTS))
     renderer(tool, schm)
     tool_adaptation(tool, schm)
-    _cleanup(schm)
+    cleanup(schm)
     if oformat == "HTML":
         result = tool_html(tool, schm, "Schematic of " + data["attributes"].get("type", filepath), display_customizations)
     else:
