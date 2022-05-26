@@ -1,0 +1,31 @@
+# Unit for test page
+attributes:
+  type: unit3
+# Default view for this schematic
+display:
+  "": {view: full}
+# Unit's interface
+io:
+  IN1: {}
+  IN2: {}
+  DBG: {dir: out}
+  OUT: {dir: out}
+  CLK: {clk: true}
+# Unit's content - two items
+units:
+  U1:
+    name: "FD"
+    unit: "<ff>"
+  U2:
+    name: "MUX"
+    unit: "<mux>"
+    nets:
+      - [/.IN1, .A]  # NOTE: A is added to MUX's inputs automatically
+      - [/.IN2, .B]  # NOTE: B is added to MUX's inputs automatically
+      - [/.CLK, .S]  # NOTE: S is already within MUX's I/O
+      - [.O, /.OUT]  # NOTE: O is added to MUX's outputs automatically
+# Unit's nets
+nets:
+  - [.IN1, U1.D]
+  - [.CLK, U1.CLK]
+  - [U1.Q, .DBG]  # NOTE: DBG is added to top unit automatically
