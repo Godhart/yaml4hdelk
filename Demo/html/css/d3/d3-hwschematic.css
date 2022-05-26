@@ -1,5 +1,6 @@
 .d3-hwschematic text {
 	font-family: monospace;
+    font-size: 80%;
 }
 
 .d3-hwschematic .node {
