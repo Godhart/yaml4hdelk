@@ -18,6 +18,7 @@ in YAML format.
 Uses HDElk or d3-schematic tools to generate graphics
 """
 # TODO: add custom styles
+# TODO: add operators support to create primitive nodes out of expressions
 
 _ROOT_PATH = None
 
