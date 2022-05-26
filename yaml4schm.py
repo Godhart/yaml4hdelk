@@ -9,7 +9,10 @@ from yaml4schm_defs import *
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
 
-_VERSION = "2.0b5.0"
+_VERSION = "2.0b5.1"
+_VERSION_HISTORY = {
+    "2.0": "Refactored v1. Works as standalone app and as a part of server (server.py)",
+}
 _INFO = f"""
 yaml4schm, version {_VERSION}
 
