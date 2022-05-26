@@ -1,0 +1,82 @@
+<head>
+  {{!meta}}
+  <title>{{title}}</title>
+  <script type="text/javascript" src="/js/d3hw/d3.js"></script>
+  <!-- <script type="text/javascript" src="./js/d3hw/d3.min.js"></script>  -->
+  <script type="text/javascript" src="/js/d3hw/elk.bundled.js"></script>
+  <script type="text/javascript" src="/js/d3hw/d3-hwschematic.js"></script>
+  {{!stylesheet}}
+  <style>
+  	body {
+	   margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+<script type="text/javascript">
+    const SERVER_VERSION    = "{{!server_version}}";
+    const YAML4SCHM_VERSION = "{{!yaml4schm_version}}";
+</script>
+
+<svg id="scheme-placeholder"></svg>
+<script>
+    // schematic rendering script
+
+    function viewport() {
+        var e = window,
+        a = 'inner';
+        if (!('innerWidth' in window)) {
+        a = 'client';
+        e = document.documentElement || document.body;
+        }
+        return {
+        width: e[a + 'Width'],
+        height: e[a + 'Height']
+        }
+    }
+
+    var width = viewport().width,
+        height = viewport().height;
+
+    var svg = d3.select("#scheme-placeholder")
+        .attr("width", width)
+        .attr("height", height);
+
+    var orig = document.body.onresize;
+    document.body.onresize = function(ev) {
+        if (orig)
+            orig(ev);
+
+        var w = viewport();
+        svg.attr("width", w.width);
+                svg.attr("height", w.height);
+    }
+
+    var hwSchematic = new d3.HwSchematic(svg);
+    if ({{static_svg}}) {
+        hwSchematic.layouter.zoomToFit = function(target){}
+    } else {
+    var zoom = d3.zoom();
+    zoom.on("zoom", function applyTransform(ev) {
+        hwSchematic.root.attr("transform", ev.transform)
+    });
+
+    // disable zoom on doubleclick
+    // because it interferes with component expanding/collapsing
+    svg.call(zoom)
+    .on("dblclick.zoom", null)
+    }
+
+    function displayContents() {
+    var graph = {{!data}};
+    // load the data and render the elements
+    hwSchematic.bindData(graph);
+    if ({{static_svg}}) {
+        hwSchematic.root.attr("transform", "translate(0, 0) scale(1.5,1.5)")
+    }
+    }
+
+    displayContents();
+</script>
+</body>

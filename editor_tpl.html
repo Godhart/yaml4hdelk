@@ -1,0 +1,155 @@
+<!-- Editor's business logic -->
+<script type="text/javascript">
+    var original_source = "";
+    var original_hash = null;
+
+    function update(text, callback) {
+        request_data("/{{!tool}}/edit/{{!file_path}}", text, callback)
+    }
+
+    function reset() {
+        document.getElementById("entry").textContent=original_source;
+        document.getElementById("b_save_web").disabled=true;
+        update(original_source, on_change_callback)
+    }
+
+    function save_web() {
+        if (document.getElementById("errors_text").textContent == "") {
+            request_data("/{{!tool}}/save/{{!file_path}}",
+                        editor_text(),
+                        on_load_callback)
+        }
+    }
+
+    function file_s() {
+        document.getElementById('i_file_s').click();
+    }
+
+    function load_f() {
+        const file = document.getElementById("i_file_s").files[0];
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById("entry").textContent=e.target.result;
+            update(e.target.result, on_change_callback)
+        };
+        reader.readAsText(file);
+    }
+
+    // NOTE: code for saveTextAsFile is taken from https://stackoverflow.com/questions/21479107/saving-html5-textarea-contents-to-file
+    function saveTextAsFile(text, file_name) {
+        const textFileAsBlob = new Blob([ text ], { type: 'text/plain' });
+
+        var downloadLink = document.createElement("a");
+        downloadLink.download = file_name;
+        downloadLink.innerHTML = "Download File";
+        if (window.webkitURL != null) {
+            // Chrome allows the link to be clicked without actually adding it to the DOM.
+            downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+        } else {
+            // Firefox requires the link to be added to the DOM before it can be clicked.
+            downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+            downloadLink.onclick = destroyClickedElement;
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+        }
+
+        downloadLink.click();
+    }
+
+    function destroyClickedElement(event) {
+        // remove the link from the DOM
+        document.body.removeChild(event.target);
+    }
+
+    function save_f() {
+        const text = editor_text();
+        const regex = /[^\/]+$/;
+        const file_name = regex.exec("{{!file_path}}");
+        saveTextAsFile(text, file_name);
+    }
+
+    function save_svg() {
+        const text = svg_value();
+        const regex = /[^\/]+$/;
+        const regex2 = /^[^.]+/;
+        const file_name = regex2.exec(regex.exec("{{!file_path}}"))+".svg";
+        saveTextAsFile(text, file_name);
+    }
+
+    function on_change() {
+        const text = editor_text();
+        update(text, on_change_callback);
+    }
+
+    function htmlDecode(input) {
+        // NOTE: code for htmlDecode is taken from https://stackoverflow.com/questions/1912501/unescape-html-entities-in-javascript
+        var doc = new DOMParser().parseFromString(input, "text/html");
+        return doc.documentElement.textContent;
+    }
+
+    function editor_text() {
+        return htmlDecode(document.getElementById("entry").innerHTML.replace("<br>", "\n"));
+    }
+
+    function svg_value() {
+        return document.getElementById("preview").innerHTML;
+    }
+
+    function request_data(url, text, callback) {
+        const xhttp=new XMLHttpRequest();
+        xhttp.onload = function() {callback(this);}
+        xhttp.open("POST", url);
+        xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        if ((text === undefined) || (text === "")) {
+            text = null;
+        }
+        xhttp.send(JSON.stringify({ "text": text , "hash": original_hash}));
+    }
+
+    function on_change_callback(xhttp) {
+        r_data = JSON.parse(xhttp.responseText);
+        if (r_data.SUCCESS !== true) {
+            if (r_data.ERROR !== undefined) {
+                document.getElementById("errors_text").textContent=r_data.ERROR;
+            }
+            document.getElementById("b_save_web").disabled=true;
+        } else {
+            document.getElementById("errors_text").textContent="";
+            document.getElementById("b_save_web").disabled = editor_text() == original_source
+            update_graph(r_data.diagram);
+        }
+    }
+
+    function on_load_callback(xhttp) {
+        r_data = JSON.parse(xhttp.responseText)
+        if (r_data.SUCCESS !== true) {
+            original_source = "";
+            original_hash = null;
+            if (r_data.ERROR !== undefined) {
+                document.getElementById("errors_text").textContent=r_data.ERROR;
+            }
+            document.getElementById("b_save_web").disabled=true;
+        } else {
+            original_source = r_data.source;
+            original_hash   = r_data.hash;
+            document.getElementById("errors_text").textContent="";
+            document.getElementById("b_save_web").disabled=true;
+            document.getElementById("entry").textContent=r_data.source;
+            update_graph(r_data.diagram);
+        }
+    }
+</script>
+
+<!-- Editor's elements -->
+<div id="control">
+    <button id="b_reset"    type="button" onclick="reset()"                     >Reset</button>
+    <button id="b_save_web" type="button" onclick="save_web()"  disabled="true" >Save on Web</button>
+    <input  id="i_file_s"   type="file"   onchange="load_f()"   accept="*.yaml" hidden="true"/>
+    <button id="b_load_f"   type="button" onclick="file_s()"                    >Load File</button>
+    <button id="b_save_f"   type="button" onclick="save_f()"                    >Save Offline</button>
+    <button id="b_save_svg" type="button" onclick="save_svg()"                  >Save SVG</button>
+</div>
+<div id="editor" style="background-color:lightgray;">
+    <pre id="entry" contentEditable="true" oninput="on_change()"></pre>
+</div>
+<div id="messages"><pre id="errors_text" style="background-color:pink;"></pre></div>

@@ -1,0 +1,26 @@
+<html>
+<head>
+  {{!meta}}
+  <title>{{title}}</title>
+  <script src="/js/hdelk/elk.bundled.js"></script>
+  <script src="/js/hdelk/svg.min.js"></script>
+  <script src="/js/hdelk/hdelk.js"></script>
+</head>
+<body>
+
+<script type="text/javascript">
+    const SERVER_VERSION    = "{{!server_version}}";
+    const YAML4SCHM_VERSION = "{{!yaml4schm_version}}";
+</script>
+
+<div id="preview"></div>
+
+<script type="text/javascript">
+
+    {{!display_customizations}}
+
+    var simple_graph = {{!data}}
+
+    hdelk.layout( simple_graph, "preview" );
+</script>
+</body>

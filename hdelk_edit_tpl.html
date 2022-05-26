@@ -1,0 +1,42 @@
+<html>
+<head>
+  {{!meta}}
+  <title>{{title}}</title>
+
+  <!-- Schematics scripts preload -->
+  <script src="/js/hdelk/elk.bundled.js"></script>
+  <script src="/js/hdelk/svg.min.js"></script>
+  <script src="/js/hdelk/hdelk.js"></script>
+
+  <!-- Schematic styling -->
+  {{!stylesheet}}
+
+</head>
+<body>
+
+<script type="text/javascript">
+    const SERVER_VERSION    = "{{!server_version}}";
+    const YAML4SCHM_VERSION = "{{!yaml4schm_version}}";
+</script>
+
+{{!base}}
+
+<!-- Schematic viewer elements -->
+<div id="preview"><div id="preview"></div></div>
+
+<!-- Schematic rendering -->
+<script type="text/javascript">
+
+    /* {{!display_customizations}} */
+    function update_graph(data) {
+        hdelk.layout( data, "preview" );
+    }
+</script>
+
+<!-- Kick-starter -->
+<script type="text/javascript">
+    update(null, on_load_callback)
+</script>
+
+</body>
+</html>
