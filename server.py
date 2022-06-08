@@ -7,6 +7,8 @@ import yaml4schm
 from yaml4schm import load_unit, render_unit, connect, renderer, tool_adaptation, cleanup
 from yaml4schm_defs import TOOL_HDELK, TOOL_D3HW
 from yaml4schm_defs import RENDER_ADD_MISSING_UNITS, RENDER_ADD_MISSING_PORTS
+from operators import parse_line, Expression
+from helpers import prints
 
 
 # TODO: add links to traverse into the deep
@@ -305,6 +307,67 @@ def edit(tool, path):
         hash = None
 
     return json.dumps({"SUCCESS": True, "diagram": schm, "source": source, "hash": hash})
+
+
+@app.route('/live/debug/<subject>', method="GET")
+def live_debug_get(subject):
+    """ Live debug editor page """
+    print(f"live_debug({subject})")
+
+    sub = "func"
+    tooler = SimpleTemplate(
+        r"% rebase('live_dbg_tpl.html',"
+        r" yaml4schm_version=yaml4schm_version, server_version=server_version,"
+        r" meta=meta,"
+        r" title=title)"+"\n"
+        r"% include('editor_tpl.html', tool=tool, editor=editor, file_path=file_path)"
+    )
+
+    meta='<meta charset="utf-8">'
+    stylesheet=''
+
+    return tooler.render(
+        yaml4schm_version=yaml4schm._VERSION,
+        server_version=_VERSION,
+        meta=meta,
+        stylesheet=stylesheet,
+        tool="live",
+        editor="debug",
+        file_path=subject,
+        title="Expressions")
+
+
+@app.route('/live/debug/<subject>', method="POST")
+def live_debug_post(subject):
+    """ Server-side business logic to react on changes in the editor """
+    response.content_type = 'application/json'
+    print(f"live_debug_post(subject={subject})")
+
+    data = request.json.get("text", "{}")
+    result = {}
+
+    if True: #try:
+        for line in data.split("\n"):
+            if True: #try:
+                expr = Expression("", [0])
+                parse_line(line, expr)
+                units = {}
+                nets = []
+                output_net = expr.export(units, nets, "Top")
+                result[line] =  {
+                    "expr" : expr.as_dict(),
+                    "output_net": output_net,
+                    "units": units,
+                    "nets": nets,
+                }
+            else: #except Exception as e:
+                result[line] = {"ERROR": f"Parsing line failed due to exception: {e}"}
+    else: #except Exception as e:
+        return json.dumps({"ERROR": f"Processing expressions failed due to exception: {e}"})
+
+    s_result = yaml.dump(result)
+    print(s_result)
+    return json.dumps({"SUCCESS": True, "diagram": s_result, "source": data, "hash": None})
 
 
 @app.route('/<tool>/save/<path:path>', method="POST")
