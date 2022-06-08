@@ -48,20 +48,24 @@ templates = {
     TOOL_HDELK: {
         VIEW:   r"% include('hdelk_view_tpl.html', data=data,"
                 r" yaml4schm_version=yaml4schm_version, server_version=server_version,"
+                r" meta=meta,"
                 r" title=title, display_customizations=display_customizations)",
         EDIT:   r"% rebase('hdelk_edit_tpl.html',"
                 r" yaml4schm_version=yaml4schm_version, server_version=server_version,"
+                r" meta=meta,"
                 r" title=title, display_customizations=display_customizations)"+"\n"
-                r"% include('editor_tpl.html', tool=tool, file_path=file_path)"
+                r"% include('editor_tpl.html', tool=tool, editor=editor, file_path=file_path)"
     },
     TOOL_D3HW: {
         VIEW:   r"% include('d3hw_view_tpl.html', data=data,"
                 r" yaml4schm_version=yaml4schm_version, server_version=server_version,"
-                r" title=title, static_svg=static_svg, meta=meta, stylesheet=stylesheet)",
+                r" meta=meta,"
+                r" title=title, static_svg=static_svg, stylesheet=stylesheet)",
         EDIT:   r"% rebase('d3hw_edit_tpl.html',"
                 r" yaml4schm_version=yaml4schm_version, server_version=server_version,"
-                r" title=title, static_svg=static_svg, meta=meta, stylesheet=stylesheet)"+"\n"
-                r"% include('editor_tpl.html', tool=tool, file_path=file_path)"
+                r" meta=meta,"
+                r" title=title, static_svg=static_svg, stylesheet=stylesheet)"+"\n"
+                r"% include('editor_tpl.html', tool=tool, editor=editor, file_path=file_path)"
     },
 }
 
@@ -277,6 +281,7 @@ def editor(tool, path):
         server_version=_VERSION,
         file_path=path,
         tool=tool,
+        editor="edit",
         title="Editing: "+path,
         static_svg=static_svg,
         meta=meta,
