@@ -15,7 +15,7 @@ io:
 units:
   U1:
     name: "FD"
-    unit: "<ff>"
+    unit: "<fd>"
   U2:
     name: "MUX"
     unit: "<mux>"

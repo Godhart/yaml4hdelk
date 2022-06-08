@@ -7,7 +7,7 @@ io:
   CLK: {clk: True}
   RST: {inv: True} #, side: south}
 units:
-  FDRE:   {unit: <FF>}
+  FDRE:   {unit: <FD>}
   ADD:    {unit: <ADD>}
   INV:    {unit: <NOT>}
   CONST:  {unit: <CONST>, name: "CONST"}
