@@ -5,6 +5,7 @@ import json
 import re
 import argparse
 from yaml4schm_defs import *
+from operators import Expression, parse_line
 
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
@@ -20,6 +21,7 @@ Provides generation of HTML with hardware schematic from textual description
 in YAML format.
 Uses HDElk or d3-schematic tools to generate graphics
 """
+# TODO: recursion protection
 # TODO: add custom styles
 # TODO: add operators support to create primitive nodes out of expressions
 
@@ -293,11 +295,29 @@ def _process_unit_instance(data: dict, filepath: str, hierpath: str = "", localp
         # then drop nested units
         if not dig or dig_depth == 0:
             data["units"] = {}
-            data["nets"] = {}
+            data["nets"] = []
     elif this_view == VIEW_FULL:        # In FULL view nested units are displayed as SYMBOLS
         nested_view = VIEW_SYMBOL
     elif this_view == VIEW_NESTED:      # In NESTED view nested units are displayed according to their own view settings
         nested_view = None
+
+    # Process operators
+    op_units = {}
+    if "operators" in data:
+        for target, expression in data["operators"].items():
+            print(f"Parsing expression `{expression}` for target `{target}`")
+            expr = Expression("", [0])
+            parse_line(expression, expr)
+            output_net = expr.export(op_units, [], "") # TODO: hierpath)
+            print(f"expression result: \n  Output net: {output_net}\n  Units: {op_units}")
+            net_data = [output_net, target]
+            if "nets" not in data:
+                data["nets"] = []
+            data["nets"].append(net_data)
+    if len(op_units) > 0:
+        if "units" not in data:
+            data["units"] = {}
+        data["units"] = {**data["units"], **op_units}
 
     nested_units = data["units"]
 

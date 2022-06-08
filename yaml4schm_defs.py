@@ -35,6 +35,7 @@ YAML_UNIT_ALLOWED = {
     "nets": None,
     "display": None,
     "attributes": None,
+    "operators": None,
 }
 
 YAML_UNIT_ATTRIBUTES_ALLOWED = {
@@ -59,6 +60,7 @@ YAML_UNIT_INSTANCE_ALLOWED = {
     "name": None,
     "generics": None,
     "nets": None,
+    "operators": None,
     # "display": None,  # TODO: support display per instance
     **YAML_UNIT_ATTRIBUTES_ALLOWED
 }
