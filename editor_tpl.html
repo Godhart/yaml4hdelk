@@ -88,7 +88,7 @@
     }
 
     function editor_text() {
-        return htmlDecode(document.getElementById("entry").innerHTML.replace("<br>", "\n"));
+        return htmlDecode(document.getElementById("entry").innerHTML.replaceAll("<br>", "\n"));
     }
 
     function svg_value() {
