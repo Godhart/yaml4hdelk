@@ -64,7 +64,7 @@ units:
       units:
         MUX:  {unit: <MUX>, nets: [[/.I0, .I0], [/.I1, .I1], [/.I2, .I2], [/.I3, .I3], [/.S, .S], [.O, MO.I0]]}
         MUX2: {unit: <MUX^>, nets: [[/.I0, .I0], [/.I1, .I1], [/.I2, .I2], [/.I3, .I3], [/.S, .S], [.O, MO.I1]]}
-        FF:   {unit: <FF>,  nets: [[/.CLK, .CLK], [/.D, .D], [/.CE, .CE], [.Q, /.Q]]}
+        FD:   {unit: <FD>,  nets: [[/.CLK, .CLK], [/.D, .D], [/.CE, .CE], [.Q, /.Q]]}
         LMUX: {unit: <LATCHED_MUX>, nets: [[/.I0, .I0], [/.I1, .I1], [/.I2, .I2], [/.I3, .I3], [/.S, .S], [.O, MO.I2]]}
         MO:   {unit: <MUX>, nets: [[.O, /.O]]}
   Buses:
