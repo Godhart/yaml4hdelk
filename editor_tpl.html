@@ -4,7 +4,7 @@
     var original_hash = null;
 
     function update(text, callback) {
-        request_data("/{{!tool}}/edit/{{!file_path}}", text, callback)
+        request_data("/{{!tool}}/{{!editor}}/{{!file_path}}", text, callback)
     }
 
     function reset() {
