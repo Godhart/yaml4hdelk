@@ -95,34 +95,42 @@ OP_MAP = {
 _COMB_IO = {"input": lambda X: f"I{X}", "output": lambda X: "Y"}
 _SHIFT_IO = {"input": lambda X: f"{('IN', 'SHIFT')[X]}", "output": lambda X: "OUT"}
 _COMP_IO = {"input": lambda X: f"{('A', 'B')[X]}", "output": lambda X: "O"}
+def _comb_ports_count(ports):
+    if isinstance(ports, int):
+        return ports
+    result = 0
+    for k in ports:
+        if k[:1]=='I':
+            result += 1
+    return result
 
 OP = {
-    "AND"   : _COMB_IO,
-    "OR"    : _COMB_IO,
-    "XOR"   : _COMB_IO,
-    "NAND"  : _COMB_IO,
-    "NOR"   : _COMB_IO,
-    "NXOR"  : _COMB_IO,
+    "AND"   : {**_COMB_IO, "name": lambda ports: f"AND{_comb_ports_count(ports)}"},
+    "OR"    : {**_COMB_IO, "name": lambda ports: f"OR{_comb_ports_count(ports)}"},
+    "XOR"   : {**_COMB_IO, "name": lambda ports: f"XOR{_comb_ports_count(ports)}"},
+    "NAND"  : {**_COMB_IO, "name": lambda ports: f"NAND{_comb_ports_count(ports)}"},
+    "NOR"   : {**_COMB_IO, "name": lambda ports: f"NOR{_comb_ports_count(ports)}"},
+    "NXOR"  : {**_COMB_IO, "name": lambda ports: f"NXOR{_comb_ports_count(ports)}"},
 
-    "SRL"   : _SHIFT_IO,
-    "SRA"   : _SHIFT_IO,
-    "SLL"   : _SHIFT_IO,
-    "SLA"   : _SHIFT_IO,
-    "ROR"   : _SHIFT_IO,
-    "ROL"   : _SHIFT_IO,
+    "SRL"   : {**_SHIFT_IO, "name": lambda ports: f"SRL"},
+    "SRA"   : {**_SHIFT_IO, "name": lambda ports: f"SRA"},
+    "SLL"   : {**_SHIFT_IO, "name": lambda ports: f"SLL"},
+    "SLA"   : {**_SHIFT_IO, "name": lambda ports: f"SLA"},
+    "ROR"   : {**_SHIFT_IO, "name": lambda ports: f"ROR"},
+    "ROL"   : {**_SHIFT_IO, "name": lambda ports: f"ROL"},
 
-    "CONCAT": {"input": lambda X: f"I{X}", "output": lambda X: "O"},
+    "CONCAT": {"input": lambda X: f"I{X}", "output": lambda X: "O", "name": lambda ports: f"CONCAT"},
 
-    "ADD"   : _COMP_IO,
-    "SUB"   : _COMP_IO,
-    "MUL"   : _COMP_IO,
-    "DIV"   : _COMP_IO,
-    "EQ"    : _COMP_IO,
-    "EQ"    : _COMP_IO,
-    "GT"    : _COMP_IO,
-    "GE"    : _COMP_IO,
-    "LT"    : _COMP_IO,
-    "LE"    : _COMP_IO,
+    "ADD"   : {**_COMP_IO, "name": lambda ports: f"ADD{_comb_ports_count(ports)}"},
+    "SUB"   : {**_COMP_IO, "name": lambda ports: f"SUB{_comb_ports_count(ports)}"},
+    "MUL"   : {**_COMP_IO, "name": lambda ports: f"MUL{_comb_ports_count(ports)}"},
+    "DIV"   : {**_COMP_IO, "name": lambda ports: f"DIV"},
+    "EQ"    : {**_COMP_IO, "name": lambda ports: f"EQ"},
+    "NE"    : {**_COMP_IO, "name": lambda ports: f"NE"},
+    "GT"    : {**_COMP_IO, "name": lambda ports: f"GT"},
+    "GE"    : {**_COMP_IO, "name": lambda ports: f"GE"},
+    "LT"    : {**_COMP_IO, "name": lambda ports: f"LT"},
+    "LE"    : {**_COMP_IO, "name": lambda ports: f"LE"},
 }
 
 _FD_IO = {
@@ -138,14 +146,14 @@ def _get_slice_output(ports_dict):
             return ports_dict[p][0]
 
 UNIT = {**OP,
-    "FD"    :   _FD_IO,
-    "MUX"   :   {"input": lambda X: f"I{X}", "$": lambda X: "S", "output": lambda X: "O"},
-    "RAM"   :   {**_FD_IO, "$": lambda X: "A"},
-    "LD"    :   {**_FD_IO, "@": lambda X: "G", "#": lambda X: "CLR", "%": lambda X: "LE"},
-    "CNT"   :   {"output": lambda X: "Q", "@": lambda X: "C", "#": lambda X: "R", "%": lambda X: "CE"},
-    "BBOX"  :   {**_FD_IO, "input": lambda X: f"I{X}", "output": lambda X: "O"},
-    "NOT"   :   {"input": lambda X: "I", "output": lambda X: "O"},
-    "SLICE" :   {"input": lambda X: f"{X}", "output": lambda ports_dict: _get_slice_output(ports_dict)},
+    "FD"    :   {**_FD_IO, "name": lambda ports: f"FD"},
+    "MUX"   :   {"input": lambda X: f"I{X}", "$": lambda X: "S", "output": lambda X: "O", "name": lambda ports: f"MUX{_comb_ports_count(ports)}"},
+    "RAM"   :   {**_FD_IO, "$": lambda X: "A", "name": lambda ports: f"RAM"},
+    "LD"    :   {**_FD_IO, "@": lambda X: "G", "#": lambda X: "CLR", "%": lambda X: "LE", "name": lambda ports: f"LD"},
+    "CNT"   :   {"output": lambda X: "Q", "@": lambda X: "C", "#": lambda X: "R", "%": lambda X: "CE", "name": lambda ports: f"CNT"},
+    "BBOX"  :   {**_FD_IO, "input": lambda X: f"I{X}", "output": lambda X: "O", "name": lambda ports: f"BBOX"},
+    "NOT"   :   {"input": lambda X: "I", "output": lambda X: "O", "name": lambda ports: f"NOT"},
+    "SLICE" :   {"input": lambda X: f"{X}", "output": lambda ports_dict: _get_slice_output(ports_dict), "name": lambda ports: f"SLICE"},
 }
 
 cooperators = [ ] # TODO: ["+", "-"], ["*", "/"]
@@ -434,7 +442,7 @@ class Expression(PrettyPrinter):
                     unit_name = f"{name_prefix}U_{self._name_suffix('',input_net)}_inv"
                     if unit_name not in units:
                         units[unit_name]={
-                            "name": f"{input_net}_inv",
+                            "name": UNIT["NOT"]["name"](1),
                             "unit": "<NOT>",
                         }
                         netz = units[unit_name]["nets"] = []
@@ -444,13 +452,12 @@ class Expression(PrettyPrinter):
                 inputs = []
                 for t in self._tokens:
                     inputs.append(t.export(units, nets, name_prefix))
-                print(inputs)
                 name_suffix = self._name_suffix(f"_{self._type}_", inputs)
                 unit_name = f"{name_prefix}U_{name_suffix}"
                 op = OP_MAP[self._type]
                 if unit_name not in units: # NOTE: With this redundant units are not instantiated
                     units[unit_name] = {
-                        "name": f"{name_suffix}",
+                        "name": OP[op]["name"](len(inputs)),
                         "unit": f"<{op}>".upper(),
                     }
                     netz = units[unit_name]["nets"] = []
@@ -501,7 +508,7 @@ class Expression(PrettyPrinter):
             unit_name = f"{name_prefix}U_{name_suffix}"
             if unit_name not in units:  # NOTE: With this redundant units are not instantiated
                 units[unit_name] = {
-                    "name": f"{name_suffix}",
+                    "name": unit["name"]([v[0] for v in inputs.values()]),
                     "unit": f"<{self._type}>".upper(),
                 }
                 netz = units[unit_name]["nets"] = []
@@ -516,7 +523,7 @@ class Expression(PrettyPrinter):
                 unit_name = f"{name_prefix}U_{name_suffix}"
                 if unit_name not in units:  # NOTE: With this redundant units are not instantiated
                     units[unit_name] = {
-                        "name": f"{name_suffix}",
+                        "name": UNIT["FD"]["name"](1),
                         "unit": "<FD>",
                     }
                     netz = units[unit_name]["nets"] = []
@@ -533,7 +540,7 @@ class Expression(PrettyPrinter):
                 unit_name = f"{name_prefix}U_{name_suffix}"
                 if unit_name not in units:
                     units[unit_name]={
-                        "name": f"{output_net}_inv",
+                        "name": UNIT["NOT"]["name"](1),
                         "unit": "<NOT>",
                     }
                     netz = units[unit_name]["nets"] = []
