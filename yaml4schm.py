@@ -333,7 +333,7 @@ def _process_unit_instance(data: dict, filepath: str, hierpath: str = "", localp
         if "operators" in v:
             for target, expression in v["operators"].items():
                 # print(f"Parsing expression `{expression}` for target `{target}`")
-                expr = Expression("", [0], local_name=k)
+                expr = Expression("", [0], relative_path=k)
                 parse_line(expression, expr)
                 output_net = expr.export(op_units, [], "") #! # TODO: hierpath)
                 # print(f"expression result: \n  Output net: {output_net}\n  Units: {op_units}")

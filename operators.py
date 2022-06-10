@@ -201,12 +201,13 @@ class PrettyPrinter(object):
 
 class Expression(PrettyPrinter):
 
-    def __init__(self, current_token, pos, port=False, parent=None):
+    def __init__(self, current_token, pos, port=False, parent=None, relative_path=""):
         # Store token that were on creation (for debug purposes)
         self._initial_token = current_token
         self._start_pos = pos[0]
         self._parent = parent
         self._level = 0
+        self._relative_path = relative_path
 
         # True if token is port assignment expression
         self._port = port
@@ -269,6 +270,10 @@ class Expression(PrettyPrinter):
     @property
     def type(self):
         return self._type
+
+    @property
+    def relative_path(self):
+        return self._relative_path
 
     @property
     def port(self):
@@ -351,7 +356,9 @@ class Expression(PrettyPrinter):
                                 token = token[1:]
                             else:
                                 modifier = ""
-                            e_token = Expression(modifier, pos, False, self)
+                            if token[:1] == ".":
+                                token = self._relative_path + token
+                            e_token = Expression(modifier, pos, False, self, relative_path=self._relative_path)
                             e_token._tokens.append(token)
                             e_token._type = TYPE_ASSIGN
                             token = e_token
@@ -375,13 +382,13 @@ class Expression(PrettyPrinter):
                 if token[-1:] in ("@", "#", "$", "%", ":"):
                     # If token ends with one of this chars - then it's port name or special port char
                     if not dry_run:
-                        self._port_assignment = Expression(token, pos, port=True)
+                        self._port_assignment = Expression(token, pos, port=True, relative_path=self._relative_path)
                     expression = False  # No expressions in token in this case
                 elif token != "":
                     # Otherwise if token is not empty - it's first token for anonymous (aka default) port assignment expression
                     # Create port assignment expression then few lines later add token into it
                     if not dry_run:
-                        self._port_assignment = Expression("", pos, port=True)
+                        self._port_assignment = Expression("", pos, port=True, relative_path=self._relative_path)
                 else:
                     # Empty token
                     if close_port or last:
@@ -576,7 +583,7 @@ def allowed_token_char(token, char, is_port):
     return True
 
 
-def parse_line(line, expression, pos=None, level=0):
+def parse_line(line, expression, pos=None, level=0, relative_path=""):
     assert pos is not None or level==0, "#A2 Unexpected to have a pos at level 0"
     if pos is None:
         pos = [0]
@@ -625,8 +632,8 @@ def parse_line(line, expression, pos=None, level=0):
                 or token_kind(current_token) == KIND_UNIT:
                 # Empty token could be if this is a nested expression
                     if expression.process_token(line, pos, DUMMY_TOKEN, dry_run=True):
-                        nested = Expression(current_token, pos)
-                        parse_line(line, nested, pos, level+1)
+                        nested = Expression(current_token, pos, relative_path=relative_path)
+                        parse_line(line, nested, pos, level+1, relative_path)
                         expression.process_token(line, pos, nested)
                         current_token = ""; closed_token = False
                 else:
