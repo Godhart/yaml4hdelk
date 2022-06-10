@@ -719,6 +719,7 @@ io:
   2b: {}
 units:
   U1: {unit: <OR>, nets: [[/.A, .I0], [/.B, .I1]]}
+  U2: {unit: <XOR>, nets: [[.Y, /.NestedOps]], operators: {.I0: /.A and /.B, .I1": ~/.Z}}
 nets:
   - [U1.O, .AorB]
 operators:
