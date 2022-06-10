@@ -19,7 +19,11 @@
     const YAML4SCHM_VERSION = "{{!yaml4schm_version}}";
 </script>
 
-<svg id="scheme-placeholder"></svg>
+<svg id="scheme-placeholder">
+    <style>
+        {{!svg_style}}
+    </style>
+</svg>
 <script>
     // schematic rendering script
 
@@ -50,7 +54,7 @@
 
         var w = viewport();
         svg.attr("width", w.width);
-                svg.attr("height", w.height);
+        svg.attr("height", w.height);
     }
 
     var hwSchematic = new d3.HwSchematic(svg);

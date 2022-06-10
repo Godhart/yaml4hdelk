@@ -49,10 +49,12 @@ templates = {
         VIEW:   r"% include('hdelk_view_tpl.html', data=data,"
                 r" yaml4schm_version=yaml4schm_version, server_version=server_version,"
                 r" meta=meta,"
+                r" svg_style=svg_style,"
                 r" title=title, display_customizations=display_customizations)",
         EDIT:   r"% rebase('hdelk_edit_tpl.html',"
                 r" yaml4schm_version=yaml4schm_version, server_version=server_version,"
                 r" meta=meta,"
+                r" svg_style=svg_style,"
                 r" title=title, display_customizations=display_customizations)"+"\n"
                 r"% include('editor_tpl.html', tool=tool, editor=editor, file_path=file_path)"
     },
@@ -60,13 +62,26 @@ templates = {
         VIEW:   r"% include('d3hw_view_tpl.html', data=data,"
                 r" yaml4schm_version=yaml4schm_version, server_version=server_version,"
                 r" meta=meta,"
+                r" svg_style=svg_style,"
                 r" title=title, static_svg=static_svg, stylesheet=stylesheet)",
         EDIT:   r"% rebase('d3hw_edit_tpl.html',"
                 r" yaml4schm_version=yaml4schm_version, server_version=server_version,"
                 r" meta=meta,"
+                r" svg_style=svg_style,"
                 r" title=title, static_svg=static_svg, stylesheet=stylesheet)"+"\n"
                 r"% include('editor_tpl.html', tool=tool, editor=editor, file_path=file_path)"
     },
+}
+
+
+def _file_content(file_path):
+    with open(file_path, "r") as f:
+        return f.read()
+
+
+svg_style = {
+    TOOL_HDELK: "",
+    TOOL_D3HW: _file_content("Demo/html/css/d3/d3-hwschematic.css")
 }
 
 renderers = {}
@@ -193,7 +208,7 @@ def render(tool, source_data, make_shell, draw_only=False, title=""):
         static_svg="false"
     else:
         meta='<meta charset="utf-8">'
-        stylesheet='<link href="/css/d3/d3-hwschematic.css" rel="stylesheet">'
+        stylesheet=""
         static_svg="false"
 
     return tooler.render(
@@ -203,6 +218,7 @@ def render(tool, source_data, make_shell, draw_only=False, title=""):
         title=f"{title}",
         static_svg=static_svg,
         meta=meta,
+        svg_style=svg_style[tool],
         stylesheet=stylesheet,
         display_customizations="")
 
@@ -270,10 +286,7 @@ def editor(tool, path):
         tooler = renderers[tool][EDIT]
 
     meta='<meta charset="utf-8">'
-    if tool == TOOL_D3HW:
-        stylesheet='<link href="/css/d3/d3-hwschematic.css" rel="stylesheet">'
-    else:
-        stylesheet=''
+    stylesheet=''
     static_svg="false"
 
     return tooler.render(
@@ -285,6 +298,7 @@ def editor(tool, path):
         title="Editing: "+path,
         static_svg=static_svg,
         meta=meta,
+        svg_style=svg_style[tool],
         stylesheet=stylesheet,
         display_customizations="")
 
