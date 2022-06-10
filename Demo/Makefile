@@ -4,6 +4,9 @@ sketch:
 	python ../yaml4schm.py sketch.yaml html/d3hw-sketch.html
 	python ../yaml4schm.py sketch.yaml html/hdelk-sketch.html -t hdelk
 
+	python ../yaml4schm.py sketchy.yaml html/d3hw-sketchy.html
+	python ../yaml4schm.py sketchy.yaml html/hdelk-sketchy.html -t hdelk
+
 general:
 	python ../yaml4schm.py top.yaml html/d3hw-top.html
 	python ../yaml4schm.py top.yaml html/hdelk-top.html -t hdelk
