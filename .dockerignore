@@ -3,6 +3,8 @@
 !server.py
 !yaml4schm.py
 !yaml4schm_defs.py
+!operators.py
+!helpers.py
 !d3hw_edit_tpl.html
 !d3hw_view_tpl.html
 !hdelk_edit_tpl.html
