@@ -10,22 +10,24 @@ docker:
 .PHONY: run
 run:
 	docker run --rm \
-		--network=host \
 		-v "$(DATA_DIR):/data" \
-		-e "SERVER_PORT=$(SERVER_PORT)" \
+		-e "SERVER_HOST=0.0.0.0" \
+		-e "SERVER_PORT=80" \
 		-e YAML4SCHM_FILES_DOMAIN_DATA=/data \
+		-p "$(SERVER_PORT):80" \
 		-u `id -u ${USER}`:`id -g ${USER}` \
-		yaml4schm:1.0
+		godhart/yaml4schm:1.0
 
 .PHONY: dev
 dev:
 	docker run --rm -it \
-		--network=host \
 		-v "$(DATA_DIR):/data" \
-		-e "SERVER_PORT=$(SERVER_PORT)" \
+		-e "SERVER_HOST=0.0.0.0" \
+		-e "SERVER_PORT=80" \
 		-e YAML4SCHM_FILES_DOMAIN_DATA=/data \
+		-p "$(SERVER_PORT):80" \
 		-u `id -u ${USER}`:`id -g ${USER}` \
 		--entrypoint "sh" \
-		yaml4schm:1.0
+		godhart/yaml4schm:1.0
 
 all: docker run
