@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Schematic of sketchy</h1>
+
+<script src="./js/hdelk/elk.bundled.js"></script>
+<script src="./js/hdelk/svg.min.js"></script>
+<script src="./js/hdelk/hdelk.js"></script>
+
+<div id="simple_diagram"></div>
+
+<script type="text/javascript">
+
+    
+
+    var simple_graph = {
+  "type": "sketchy",
+  "id": "/",
+  "children": [
+    {
+      "label": "A",
+      "id": "/.A",
+      "port": 1
+    },
+    {
+      "label": "B",
+      "id": "/.B",
+      "port": 1
+    },
+    {
+      "label": "AorB",
+      "id": "/.AorB",
+      "port": 1
+    },
+    {
+      "label": "2b",
+      "id": "/.2b",
+      "port": 1
+    },
+    {
+      "type": "or",
+      "id": "/U1",
+      "outPorts": [
+        {
+          "label": "O",
+          "id": "/U1.O"
+        }
+      ],
+      "inPorts": [
+        {
+          "label": "I0",
+          "id": "/U1.I0"
+        },
+        {
+          "label": "I1",
+          "id": "/U1.I1"
+        }
+      ]
+    },
+    {
+      "type": "xor",
+      "id": "/U2",
+      "outPorts": [
+        {
+          "label": "Y",
+          "id": "/U2.Y"
+        }
+      ],
+      "inPorts": [
+        {
+          "label": "I0",
+          "id": "/U2.I0"
+        },
+        {
+          "label": "I1\"",
+          "id": "/U2.I1\""
+        }
+      ]
+    },
+    {
+      "type": "not",
+      "label": "NOT",
+      "id": "/U_____Z_inv",
+      "outPorts": [
+        {
+          "label": "O",
+          "id": "/U_____Z_inv.O"
+        }
+      ],
+      "inPorts": [
+        {
+          "label": "I",
+          "id": "/U_____Z_inv.I"
+        }
+      ]
+    },
+    {
+      "type": "mux",
+      "label": "MUX2",
+      "id": "/U_MUX___I0______A___I1______B___S______SELECT",
+      "southPorts": [
+        {
+          "label": "S",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT.S"
+        }
+      ],
+      "inPorts": [
+        {
+          "label": "I0",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT.I0"
+        },
+        {
+          "label": "I1",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT.I1"
+        }
+      ],
+      "outPorts": [
+        {
+          "label": "O",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT.O"
+        }
+      ]
+    },
+    {
+      "type": "fd",
+      "label": "FD",
+      "id": "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE",
+      "inPorts": [
+        {
+          "label": "CLK",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE.CLK"
+        },
+        {
+          "label": "D",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE.D"
+        },
+        {
+          "label": "CE",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE.CE"
+        }
+      ],
+      "outPorts": [
+        {
+          "label": "Q",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE.Q"
+        }
+      ],
+      "southPorts": [
+        {
+          "label": "R",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE.R"
+        },
+        {
+          "label": "CLR",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE.CLR"
+        }
+      ],
+      "northPorts": [
+        {
+          "label": "S",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE.S"
+        },
+        {
+          "label": "PRE",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE.PRE"
+        }
+      ]
+    },
+    {
+      "type": "not",
+      "label": "NOT",
+      "id": "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv",
+      "inPorts": [
+        {
+          "label": "I",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv.I"
+        }
+      ],
+      "outPorts": [
+        {
+          "label": "O",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv.O"
+        }
+      ]
+    },
+    {
+      "type": "or",
+      "label": "OR5",
+      "id": "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O",
+      "outPorts": [
+        {
+          "label": "Y",
+          "id": "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.Y"
+        }
+      ],
+      "inPorts": [
+        {
+          "label": "I0",
+          "id": "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.I0"
+        },
+        {
+          "label": "I1",
+          "id": "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.I1"
+        },
+        {
+          "label": "I2",
+          "id": "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.I2"
+        },
+        {
+          "label": "I3",
+          "id": "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.I3"
+        },
+        {
+          "label": "I4",
+          "id": "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.I4"
+        }
+      ]
+    },
+    {
+      "type": "not",
+      "label": "NOT",
+      "id": "/U_MUX___I0______A___I1______B___S______SELECT__inv",
+      "inPorts": [
+        {
+          "label": "I",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT__inv.I"
+        }
+      ],
+      "outPorts": [
+        {
+          "label": "O",
+          "id": "/U_MUX___I0______A___I1______B___S______SELECT__inv.O"
+        }
+      ]
+    },
+    {
+      "type": "and",
+      "label": "AND3",
+      "id": "/U_U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O__Y_and_____Y_and_U_MUX___I0______A___I1______B___S______SELECT__inv__O",
+      "outPorts": [
+        {
+          "label": "Y",
+          "id": "/U_U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O__Y_and_____Y_and_U_MUX___I0______A___I1______B___S______SELECT__inv__O.Y"
+        }
+      ],
+      "inPorts": [
+        {
+          "label": "I0",
+          "id": "/U_U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O__Y_and_____Y_and_U_MUX___I0______A___I1______B___S______SELECT__inv__O.I0"
+        },
+        {
+          "label": "I1",
+          "id": "/U_U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O__Y_and_____Y_and_U_MUX___I0______A___I1______B___S______SELECT__inv__O.I1"
+        },
+        {
+          "label": "I2",
+          "id": "/U_U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O__Y_and_____Y_and_U_MUX___I0______A___I1______B___S______SELECT__inv__O.I2"
+        }
+      ]
+    },
+    {
+      "type": "not",
+      "label": "NOT",
+      "id": "/U_____2b_inv",
+      "inPorts": [
+        {
+          "label": "I",
+          "id": "/U_____2b_inv.I"
+        }
+      ],
+      "outPorts": [
+        {
+          "label": "O",
+          "id": "/U_____2b_inv.O"
+        }
+      ]
+    },
+    {
+      "type": "or",
+      "label": "OR2",
+      "id": "/U_____2b_or_U_____2b_inv__O",
+      "outPorts": [
+        {
+          "label": "Y",
+          "id": "/U_____2b_or_U_____2b_inv__O.Y"
+        }
+      ],
+      "inPorts": [
+        {
+          "label": "I0",
+          "id": "/U_____2b_or_U_____2b_inv__O.I0"
+        },
+        {
+          "label": "I1",
+          "id": "/U_____2b_or_U_____2b_inv__O.I1"
+        }
+      ]
+    },
+    {
+      "type": "and",
+      "label": "AND2",
+      "id": "/U_____A_and_____B",
+      "outPorts": [
+        {
+          "label": "Y",
+          "id": "/U_____A_and_____B.Y"
+        }
+      ],
+      "inPorts": [
+        {
+          "label": "I0",
+          "id": "/U_____A_and_____B.I0"
+        },
+        {
+          "label": "I1",
+          "id": "/U_____A_and_____B.I1"
+        }
+      ]
+    },
+    {
+      "label": "OP",
+      "id": "/OP",
+      "inPorts": [
+        {
+          "label": "I0",
+          "id": "/OP.I0"
+        },
+        {
+          "label": "I1",
+          "id": "/OP.I1"
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "id": "/B",
+      "outPorts": [
+        {
+          "label": "X",
+          "id": "/B.X"
+        }
+      ]
+    },
+    {
+      "label": "QUESTION",
+      "id": "/.QUESTION",
+      "port": 1
+    },
+    {
+      "label": ".NestedOps",
+      "id": "/.NestedOps",
+      "port": 1
+    },
+    {
+      "label": ".Z",
+      "id": "/.Z",
+      "port": 1
+    },
+    {
+      "label": ".SELECT",
+      "id": "/.SELECT",
+      "port": 1
+    },
+    {
+      "label": ".CLK",
+      "id": "/.CLK",
+      "port": 1
+    },
+    {
+      "label": ".CE",
+      "id": "/.CE",
+      "port": 1
+    },
+    {
+      "label": ".Y",
+      "id": "/.Y",
+      "port": 1
+    }
+  ],
+  "edges": [
+    {
+      "sources": [
+        "/U1.O"
+      ],
+      "targets": [
+        "/.AorB"
+      ]
+    },
+    {
+      "sources": [
+        "/U1.O"
+      ],
+      "targets": [
+        "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.I0"
+      ]
+    },
+    {
+      "sources": [
+        "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.Y"
+      ],
+      "targets": [
+        "/OP.I0"
+      ]
+    },
+    {
+      "sources": [
+        "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.Y"
+      ],
+      "targets": [
+        "/U_U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O__Y_and_____Y_and_U_MUX___I0______A___I1______B___S______SELECT__inv__O.I0"
+      ]
+    },
+    {
+      "sources": [
+        "/U_U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O__Y_and_____Y_and_U_MUX___I0______A___I1______B___S______SELECT__inv__O.Y"
+      ],
+      "targets": [
+        "/OP.I1"
+      ]
+    },
+    {
+      "sources": [
+        "/U_____2b_or_U_____2b_inv__O.Y"
+      ],
+      "targets": [
+        "/.QUESTION"
+      ]
+    },
+    {
+      "sources": [
+        "/.A"
+      ],
+      "targets": [
+        "/U1.I0"
+      ]
+    },
+    {
+      "sources": [
+        "/.A"
+      ],
+      "targets": [
+        "/U_MUX___I0______A___I1______B___S______SELECT.I0"
+      ]
+    },
+    {
+      "sources": [
+        "/.A"
+      ],
+      "targets": [
+        "/U_____A_and_____B.I0"
+      ]
+    },
+    {
+      "sources": [
+        "/.B"
+      ],
+      "targets": [
+        "/U1.I1"
+      ]
+    },
+    {
+      "sources": [
+        "/.B"
+      ],
+      "targets": [
+        "/U_MUX___I0______A___I1______B___S______SELECT.I1"
+      ]
+    },
+    {
+      "sources": [
+        "/.B"
+      ],
+      "targets": [
+        "/U_____A_and_____B.I1"
+      ]
+    },
+    {
+      "sources": [
+        "/U2.Y"
+      ],
+      "targets": [
+        "/.NestedOps"
+      ]
+    },
+    {
+      "sources": [
+        "/U_____A_and_____B.Y"
+      ],
+      "targets": [
+        "/U2.I0"
+      ]
+    },
+    {
+      "sources": [
+        "/U_____Z_inv.O"
+      ],
+      "targets": [
+        "/U2.I1\""
+      ]
+    },
+    {
+      "sources": [
+        "/U_____Z_inv.O"
+      ],
+      "targets": [
+        "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.I3"
+      ]
+    },
+    {
+      "sources": [
+        "/.Z"
+      ],
+      "targets": [
+        "/U_____Z_inv.I"
+      ]
+    },
+    {
+      "sources": [
+        "/.SELECT"
+      ],
+      "targets": [
+        "/U_MUX___I0______A___I1______B___S______SELECT.S"
+      ]
+    },
+    {
+      "sources": [
+        "/.CLK"
+      ],
+      "targets": [
+        "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE.CLK"
+      ]
+    },
+    {
+      "sources": [
+        "/.CE"
+      ],
+      "targets": [
+        "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE.CE"
+      ]
+    },
+    {
+      "sources": [
+        "/U_MUX___I0______A___I1______B___S______SELECT.O"
+      ],
+      "targets": [
+        "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE.D"
+      ]
+    },
+    {
+      "sources": [
+        "/U_MUX___I0______A___I1______B___S______SELECT.O"
+      ],
+      "targets": [
+        "/U_MUX___I0______A___I1______B___S______SELECT__inv.I"
+      ]
+    },
+    {
+      "sources": [
+        "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE.Q"
+      ],
+      "targets": [
+        "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv.I"
+      ]
+    },
+    {
+      "sources": [
+        "/B.X"
+      ],
+      "targets": [
+        "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.I1"
+      ]
+    },
+    {
+      "sources": [
+        "/.Y"
+      ],
+      "targets": [
+        "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.I2"
+      ]
+    },
+    {
+      "sources": [
+        "/.Y"
+      ],
+      "targets": [
+        "/U_U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O__Y_and_____Y_and_U_MUX___I0______A___I1______B___S______SELECT__inv__O.I1"
+      ]
+    },
+    {
+      "sources": [
+        "/U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv.O"
+      ],
+      "targets": [
+        "/U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O.I4"
+      ]
+    },
+    {
+      "sources": [
+        "/U_MUX___I0______A___I1______B___S______SELECT__inv.O"
+      ],
+      "targets": [
+        "/U_U_U1__O_or_B__X_or_____Y_or_U_____Z_inv__O_or_U_MUX___I0______A___I1______B___S______SELECT__FD___CLK______CLK___CE______CE__inv__O__Y_and_____Y_and_U_MUX___I0______A___I1______B___S______SELECT__inv__O.I2"
+      ]
+    },
+    {
+      "sources": [
+        "/.2b"
+      ],
+      "targets": [
+        "/U_____2b_inv.I"
+      ]
+    },
+    {
+      "sources": [
+        "/.2b"
+      ],
+      "targets": [
+        "/U_____2b_or_U_____2b_inv__O.I0"
+      ]
+    },
+    {
+      "sources": [
+        "/U_____2b_inv.O"
+      ],
+      "targets": [
+        "/U_____2b_or_U_____2b_inv__O.I1"
+      ]
+    }
+  ]
+}
+
+    hdelk.layout( simple_graph, "simple_diagram" );
+</script>
+
+</body>
+</html>
