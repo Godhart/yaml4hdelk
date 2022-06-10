@@ -23,7 +23,7 @@ Uses HDElk or d3-schematic tools to generate graphics
 """
 # TODO: recursion protection
 # TODO: add custom styles
-# TODO: add operators support to create primitive nodes out of expressions
+# TODO: intermediate nets for expressions
 
 _ROOT_PATH = None
 
@@ -296,6 +296,7 @@ def _process_unit_instance(data: dict, filepath: str, hierpath: str = "", localp
         if not dig or dig_depth == 0:
             data["units"] = {}
             data["nets"] = []
+            data["operators"] = {}
     elif this_view == VIEW_FULL:        # In FULL view nested units are displayed as SYMBOLS
         nested_view = VIEW_SYMBOL
     elif this_view == VIEW_NESTED:      # In NESTED view nested units are displayed according to their own view settings
@@ -305,19 +306,15 @@ def _process_unit_instance(data: dict, filepath: str, hierpath: str = "", localp
     op_units = {}
     if "operators" in data:
         for target, expression in data["operators"].items():
-            print(f"Parsing expression `{expression}` for target `{target}`")
+            # print(f"Parsing expression `{expression}` for target `{target}`")
             expr = Expression("", [0])
             parse_line(expression, expr)
-            output_net = expr.export(op_units, [], "") # TODO: hierpath)
-            print(f"expression result: \n  Output net: {output_net}\n  Units: {op_units}")
+            output_net = expr.export(op_units, [], "") #! # TODO: hierpath)
+            # print(f"expression result: \n  Output net: {output_net}\n  Units: {op_units}")
             net_data = [output_net, target]
             if "nets" not in data:
                 data["nets"] = []
             data["nets"].append(net_data)
-    if len(op_units) > 0:
-        if "units" not in data:
-            data["units"] = {}
-        data["units"] = {**data["units"], **op_units}
 
     nested_units = data["units"]
 
@@ -330,6 +327,26 @@ def _process_unit_instance(data: dict, filepath: str, hierpath: str = "", localp
     # TODO: raise error if there is something to remove
     for k in remove:
         del nested_units[k]
+
+    for k, v in nested_units.items():
+        # Process instance specific operators
+        if "operators" in v:
+            for target, expression in v["operators"].items():
+                # print(f"Parsing expression `{expression}` for target `{target}`")
+                expr = Expression("", [0], local_name=k)
+                parse_line(expression, expr)
+                output_net = expr.export(op_units, [], "") #! # TODO: hierpath)
+                # print(f"expression result: \n  Output net: {output_net}\n  Units: {op_units}")
+                net_data = [output_net, target]
+                if "nets" not in v:
+                    v["nets"] = []
+                v["nets"].append(net_data)
+
+    if len(op_units) > 0:
+        if "units" not in data:
+            data["units"] = {}
+        data["units"] = {**data["units"], **op_units}
+        nested_units = data["units"]
 
     if A_FILEPATH in data:
         # Reset local path for nested units if this unit were loaded
