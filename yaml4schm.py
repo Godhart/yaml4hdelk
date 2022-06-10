@@ -10,8 +10,9 @@ from operators import Expression, parse_line
 _SKIP_TODO        = True
 _IGNORE_UNCERTAIN = True
 
-_VERSION = "2.0b5.1"
+_VERSION = "2.1a0.0"
 _VERSION_HISTORY = {
+    "2.1": "Basic support for operators (though work and checks still WIP)",
     "2.0": "Refactored v1. Works as standalone app and as a part of server (server.py)",
 }
 _INFO = f"""
