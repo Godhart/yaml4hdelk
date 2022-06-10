@@ -1,0 +1,14 @@
+io:
+  A: {}
+  B: {}
+  AorB: {dir: out}
+  2b: {}
+units:
+  U1: {unit: <OR>, nets: [[/.A, .I0], [/.B, .I1]]}
+  U2: {unit: <XOR>, nets: [[.Y, /.NestedOps]], operators: {.I0: /.A and /.B, .I1": ~/.Z}}
+nets:
+  - [U1.O, .AorB]
+operators:
+  "OP.I0": U1.O or B.X or /.Y or ~/.Z or ~MUX(/.A, /.B, $/.SELECT, @/.CLK, %/.CE)
+  "OP.I1": (U1.O or B.X or /.Y or ~/.Z or ~MUX(/.A, /.B, $/.SELECT, @/.CLK, %/.CE)) and /.Y and ~MUX(/.A, /.B, $/.SELECT)
+  ".QUESTION": /.2b or ~/.2b
