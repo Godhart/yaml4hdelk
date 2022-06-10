@@ -17,8 +17,10 @@ from helpers import prints
 #   https://stackoverflow.com/questions/13318608/streaming-connection-using-python-bottle-multiprocessing-and-gevent
 
 
-_VERSION = "1.1b0.0"
+_VERSION = "1.3b0.0"
 _VERSION_HISTORY = {
+    "1.3": "supported changes in view/edit templates (svg styling)",
+    "1.2": "+ live debug",
     "1.1": "+ editor mode, JSON output",
     "1.0": "Renders schematics from files on server",
 }
