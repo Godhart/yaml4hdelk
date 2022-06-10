@@ -705,7 +705,7 @@ def parse_line(line, expression, pos=None, level=0):
         raise ValueError(f"#19 Not closed quotation on line '{line}'! Check following quote: `{quoted}{current_token}`")
 
     # Process last token
-    expression.process_token(line, pos, current_token) # TODO: , last=True)
+    expression.process_token(line, pos, current_token, last=True)
     current_token = ""; closed_token = False
 
 _TESTS = {
