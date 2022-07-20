@@ -1,0 +1,87 @@
+source: TODO
+
+merge:
+  - {source:    TODO}
+  - {generics:  TODO}
+
+generics:       TODO
+
+io:
+  A:
+    dir:        in
+    side:       east
+    color:      TODO
+    highlight:  TODO
+    type:       TODO
+    bus:        TODO
+    clk:        false
+    gate:       false
+    inv:        true
+    hide:       TODO
+    show:       TODO
+    autohide:   TODO
+    order:      TODO
+    class:      TODO
+    style:      TODO
+    connectedAsParrent: TODO
+    layers:     TODO
+    children:
+      B: {dir:  out}
+      C: {side: west}
+      D: {side: north}
+      E: {side: south}
+
+units:
+  U1: {unit:    {}}
+  U2: {unit:    "<asd>"}
+  U3: {name:    "asd"}   # NOTE: Should fail with missing propety "unit"
+  U4: {}              # NOTE: Should fail with missing propety "unit"
+  U5:
+    unit:       {}
+    name:       TODO
+    generics:   TODO
+    nets:       TODO
+    operators:  TODO
+    display:    TODO
+    layers:     TODO
+    all_the_attributes: TODO
+
+display:        TODO
+
+attributes:
+  type:         TODO
+  d3hw_name:    TODO
+  kind:         TODO
+  color:        TODO
+  highlight:    TODO
+  text:         TODO
+  class:        TODO
+  style:        TODO
+  props:        TODO
+  hide:         TODO
+  show:         TODO
+  hideNC:       TODO
+
+nets:
+  - [TODO:src, TODO:dst, -regex, name:TODO]
+  - {src: A}  # NOTE: Should fail with missing propety "dst"
+  - {dst: B}  # NOTE: Should fail with missing propety "src"
+  - {src:       TODO, dst:  TODO}
+  - {srcr:      TODO, dstr: TODO}  # TODO: sould pass
+  - {src:       TODO, dstr: TODO}  # TODO: sould pass
+  - {srcr:      TODO, dst:  TODO}  # TODO: sould pass
+  - src:        TODO
+    dst:        TODO
+    name:       TODO
+    text:       TODO
+    bus:        TODO
+    color:      TODO
+    highlight:  TODO
+    reverse:    TODO
+    hide:       TODO
+    show:       TODO
+    class:      TODO
+    style:      TODO
+    layers:     TODO
+
+operators:      TODO
