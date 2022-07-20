@@ -160,9 +160,7 @@ UNIT = {**OP,
 
 cooperators = [ ] # TODO: ["+", "-"], ["*", "/"]
 
-# TODO: ports naming for operators (default name, indexing for default name, special chars to port name map)
 # TODO: operands amount limits (low and high) for operators
-# TODO: define async operation to add FD in case of presence of @/#/% special port chars
 
 units = [
     "FD", "RAM", "LD", "MUX", "CNT", "BBOX",
