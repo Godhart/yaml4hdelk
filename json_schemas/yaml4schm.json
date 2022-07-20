@@ -1,0 +1,176 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "$ref": "#/$defs/unitSpec",
+    "$id": "./yaml4schm.json",
+    "$comments": "VSCode: apply for '*.schm.yaml' using this guide https://dev.to/brpaz/how-to-create-your-own-auto-completion-for-json-and-yaml-files-on-vs-code-with-the-help-of-json-schema-k1i",
+    "title": "Top unit",
+    "description": "Schematics description in YAML for top unit",
+
+    "$defs": {
+        "unitSpec": {
+            "title": "Inline Unit Specification",
+            "description": "Unit specification - declaration of IO, generics, internal schematic",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "source":   {"const":   "TODO"},
+                "merge":    {"type":    "array", "items": {
+                    "$ref": "#/$defs/unitSpec"
+                }},
+                "units":    {"$ref":    "#/$defs/unitsDict"},
+                "generics": {"const":   "TODO"},
+                "io":       {"$ref":    "#/$defs/ioDict"},
+                "display":  {"const":   "TODO"},
+                "attributes": {"$ref":  "#/$defs/unitAttr"},
+                "nets":     {"type":    "array", "items": {
+                    "oneOf": [
+                        {   "$ref":    "#/$defs/netSpec"},
+                        {   "type":    "array",
+                            "prefixItems": [
+                                { "const":  "TODO:src" },
+                                { "const":  "TODO:dst" }
+                            ],
+                            "additionalItems": {
+                                "type": "string",
+                                "pattern": "^((-regex)|(name:TODO)|(text:TODO)|(bus:TODO)|(color:TODO)|(highlight:TODO)|(reverse:TODO)|(hide:TODO)|(show:TODO)|(class:TODO)|(style:TODO)|(layers:TODO))$"
+                            }
+                        }
+                    ]
+                }},
+                "operators":{"const":   "TODO"}
+            }
+        },
+        "unitsDict": {
+            "title": "Nested units",
+            "description": "All the nested units",
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "^\\w+$":   { "$ref": "#/$defs/unitInst" }
+            }
+        },
+        "unitInst": {
+            "title": "Unit's Instance Specification",
+            "description": "Unit's Instance Specification - attributes, locally refered connections and operators, display specification",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["unit"],
+            "properties": {
+                "source":   {"const":   "TODO"},
+                "merge":    {"type":    "array", "items": {
+                    "$ref": "#/$defs/unitInst"
+                }},
+                "unit": {
+                    "oneOf": [
+                        {
+                            "title": "Reference to Unit Specification",
+                            "description": "Reference for Unit Specification lookup in external files. Specified as path (relative or absolute) or filename without extension within angle braces (i.e. <>)",
+                            "type": "string",
+                            "pattern": "^((<\\w+>)|(ECMA-262 regexp)|(TODO: filepath within quotes))$"
+                        },
+                        {"$ref": "#/$defs/unitSpec"}
+                    ]
+                },
+                "name":     {"const": "TODO"},
+                "generics": {"const": "TODO"},
+                "nets":     {"const": "TODO"},
+                "operators":{"const": "TODO"},
+                "display":  {"const": "TODO"},
+                "layers":   {"const": "TODO"},
+                "all_the_attributes": {"const": "TODO"}
+            }
+        },
+
+        "unitAttr": {
+            "title": "Unit's Attributes Specification",
+            "description": "Specification of attributes that are applicable to unit or it's instance",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "type":             {"const": "TODO"},
+                "d3hw_name":        {"const": "TODO"},
+                "kind":             {"const": "TODO"},
+                "color":            {"const": "TODO"},
+                "highlight":        {"const": "TODO"},
+                "text":             {"const": "TODO"},
+                "class":            {"const": "TODO"},
+                "style":            {"const": "TODO"},
+                "props":            {"const": "TODO"},
+                "hide":             {"const": "TODO"},
+                "show":             {"const": "TODO"},
+                "hideNC":           {"const": "TODO"}
+            }
+        },
+
+        "ioSpec": {
+            "title": "IO Pin Specification",
+            "description": "IO display attributes",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "source":   {"const":   "TODO"},
+                "merge":    {"type":    "array", "items": {
+                    "$ref": "#/$defs/ioSpec"
+                }},
+                "name":     {"type": "string"},
+                "dir":      {"enum": ["in", "out"]},
+                "side":     {"enum": ["north", "south", "west", "east"]},
+                "color":    {"const": "TODO"},
+                "highlight":{"const": "TODO"},
+                "type":     {"const": "TODO"},
+                "bus":      {"const": "TODO"},
+                "clk":      {"type": "boolean"},
+                "gate":     {"type": "boolean"},
+                "inv":      {"type": "boolean"},
+                "hide":     {"const": "TODO"},
+                "show":     {"const": "TODO"},
+                "autohide": {"const": "TODO"},
+                "order":    {"const": "TODO"},
+                "class":    {"const": "TODO"},
+                "style":    {"const": "TODO"},
+                "connectedAsParrent": {"const": "TODO"},
+                "layers":   {"const": "TODO"},
+                "children": {"$ref": "#/$defs/ioDict"}
+            }
+        },
+
+        "ioDict": {
+            "title": "Nested IO items in case if it's a IO group",
+            "description": "All the nested IO items",
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "^\\w+$": {"$ref": "#/$defs/ioSpec"}
+            }
+        },
+
+        "netSpec": {
+            "title": "Net Specification",
+            "description": "Net endpoints, display attributes",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["src", "dst"],
+            "properties": {
+                "source":   {"const":   "TODO"},
+                "merge":    {"type":    "array", "items": {
+                    "$ref": "#/$defs/netSpec"
+                }},
+                "src":      {"const":   "TODO"},
+                "dst":      {"const":   "TODO"},
+                "srcr":     {"const":   "TODO"},
+                "dstr":     {"const":   "TODO"},
+                "name":     {"const":   "TODO"},
+                "text":     {"const":   "TODO"},
+                "bus":      {"const":   "TODO"},
+                "color":    {"const":   "TODO"},
+                "highlight":{"const":   "TODO"},
+                "reverse":  {"const":   "TODO"},
+                "hide":     {"const":   "TODO"},
+                "show":     {"const":   "TODO"},
+                "class":    {"const":   "TODO"},
+                "style":    {"const":   "TODO"},
+                "layers":   {"const":   "TODO"}
+            }
+        }
+    }
+}
