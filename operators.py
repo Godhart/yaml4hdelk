@@ -10,6 +10,8 @@ import copy
 
 # TODO: recursion protection?
 # TODO: freestyle unit description where units and nets are mixed
+# TODO: autonaming output nets by operator instance itself
+# TODO: buffer op
 
 
 NEG = "~"   # TODO: replaces "~" with NEG in the code

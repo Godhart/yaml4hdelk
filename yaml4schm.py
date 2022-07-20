@@ -25,6 +25,8 @@ Uses HDElk or d3-schematic tools to generate graphics
 # TODO: recursion protection
 # TODO: add custom styles
 # TODO: intermediate nets for expressions
+# TODO:
+# TODO: documentation
 
 _ROOT_PATH = None
 
