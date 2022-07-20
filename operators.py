@@ -31,7 +31,7 @@ operators = [
     "&",    # Concatenation into BUS
     "+", "-", "*", "/", "**",
     "=", "==", ">", ">=", "<", "<=",
-    "eq", "gt", "ge", "lt", "le",
+    "eq", "ne", "gt", "ge", "lt", "le",
 ]
 
 OP_MAP = {
@@ -171,7 +171,7 @@ units = [
     "SRL", "SRA", "SLL", "SLA", "ROR", "ROL",
     "CONCAT", "SLICE",
     "ADD", "SUB", "MUL", "DIV",
-    "EQ", "GT", "GE", "LT", "LE",
+    "EQ", "NE", "GT", "GE", "LT", "LE",
 ]
 
 special = ["fsm", "code", ] # TODO: chain for chaining heterogenous operators by order
