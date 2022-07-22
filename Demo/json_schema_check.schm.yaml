@@ -1,13 +1,33 @@
-source: TODO
+source: /src1.schm.yaml
 
 merge:
-  - {source:    TODO}
+  - {source:    /on-root.yaml}
+  - {source:    same1.yaml}
+  - {source:    ./same2.yaml}
+  - {source:    ./path/lower.yaml}
+  - {source:    ../upper.yaml}
+  - {source:    ./../upper2.yaml}
+  - {source:    ./../../upper3/data.yaml}
+  - {source:    .hidden-file.yaml#/subsection1}
+  - {source:    ./../../.hidden-folder/data.yaml}
+  - {source:    $path/part-or-just-filename.yaml}
+  - {source:    \#/section-within-this-file }
+  - {source:    \#/sub/section/within-this-file }
+  - {source:    http://domain.com.qwe/data.yaml}
+  - {source:    https://do-main.com/path/data.yaml}
+  - {source:    https://domain@/data.yaml}
+  - {source:    https://domain/base_path1@/data.yaml}
+  - {source:    https://domain/base/path2@/path/data.yaml#/sub/section2}
+  - {source:    git://domain/repo-path@/main^/data.yaml}
+  - {source:    git://do-main/repo-path@/commit/or/some-branch^/_path_/.to/.any--file.yaml-}
+  - {source:    git://do.ma-in.com/repo-path@/commit/or/some-branch^$path/part-or-just-filename.yaml}
   - {generics:  TODO}
 
 generics:       TODO
 
 io:
   A:
+    name:       TODO
     dir:        in
     side:       east
     color:      TODO
@@ -33,10 +53,13 @@ io:
 
 units:
   U1: {unit:    {}}
-  U2: {unit:    "<asd>"}
-  U3: {name:    "asd"}   # NOTE: Should fail with missing propety "unit"
-  U4: {}              # NOTE: Should fail with missing propety "unit"
-  U5:
+  U2: {unit:    <foo>}
+  U3: {unit:    \#/also-allowed-all-variants-of-source-field-value}
+  UX: {unit:    http://like/this}
+  UY: {unit:    git://and/that@/main^/path.yaml}
+  U4: {name:    "bar"}    # NOTE: Should fail with missing propety "unit"
+  U5: {}                  # NOTE: Should fail with missing propety "unit"
+  U6:
     unit:       {}
     name:       TODO
     generics:   TODO
