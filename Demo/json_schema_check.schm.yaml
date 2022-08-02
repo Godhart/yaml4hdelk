@@ -43,7 +43,7 @@ io:
     order:      TODO
     class:      TODO
     style:      TODO
-    connectedAsParrent: TODO
+    connectedAsParent: TODO
     layers:     TODO
     children:
       B: {dir:  out}
@@ -57,13 +57,14 @@ units:
   U3: {unit:    \#/also-allowed-all-variants-of-source-field-value}
   UX: {unit:    http://like/this}
   UY: {unit:    git://and/that@/main^/path.yaml}
-  U4: {name:    "bar"}    # NOTE: Should fail with missing propety "unit"
-  U5: {}                  # NOTE: Should fail with missing propety "unit"
+  U4: {name:    "bar"}    # NOTE: Should fail with missing property "unit"
+  U5: {}                  # NOTE: Should fail with missing property "unit"
   U6:
     unit:       {}
     name:       TODO
     generics:   TODO
-    nets:       TODO
+    nets:
+      - ["src", "dst", "-regex", "name:TODO"]
     operators:  TODO
     display:    TODO
     layers:     TODO
@@ -86,13 +87,13 @@ attributes:
   hideNC:       TODO
 
 nets:
-  - [TODO:src, TODO:dst, -regex, name:TODO]
-  - {src: A}  # NOTE: Should fail with missing propety "dst"
-  - {dst: B}  # NOTE: Should fail with missing propety "src"
+  - [TODO:src, TODO:dst, -regex, name:TODO] # TODO: validation not works for some reason
+  - {src: A}  # NOTE: Should fail with missing property "dst"
+  - {dst: B}  # NOTE: Should fail with missing property "src"
   - {src:       TODO, dst:  TODO}
-  - {srcr:      TODO, dstr: TODO}  # TODO: sould pass
-  - {src:       TODO, dstr: TODO}  # TODO: sould pass
-  - {srcr:      TODO, dst:  TODO}  # TODO: sould pass
+  - {srcr:      TODO, dstr: TODO}  # TODO: should pass
+  - {src:       TODO, dstr: TODO}  # TODO: should pass
+  - {srcr:      TODO, dst:  TODO}  # TODO: should pass
   - src:        TODO
     dst:        TODO
     name:       TODO
