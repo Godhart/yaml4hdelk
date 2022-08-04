@@ -88,20 +88,20 @@ attributes:
 
 nets:
   - [TODO:src, TODO:dst, -regex, name:TODO] # TODO: validation not works for some reason
-  - {src: A}  # NOTE: Should fail with missing property "dst"
-  - {dst: B}  # NOTE: Should fail with missing property "src"
-  - {src:       TODO, dst:  TODO}
-  - {srcr:      TODO, dstr: TODO}  # TODO: should pass
-  - {src:       TODO, dstr: TODO}  # TODO: should pass
-  - {srcr:      TODO, dst:  TODO}  # TODO: should pass
-  - src:        TODO
-    dst:        TODO
-    name:       TODO
-    text:       TODO
-    bus:        TODO
-    color:      TODO
-    highlight:  TODO
-    reverse:    TODO
+  - {src:       /A}  # NOTE: Should fail with missing property "dst"
+  - {dstr:      /B}  # NOTE: Should fail with missing property "srcr"
+  - {src:       /src, dst:  /dst}
+  - {srcr:      a regex would fit here, dstr: another regex}
+  - {src:       /src/unit, dstr: again regex}
+  - {srcr:      a regex too, dst:  /.top_pin}
+  - src:        /some_unit.pin
+    dst:        .local.pin
+    name:       custom net name (any string would do)
+    text:       TODO  # TODO: not supported yet by tool. ? intended to use for popup text / notes ?
+    bus:        0
+    color:      TODO  # TODO: not supported yet by tool.
+    highlight:  6
+    reverse:    true
     hide:       TODO
     show:       TODO
     class:      TODO
