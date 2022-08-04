@@ -243,7 +243,12 @@
             "description": "Net endpoints and net attributes",
             "type": "object",
             "additionalProperties": false,
-            "required": ["src", "dst"],
+            "anyOf": [
+                {"required": ["src", "dst"]},
+                {"required": ["srcr", "dstr"]},
+                {"required": ["src", "dstr"]},
+                {"required": ["srcr", "dst"]}
+                ],
             "properties": {
                 "source":   {
                     "title": "Source",
@@ -262,16 +267,16 @@
                     "description": "Specification is used only for referencing from other places",
                     "const": "TODO: boolean after it's implemented"
                 },
-                "src":      {"type":    "string", "pattern": "^(((/\\w+)+)|((/|((/\\w+)+))?((\\.w+)+)))$"},
-                "dst":      {"const":   "TODO"},
-                "srcr":     {"const":   "TODO"},
-                "dstr":     {"const":   "TODO"},
+                "src":      {"type":    "string", "pattern": "^(((/\\w+)+)|((/|((/\\w+)+))?((\\.\\w+)+)))$"},
+                "dst":      {"type":    "string", "pattern": "^(((/\\w+)+)|((/|((/\\w+)+))?((\\.\\w+)+)))$"},
+                "srcr":     {"type":    "string", "format": "regex"},
+                "dstr":     {"type":    "string", "format": "regex"},
                 "name":     {"type":    "string"},
                 "text":     {"const":   "TODO"},
-                "bus":      {"const":   "TODO"},
+                "bus":      {"type":    "integer", "minimum": 0},
                 "color":    {"const":   "TODO"},
-                "highlight":{"const":   "TODO"},
-                "reverse":  {"enum":    ["true"]},
+                "highlight":{"type":    "integer", "minimum": 0, "maximum": 6},
+                "reverse":  {"type":    "boolean"},
                 "hide":     {"const":   "TODO"},
                 "show":     {"const":   "TODO"},
                 "class":    {"const":   "TODO"},
