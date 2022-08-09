@@ -28,7 +28,8 @@
                 "virtual":  {
                     "title": "Virtual",
                     "description": "Specification is used only for referencing from other places",
-                    "const": "TODO: boolean after it's implemented"
+                    "comments": "NOTE: isn't implemented yet",
+                    "type":  "boolean"
                 },
                 "units":    {"$ref":    "#/$defs/unitsDict"},
                 "generics": {"const":   "TODO"},
@@ -94,7 +95,7 @@
                 "virtual":  {
                     "title": "Virtual",
                     "description": "Specification is used only for referencing from other places",
-                    "const": "TODO: boolean after it's implemented"
+                    "type":  "boolean"
                 },
                 "unit": {
                     "oneOf": [
@@ -166,20 +167,21 @@
                 "virtual":  {
                     "title": "Virtual",
                     "description": "Specification is used only for referencing from other places",
-                    "const": "TODO: boolean after it's implemented"
+                    "type":  "boolean"
                 },
-                "type":             {"const": "TODO"},
-                "d3hw_name":        {"const": "TODO"},
-                "kind":             {"const": "TODO"},
-                "color":            {"const": "TODO"},
-                "highlight":        {"const": "TODO"},
-                "text":             {"const": "TODO"},
+                "type":             {"type":  "string"},
+                "d3hw_name":        {"enum": ["","ADD","AND","CONCAT","DIV","EQ","FF","GE","GT","LATCHED_MUX","LE","LT","MUL","MUX","NAND","NE","NOR","NOT","NXOR","OR","SLICE","SUB","XOR"]},
+                "kind":             {"enum": ["","Operator"]},
+                "color":            {"type":  "string", "pattern": "^(white|black|red|green|blue|cyan|magenta|yellow|brown|orange|lightgreen|lightblue|lightyellow|purple|violet|(#([0-9a-fA-F]{3}){1,2}))$"},
+                "highlight":        {"type":  "integer", "minimum": 0, "maximum": 6},
+                "text":             {"type":  "string"},
                 "class":            {"const": "TODO"},
                 "style":            {"const": "TODO"},
                 "props":            {"const": "TODO"},
                 "hide":             {"const": "TODO"},
                 "show":             {"const": "TODO"},
-                "hideNC":           {"const": "TODO"}
+                "hideNC":           {"type":  "boolean"},
+                "layers":           {"const": "TODO"}
             }
         },
 
@@ -204,22 +206,33 @@
                 "virtual":  {
                     "title": "Virtual",
                     "description": "Specification is used only for referencing from other places",
-                    "const": "TODO: boolean after it's implemented"
+                    "type":  "boolean"
                 },
                 "name":     {"type": "string"},
                 "dir":      {"enum": ["in", "out"]},
                 "side":     {"enum": ["north", "south", "west", "east"]},
-                "color":    {"const": "TODO"},
-                "highlight":{"const": "TODO"},
-                "type":     {"const": "TODO"},
-                "bus":      {"const": "TODO"},
+                "color":    {"type":  "string", "pattern": "^(white|black|red|green|blue|cyan|magenta|yellow|brown|orange|lightgreen|lightblue|lightyellow|purple|violet|(#([0-9a-fA-F]{3}){1,2}))$"},
+                "highlight":{"type":  "integer", "minimum": 0, "maximum": 6},
+                "type":     {"type": "string", "pattern": "^\\w+$"},
+                "bus":      {"anyOf":[
+                            {"type":  "integer", "minimum": 0},
+                            {"type":  "string", "pattern": "^\\w+$"}
+                            ]},
+                "bus_left": {"anyOf": [
+                            {"type":  "integer", "minimum": 0},
+                            {"type":  "string", "pattern": "^\\w+$"}
+                            ]},
+                "bus_right": {"anyOf": [
+                            {"type":    "integer", "minimum": 0},
+                            {"type":    "string", "pattern": "^\\w+$"}
+                            ]},
                 "clk":      {"type": "boolean"},
                 "gate":     {"type": "boolean"},
                 "inv":      {"type": "boolean"},
                 "hide":     {"const": "TODO"},
                 "show":     {"const": "TODO"},
-                "autohide": {"const": "TODO"},
-                "order":    {"const": "TODO"},
+                "autohide": {"type":  "boolean"},
+                "order":    {"type":  "integer"},
                 "class":    {"const": "TODO"},
                 "style":    {"const": "TODO"},
                 "connectedAsParent": {"const": "TODO"},
@@ -244,9 +257,9 @@
             "type": "object",
             "additionalProperties": false,
             "anyOf": [
-                {"required": ["src", "dst"]},
+                {"required": ["src",  "dst"]},
                 {"required": ["srcr", "dstr"]},
-                {"required": ["src", "dstr"]},
+                {"required": ["src",  "dstr"]},
                 {"required": ["srcr", "dst"]}
                 ],
             "properties": {
@@ -265,16 +278,27 @@
                 "virtual":  {
                     "title": "Virtual",
                     "description": "Specification is used only for referencing from other places",
-                    "const": "TODO: boolean after it's implemented"
+                    "type":  "boolean"
                 },
                 "src":      {"type":    "string", "pattern": "^(((/\\w+)+)|((/|((/\\w+)+))?((\\.\\w+)+)))$"},
                 "dst":      {"type":    "string", "pattern": "^(((/\\w+)+)|((/|((/\\w+)+))?((\\.\\w+)+)))$"},
                 "srcr":     {"type":    "string", "format": "regex"},
                 "dstr":     {"type":    "string", "format": "regex"},
                 "name":     {"type":    "string"},
-                "text":     {"const":   "TODO"},
-                "bus":      {"type":    "integer", "minimum": 0},
-                "color":    {"const":   "TODO"},
+                "text":     {"type":    "string"},
+                "bus":      {"anyOf":[
+                            {"type":  "integer", "minimum": 0},
+                            {"type":  "string", "pattern": "^\\w+$"}
+                            ]},
+                "bus_left": {"anyOf": [
+                            {"type":  "integer", "minimum": 0},
+                            {"type":  "string", "pattern": "^\\w+$"}
+                            ]},
+                "bus_right": {"anyOf": [
+                            {"type":    "integer", "minimum": 0},
+                            {"type":    "string", "pattern": "^\\w+$"}
+                            ]},
+                "color":    {"type":    "string", "pattern": "^(white|black|red|green|blue|cyan|magenta|yellow|brown|orange|lightgreen|lightblue|lightyellow|purple|violet|(#([0-9a-fA-F]{3}){1,2}))$"},
                 "highlight":{"type":    "integer", "minimum": 0, "maximum": 6},
                 "reverse":  {"type":    "boolean"},
                 "hide":     {"const":   "TODO"},

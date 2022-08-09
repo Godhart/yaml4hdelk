@@ -11,14 +11,14 @@ merge:
   - {source:    .hidden-file.yaml#/subsection1}
   - {source:    ./../../.hidden-folder/data.yaml}
   - {source:    $path/part-or-just-filename.yaml}
-  - {source:    \#/section-within-this-file }
+  - {source:    \#/section-within-this-file }             # TODO: subsections aren't supported yet by tool
   - {source:    \#/sub/section/within-this-file }
-  - {source:    http://domain.com.qwe/data.yaml}
+  - {source:    http://domain.com.qwe/data.yaml}          # TODO: http isn't supported yet by tool
   - {source:    https://do-main.com/path/data.yaml}
   - {source:    https://domain@/data.yaml}
   - {source:    https://domain/base_path1@/data.yaml}
   - {source:    https://domain/base/path2@/path/data.yaml#/sub/section2}
-  - {source:    git://domain/repo-path@/main^/data.yaml}
+  - {source:    git://domain/repo-path@/main^/data.yaml}  # TODO: git isn't supported yet by tool yet
   - {source:    git://do-main/repo-path@/commit/or/some-branch^/_path_/.to/.any--file.yaml-}
   - {source:    git://do.ma-in.com/repo-path@/commit/or/some-branch^$path/part-or-just-filename.yaml}
   - {generics:  TODO}
@@ -27,20 +27,23 @@ generics:       TODO
 
 io:
   A:
-    name:       TODO
+    virtual:    False     # TODO: if True then it's unit definition for referencing purposes only (by source), not a real instance
+    name:       any string would do
     dir:        in
     side:       east
-    color:      TODO
-    highlight:  TODO
-    type:       TODO
-    bus:        TODO
-    clk:        false
-    gate:       false
-    inv:        true
+    color:      "#ABC"    # TODO: not supported yet by tool. Would be translated into class/style or something relevant and translated onto nets
+    highlight:  1         # TODO: Would be translated into class/style or something relevant and translated onto nets
+    type:       some_type # TODO: not supported yet by tool. Defines signal type (signal, ground, power, std_logic, lvcmos, etc). Should be used for DRC checks
+    bus:        8         # TODO: not supported yet by tool. Should be translated onto nets
+    bus_left:   7         # TODO: not supported yet by tool: index/mnemonic of leftmost item. Would be included into name suffix if specified
+    bus_right:  word      # TODO: not supported yet by tool: index/mnemonic of rightmost item. Would be included into name suffix if specified
+    clk:        False
+    gate:       False
+    inv:        True
     hide:       TODO
     show:       TODO
-    autohide:   TODO
-    order:      TODO
+    autohide:   True
+    order:      0
     class:      TODO
     style:      TODO
     connectedAsParent: TODO
@@ -61,7 +64,7 @@ units:
   U5: {}                  # NOTE: Should fail with missing property "unit"
   U6:
     unit:       {}
-    name:       TODO
+    name:       any string would do
     generics:   TODO
     nets:
       - ["src", "dst", "-regex", "name:TODO"]
@@ -73,35 +76,40 @@ units:
 display:        TODO
 
 attributes:
-  type:         TODO
-  d3hw_name:    TODO
-  kind:         TODO
-  color:        TODO
-  highlight:    TODO
-  text:         TODO
+  virtual:      False
+  type:         word or few  # This is used as part name in PCB designs
+  d3hw_name:    ADD
+  kind:         Operator
+  color:        "#0fF9aA"  #also red green blue etc
+  highlight:    0
+  text:         any string would do
   class:        TODO
   style:        TODO
   props:        TODO
   hide:         TODO
   show:         TODO
-  hideNC:       TODO
+  hideNC:       True
+  layers:       TODO
 
 nets:
   - [TODO:src, TODO:dst, -regex, name:TODO] # TODO: validation not works for some reason
-  - {src:       /A}  # NOTE: Should fail with missing property "dst"
-  - {dstr:      /B}  # NOTE: Should fail with missing property "srcr"
+  - {src:       /A}   # NOTE: Should fail with missing property "dst"
+  - {dstr:      /B}   # NOTE: Should fail with missing property "srcr"
   - {src:       /src, dst:  /dst}
   - {srcr:      a regex would fit here, dstr: another regex}
   - {src:       /src/unit, dstr: again regex}
   - {srcr:      a regex too, dst:  /.top_pin}
-  - src:        /some_unit.pin
+  - virtual:    False
+    src:        /some_unit.pin
     dst:        .local.pin
     name:       custom net name (any string would do)
     text:       TODO  # TODO: not supported yet by tool. ? intended to use for popup text / notes ?
     bus:        0
-    color:      TODO  # TODO: not supported yet by tool.
+    bus_left:   7     # TODO: not supported yet by tool: index/mnemonic of leftmost item. Would be included into name suffix if specified
+    bus_right:  word  # TODO: not supported yet by tool: index/mnemonic of rightmost item. Would be included into name suffix if specified
+    color:      red   # TODO: not supported yet by tool. Would be translated into class/style or something relevant
     highlight:  6
-    reverse:    true
+    reverse:    True
     hide:       TODO
     show:       TODO
     class:      TODO
