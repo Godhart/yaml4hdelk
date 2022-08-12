@@ -454,6 +454,13 @@ def css(path):
     return static_file(path, root="Demo/html/css")
 
 
+@app.route('/monaco/<path:path>')
+def monaco(path):
+    """ Static TTF Files """
+
+    return static_file(path, root="Demo/html/monaco")
+
+
 if __name__ == "__main__":
     host = os.environ.get("SERVER_HOST", "localhost")
     port = os.environ.get("SERVER_PORT", 8083)
