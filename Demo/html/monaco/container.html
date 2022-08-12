@@ -102,6 +102,7 @@
             display: flex;
             justify-content: center;
         }
+
         .editor {
             height: 100%;
             width: 100%;
@@ -116,7 +117,7 @@
 
 <body>
     <script>
-        let iframe_domain = "http://127.0.0.1:8089";
+        const iframe_domain = "http://127.0.0.1:8089";  // TODO: It's UGLY, do better
 
         function iframe_call(iframe_id, data, origin) {
             iframe_obj = document.getElementById(iframe_id).contentWindow;
@@ -142,27 +143,67 @@
                 this.editorCreated = true;
                 console.log("Container: editor creation confirmed!");
 
-                iframe_call("editor", {
-                    "obj": "worker",
-                    "method": "contextAdd",
-                    "args": ["hello.yaml", "hello: world!"]
-                }, this.editorDomain);
+                let filesCount = 0;
+                let lastFile = '';
+                for (const [key, value] of Object.entries(localData.localChanges)) {
+                    iframe_call("editor", {
+                        "obj": "worker",
+                        "method": "contextAdd",
+                        "args": [key, value.currentValue]
+                    }, this.editorDomain);
+                    filesCount += 1;
+                    lastFile = key;
+                }
 
-                iframe_call("editor", {
-                    "obj": "worker",
-                    "method": "contextSwitch",
-                    "args": ["hello.yaml"]
-                }, this.editorDomain);
+                if (localData.localChanges[localData.lastActiveFile] !== undefined) {
+                    lastFile = localData.lastActiveFile;
+                }
+                if (lastFile !== "") {
+                    iframe_call("editor", {
+                        "obj": "worker",
+                        "method": "contextSwitch",
+                        "args": [lastFile]
+                    }, this.editorDomain);
+                }
 
                 iframe_call("editor", {
                     "obj": "settings",
                     "method": "onChangeListenerSet",
                     "args": ["controller"]
                 }, this.editorDomain);
+
+                if (filesCount === 0) {
+                    iframe_call("editor", {
+                        "obj": "worker",
+                        "method": "contextAdd",
+                        "args": ["hello.yaml", "hello: yaml4schm!"]
+                    }, this.editorDomain);
+
+                    iframe_call("editor", {
+                        "obj": "worker",
+                        "method": "contextSwitch",
+                        "args": ["hello.yaml"]
+                    }, this.editorDomain);
+
+                    localData.lastActiveFileSet('hello.yaml');
+
+                    iframe_call("editor", {
+                        "obj": "worker",
+                        "method": "contextDump",
+                        "args": [],
+                        "callback": {
+                            "func": "call",
+                            "obj": "localData",
+                            "method": "updateAll",
+                        }
+                    }, this.editorDomain);
+                }
             }
 
-            onEditorChange() {
-                // TODO: schedule update
+            onEditorChange(filePath) {
+                localData.lastActiveFileSet(filePath)
+                // TODO: schedule update after some time
+                // TODO: update preview
                 iframe_call("editor", {
                     "obj": "worker",
                     "method": "contextDump",
@@ -176,22 +217,11 @@
             }
 
             onErrorsChange(info) {
-                // TODO: update local data information
-                console.log(info);
+                localData.updateErrors(info)
             }
         }
 
         const controller = new Controller();
-
-        class LocalData {
-            files = {}
-            updateAll(data) {
-                // TODO: set value, not whole thing
-                this.files = data;
-                console.log(JSON.stringify(this.files));
-            }
-        }
-        const localData = new LocalData();
 
         window.addEventListener('message', (event) => {
             console.log("Container received message: " + JSON.stringify(event), "\n origin - " + JSON.stringify(event.origin), "\n data   - " + JSON.stringify(event.data));
@@ -221,7 +251,7 @@
                     if (obj[event.data.method] !== undefined) {
                         const result = obj[event.data.method](...event.data.args);
                         if (event.data.callback !== undefined) {
-                            let callback = event.data.callback;
+                            const callback = event.data.callback;
                             // TODO: window.parent.postMessage({
                             //     'func': callback.func,
                             //     'obj': callback.obj,
@@ -236,6 +266,69 @@
                 }
             }
         });
+
+    </script>
+
+    <script>
+        class FileData {
+            problemsEditor = 0
+            problemsRemote = 0
+            stateInitial = null
+            currentValue = ""
+        }
+
+        class LocalData {
+            localChanges = {}
+            lastActiveFile = ''
+
+            constructor() {
+                const storedChanges = localStorage.getItem('localChanges');
+                if (storedChanges) {
+                    console.log("Loading stored changes:" + storedChanges);
+                    this.localChanges = {};
+                    const data = JSON.parse(storedChanges);
+                    for (const [key, value] of Object.entries(data)) {
+                        this.localChanges[key] = Object.assign(new FileData(), value);
+                    }
+                }
+                const activeFile = localStorage.getItem('activeFile');
+                if (activeFile) {
+                    this.lastActiveFile = activeFile;
+                }
+            }
+
+            lastActiveFileSet(value) {
+                if (this.localChanges[value] !== undefined) {
+                    this.lastActiveFile = value;
+                    localStorage.setItem('activeFile', this.lastActiveFile);
+                    console.log(this.lastActiveFile);
+                }
+            }
+
+            updateAll(data) {
+                for (const [key, value] of Object.entries(data)) {
+                    if (this.localChanges[key] === undefined) {
+                        this.localChanges[key] = new FileData();
+                    }
+                    this.localChanges[key].currentValue = value;
+                    localStorage.setItem('localChanges', JSON.stringify(this.localChanges));
+                }
+                // TODO: cleanup localChanges that are not in data?
+                console.log(JSON.stringify(this.localChanges));
+            }
+
+            updateErrors(data) {
+                const filePath = data.path.substring(1);
+                if (this.localChanges[filePath] !== undefined) {
+                    this.localChanges[filePath].problemsEditor = data.problemsCount;
+                    localStorage.setItem('localChanges', JSON.stringify(this.localChanges));
+                    console.log(JSON.stringify(this.localChanges));
+                }
+            }
+
+        }
+
+        const localData = new LocalData();
 
     </script>
 
