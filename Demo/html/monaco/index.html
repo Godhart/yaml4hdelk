@@ -1,0 +1,59 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="icon" type="image/svg+xml" href="aaac092d09e0a367c407.svg"/><title>Monaco YAML4SCHM Editor Frame</title><meta name="description" content="Monaco editor with support of YAML4SCHM"/><meta name="theme-color" content="#42e3ff"/><meta name="viewport" content="width=device-width,initial-scale=1"><script defer="defer" src="4154d1fcd0b1e1383799.js"></script><link href="e1182fd3eae5e7486586.css" rel="stylesheet"></head><body><main><select id="schema-selection"><option value="schm.yaml">YAML4SCHM</option></select><div id="breadcrumbs"></div><div id="editor"></div><div id="problems"></div></main><script>window.addEventListener('message', (event) => {
+      console.log("Editor received message: " + JSON.stringify(event), "\n origin - " + JSON.stringify(event.origin), "\n data   - " + JSON.stringify(event.data));
+
+      /* TODO: if (event.origin !== my_domain) {
+        return null;
+      } */
+      if (event.data.func === 'call') {
+        if (event.data.obj === undefined) {
+          return null;
+        }
+        if (event.data.method === undefined) {
+          return null;
+        }
+        if (event.data.args === undefined) {
+          return null;
+        }
+        if (event.data.obj !== undefined)
+        {
+          let obj = null;
+          if (event.data.obj === 'worker') {
+            obj = document.worker;
+          } else if (event.data.obj === 'settings') {
+            obj = document.settings;
+          }
+          if (obj == null) {
+            return null;
+          }
+          if (obj[event.data.method] !== undefined) {
+            const result = obj[event.data.method](...event.data.args);
+            if (event.data.callback !== undefined) {
+              let callback = event.data.callback;
+              window.parent.postMessage({
+                'func': callback.func,
+                'obj': callback.obj,
+                'method': callback.method,
+                'args': [result],
+                'callback': undefined,
+              }, callback.origin);
+            }
+          }
+        } else {
+          return null;
+        }
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.parent ===undefined || window.parent == null) {
+        return null;
+      }
+      console.log("Editor frame loaded");
+      window.parent.postMessage({
+        'func': 'call',
+        'obj': 'controller',
+        'method': 'onEditorCreated',
+        'args': [],
+        'callback': undefined
+      }, '*')
+    });</script></body></html>

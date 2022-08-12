@@ -1,0 +1,311 @@
+{
+  "$ref": "#/$defs/unitSpec",
+  "$id": "./yaml4schm.json",
+  "$comments": "VSCode: apply for '*.schm.yaml' using this guide https://dev.to/brpaz/how-to-create-your-own-auto-completion-for-json-and-yaml-files-on-vs-code-with-the-help-of-json-schema-k1i",
+  "title": "Unit",
+  "description": "Schematics description in YAML format for unit",
+
+  "$defs": {
+      "unitSpec": {
+          "title": "Unit Specification",
+          "description": "Contains unit specification:\n\n  - declaration of IO,\n  - declaration of unit's generics,\n  - unit's attributes defaults,\n  - description of unit's schematic",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "source":   {
+                  "title": "Source",
+                  "description": "Path to external file with unit specification.\nPath may be specified as:\n\n  - locally referenced path,\n  - absolute path (in respect to common base path),\n  - http reference,\n  - git reference (see docs for details).\n\nA part of file can be used if specified so (extra path after # (hash) sign, similar to JSON-Schema).\nLoaded data should be a dictionary.\nItems from loaded data would override items that were declared ABOVE (items that are not in loaded data would be kept).\nLoaded data can be altered then with declarations BELOW.",
+                  "type": "string",
+                  "pattern": "^((/|\\$|((\\.\\.?/)(\\.\\./)*)|(https?://\\w([.-]?\\w)*((/(\\w(-?\\w)*/)*(\\w(-?\\w)*))?@/)?)|(git://\\w([.-]?\\w)*/(\\w(-?\\w)*/)*(\\w(-?\\w)*@/)(\\w(-?\\w)*/)*(\\w(-?\\w)*\\^)(\\$|/)))?([\\w.-]*[\\w-]/)*([\\w.-]*[\\w-])(#(/\\w([\\w.-]*\\w)*)+)?)|(#(/\\w([\\w.-]*\\w)*)+)$"
+              },
+              "merge":    {
+                  "title": "Merge",
+                  "description": "List with unit specifications, that would be merged with items, declared ABOVE:\n  - dictionaries are mixed recursively (existing items are replaced),\n  - lists are joined,\n  - scalars simply replaced,\n  - items with null/None value would delete existing items.\n\nSince specification allows 'source' - data for merge may be loaded from external file.",
+                  "type":    "array",
+                  "items": {"$ref": "#/$defs/unitSpec"}
+              },
+              "virtual":  {
+                  "title": "Virtual",
+                  "description": "Specification is used only for referencing from other places",
+                  "comments": "NOTE: isn't implemented yet",
+                  "type":  "boolean"
+              },
+              "units":    {"$ref":    "#/$defs/unitsDict"},
+              "generics": {"const":   "TODO"},
+              "io":       {"$ref":    "#/$defs/ioDict"},
+              "display":  {"const":   "TODO"},
+              "attributes": {"$ref":  "#/$defs/unitAttr"},
+              "nets":     {
+                  "title": "Nets",
+                  "description": "Description of connections within this very unit",
+                  "type":    "array",
+                  "items": {
+                      "oneOf": [
+                          {   "$ref":     "#/$defs/netSpec"},
+                          {
+                              "title":    "Net Specification",
+                              "description": "Net specification in form of list of strings.\nFirst two items are source and destination endpoints, following list items are net attributes and regex toggler.",
+                              "type":     "array",
+                              "prefixItems": [
+                                  { "const":  "TODO:src" },
+                                  { "const":  "TODO:dst" }
+                              ],
+                              "additionalItems": {
+                                  "title": "Net attributes",
+                                  "description": "Attributes of net specified as string, or regex toggler.\nAttributes are specified using following pattern: 'attr_name:attr_value', for example 'name:clk'.\nIf '-regex' within attributes then src and dst are treated as regexes.",
+                                  "type": "string",
+                                  "pattern": "^((-regex)|(name:TODO)|(text:TODO)|(bus:TODO)|(color:TODO)|(highlight:TODO)|(reverse:TODO)|(hide:TODO)|(show:TODO)|(class:TODO)|(style:TODO)|(layers:TODO))$"
+                              }
+                          }
+                      ]
+                  }
+              },
+              "operators":{"const":   "TODO"}
+          }
+      },
+      "unitsDict": {
+          "title": "Nested units",
+          "description": "Dictionary with specifications for nested units instances.\nKey is unit's instance reference name, that would be used in nets, operators and other references.\nValue should be an unit's instance specification.",
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+              "^\\w+$":   { "$ref": "#/$defs/unitInst" }
+          }
+      },
+      "unitInst": {
+          "title": "Unit's Instance Specification",
+          "description": "Contains:\n\n  - values for unit's generics,\n  - locally referred connections and operators,\n  - display specification,\n  - attributes overrides",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["unit"],
+          "properties": {
+              "source":   {
+                  "title": "Source",
+                  "description": "Path to external file with unit's instance specification.\nPath may be specified as:\n\n  - locally referenced path,\n  - absolute path (in respect to common base path),\n  - http reference,\n  - git reference (see docs for details).\n\nA part of file can be used if specified so (extra path after # (hash) sign, similar to JSON-Schema).\nLoaded data should be a dictionary.\nItems from loaded data would override items that were declared ABOVE (items that are not in loaded data would be kept).\nLoaded data can be altered then with declarations BELOW.",
+                  "type":  "string",
+                  "pattern": "^((/|\\$|((\\.\\.?/)(\\.\\./)*)|(https?://\\w([.-]?\\w)*((/(\\w(-?\\w)*/)*(\\w(-?\\w)*))?@/)?)|(git://\\w([.-]?\\w)*/(\\w(-?\\w)*/)*(\\w(-?\\w)*@/)(\\w(-?\\w)*/)*(\\w(-?\\w)*\\^)(\\$|/)))?([\\w.-]*[\\w-]/)*([\\w.-]*[\\w-])(#(/\\w([\\w.-]*\\w)*)+)?)|(#(/\\w([\\w.-]*\\w)*)+)$"
+              },
+              "merge":    {
+                  "title": "Merge",
+                  "description": "List with unit's instance specifications, that would be merged with items, declared ABOVE:\n  - dictionaries are mixed recursively (existing items are replaced),\n  - lists are joined,\n  - scalars simply replaced,\n  - items with null/None value would delete existing items.\n\nSince specification allows 'source' - data for merge may be loaded from external file.",
+                  "type":  "array",
+                  "items": {"$ref": "#/$defs/unitInst"}
+              },
+              "virtual":  {
+                  "title": "Virtual",
+                  "description": "Specification is used only for referencing from other places",
+                  "type":  "boolean"
+              },
+              "unit": {
+                  "oneOf": [
+                      {
+                          "title": "Symbolic Reference to Unit Specification",
+                          "description": "Reference for Unit Specification lookup in external files.\n\nSpecified as:\n  - path (same rules as for 'source' field),\n  - just a filename without extension within angle braces (i.e. <>)",
+                          "type": "string",
+                          "pattern": "^((#(/\\w([\\w.-]*\\w)*)+))|(<\\w+>)|((/|\\$|((\\.\\.?/)(\\.\\./)*)|(https?://\\w([.-]?\\w)*((/(\\w(-?\\w)*/)*(\\w(-?\\w)*))?@/)?)|(git://\\w([.-]?\\w)*/(\\w(-?\\w)*/)*(\\w(-?\\w)*@/)(\\w(-?\\w)*/)*(\\w(-?\\w)*\\^)(\\$|/)))?([\\w.-]*[\\w-]/)*([\\w.-]*[\\w-])(#(/\\w([\\w.-]*\\w)*)+)?)$"
+                      },
+                      {"$ref": "#/$defs/unitSpec"}
+                  ]
+              },
+              "name":     {
+                  "title": "Name",
+                  "description": "Name (label) that would be displayed.\nIf omitted then unit's reference name would be used",
+                  "type": "string"
+              },
+              "generics": {"const": "TODO"},
+              "nets":     {
+                  "title": "Nets",
+                  "description": "Description of nets, connected to this unit",
+                  "type":    "array",
+                  "items": {
+                      "oneOf": [
+                          {   "$ref":     "#/$defs/netSpec"},
+                          {
+                              "title":    "Net Specification",
+                              "description": "Net specification in form of list of strings.\nFirst two items are source and destination endpoints, following list items are net attributes and regex toggler.",
+                              "type":     "array",
+                              "prefixItems": [
+                                  { "const":  "TODO:src" },
+                                  { "const":  "TODO:dst" }
+                              ],
+                              "additionalItems": {
+                                  "title": "Net attributes",
+                                  "description": "Attributes of net specified as string, or regex toggler.\nAttributes are specified using following pattern: 'attr_name:attr_value', for example 'name:clk'.\nIf '-regex' within attributes then src and dst are treated as regexes.",
+                                  "type": "string",
+                                  "pattern": "^((-regex)|(name:TODO)|(text:TODO)|(bus:TODO)|(color:TODO)|(highlight:TODO)|(reverse:TODO)|(hide:TODO)|(show:TODO)|(class:TODO)|(style:TODO)|(layers:TODO))$"
+                              }
+                          }
+                      ]
+                  }
+              },
+              "operators":{"const": "TODO"},
+              "display":  {"const": "TODO"},
+              "layers":   {"const": "TODO"},
+              "all_the_attributes": {"const": "TODO"}
+          }
+      },
+
+      "unitAttr": {
+          "title": "Unit's Attributes Specification",
+          "description": "Contains default values for unit's attributes",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "source":   {
+                  "title": "Source",
+                  "description": "Path to external file with attributes specification.\nPath may be specified as:\n\n  - locally referenced path,\n  - absolute path (in respect to common base path),\n  - http reference,\n  - git reference (see docs for details).\n\nA part of file can be used if specified so (extra path after # (hash) sign, similar to JSON-Schema).\nLoaded data should be a dictionary.\nItems from loaded data would override items that were declared ABOVE (items that are not in loaded data would be kept).\nLoaded data can be altered then with declarations BELOW.",
+                  "type": "string",
+                  "pattern": "^((/|\\$|((\\.\\.?/)(\\.\\./)*)|(https?://\\w([.-]?\\w)*((/(\\w(-?\\w)*/)*(\\w(-?\\w)*))?@/)?)|(git://\\w([.-]?\\w)*/(\\w(-?\\w)*/)*(\\w(-?\\w)*@/)(\\w(-?\\w)*/)*(\\w(-?\\w)*\\^)(\\$|/)))?([\\w.-]*[\\w-]/)*([\\w.-]*[\\w-])(#(/\\w([\\w.-]*\\w)*)+)?)|(#(/\\w([\\w.-]*\\w)*)+)$"
+              },
+              "merge":    {
+                  "title": "Merge",
+                  "description": "List with attributes specifications, that would be merged with items, declared ABOVE:\n  - dictionaries are mixed recursively (existing items are replaced),\n  - lists are joined,\n  - scalars simply replaced,\n  - items with null/None value would delete existing items.\n\nSince specification allows 'source' - data for merge may be loaded from external file.",
+                  "type":    "array",
+                  "items": {"$ref": "#/$defs/unitAttr"}
+              },
+              "virtual":  {
+                  "title": "Virtual",
+                  "description": "Specification is used only for referencing from other places",
+                  "type":  "boolean"
+              },
+              "type":             {"type":  "string"},
+              "d3hw_name":        {"enum": ["","ADD","AND","CONCAT","DIV","EQ","FF","GE","GT","LATCHED_MUX","LE","LT","MUL","MUX","NAND","NE","NOR","NOT","NXOR","OR","SLICE","SUB","XOR"]},
+              "kind":             {"enum": ["","Operator"]},
+              "color":            {"type":  "string", "pattern": "^(white|black|red|green|blue|cyan|magenta|yellow|brown|orange|lightgreen|lightblue|lightyellow|purple|violet|(#([0-9a-fA-F]{3}){1,2}))$"},
+              "highlight":        {"type":  "integer", "minimum": 0, "maximum": 6},
+              "text":             {"type":  "string"},
+              "class":            {"const": "TODO"},
+              "style":            {"const": "TODO"},
+              "props":            {"const": "TODO"},
+              "hide":             {"const": "TODO"},
+              "show":             {"const": "TODO"},
+              "hideNC":           {"type":  "boolean"},
+              "layers":           {"const": "TODO"}
+          }
+      },
+
+      "ioSpec": {
+          "title": "IO Pin Specification",
+          "description": "IO display attributes",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "source":   {
+                  "title": "Source",
+                  "description": "Path to external file with IO specification.\nPath may be specified as:\n\n  - locally referenced path,\n  - absolute path (in respect to common base path),\n  - http reference,\n  - git reference (see docs for details).\n\nA part of file can be used if specified so (extra path after # (hash) sign, similar to JSON-Schema).\nLoaded data should be a dictionary.\nItems from loaded data would override items that were declared ABOVE (items that are not in loaded data would be kept).\nLoaded data can be altered then with declarations BELOW.",
+                  "type": "string",
+                  "pattern": "^((/|\\$|((\\.\\.?/)(\\.\\./)*)|(https?://\\w([.-]?\\w)*((/(\\w(-?\\w)*/)*(\\w(-?\\w)*))?@/)?)|(git://\\w([.-]?\\w)*/(\\w(-?\\w)*/)*(\\w(-?\\w)*@/)(\\w(-?\\w)*/)*(\\w(-?\\w)*\\^)(\\$|/)))?([\\w.-]*[\\w-]/)*([\\w.-]*[\\w-])(#(/\\w([\\w.-]*\\w)*)+)?)|(#(/\\w([\\w.-]*\\w)*)+)$"
+              },
+              "merge":    {
+                  "title": "Merge",
+                  "description": "List with IO specifications, that would be merged with items, declared ABOVE:\n  - dictionaries are mixed recursively (existing items are replaced),\n  - lists are joined,\n  - scalars simply replaced,\n  - items with null/None value would delete existing items.\n\nSince specification allows 'source' - data for merge may be loaded from external file.",
+                  "type":    "array",
+                  "items": {"$ref": "#/$defs/ioSpec"}
+              },
+              "virtual":  {
+                  "title": "Virtual",
+                  "description": "Specification is used only for referencing from other places",
+                  "type":  "boolean"
+              },
+              "name":     {"type": "string"},
+              "dir":      {"enum": ["in", "out"]},
+              "side":     {"enum": ["north", "south", "west", "east"]},
+              "color":    {"type":  "string", "pattern": "^(white|black|red|green|blue|cyan|magenta|yellow|brown|orange|lightgreen|lightblue|lightyellow|purple|violet|(#([0-9a-fA-F]{3}){1,2}))$"},
+              "highlight":{"type":  "integer", "minimum": 0, "maximum": 6},
+              "type":     {"type": "string", "pattern": "^\\w+$"},
+              "bus":      {"anyOf":[
+                          {"type":  "integer", "minimum": 0},
+                          {"type":  "string", "pattern": "^\\w+$"}
+                          ]},
+              "bus_left": {"anyOf": [
+                          {"type":  "integer", "minimum": 0},
+                          {"type":  "string", "pattern": "^\\w+$"}
+                          ]},
+              "bus_right": {"anyOf": [
+                          {"type":    "integer", "minimum": 0},
+                          {"type":    "string", "pattern": "^\\w+$"}
+                          ]},
+              "clk":      {"type": "boolean"},
+              "gate":     {"type": "boolean"},
+              "inv":      {"type": "boolean"},
+              "hide":     {"const": "TODO"},
+              "show":     {"const": "TODO"},
+              "autohide": {"type":  "boolean"},
+              "order":    {"type":  "integer"},
+              "class":    {"const": "TODO"},
+              "style":    {"const": "TODO"},
+              "connectedAsParent": {"const": "TODO"},
+              "layers":   {"const": "TODO"},
+              "children": {"$ref": "#/$defs/ioDict"}
+          }
+      },
+
+      "ioDict": {
+          "title": "IO subgroup",
+          "description": "Used when multiple IO's are grouped into single IO group. Dictionary with specifications for each IO of a group.\nKey is IO reference sub name. Subname would be joined with group's name via '.' (dot) and joined name would be used in nets, operators and other references.\nValue should be an IO specification.",
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+              "^\\w+$": {"$ref": "#/$defs/ioSpec"}
+          }
+      },
+
+      "netSpec": {
+          "title": "Net Specification",
+          "description": "Net endpoints and net attributes",
+          "type": "object",
+          "additionalProperties": false,
+          "anyOf": [
+              {"required": ["src",  "dst"]},
+              {"required": ["srcr", "dstr"]},
+              {"required": ["src",  "dstr"]},
+              {"required": ["srcr", "dst"]}
+              ],
+          "properties": {
+              "source":   {
+                  "title": "Source",
+                  "description": "Path to external file with net specification.\nPath may be specified as:\n\n  - locally referenced path,\n  - absolute path (in respect to common base path),\n  - http reference,\n  - git reference (see docs for details).\n\nA part of file can be used if specified so (extra path after # (hash) sign, similar to JSON-Schema).\nLoaded data should be a dictionary.\nItems from loaded data would override items that were declared ABOVE (items that are not in loaded data would be kept).\nLoaded data can be altered then with declarations BELOW.",
+                  "type": "string",
+                  "pattern": "^((/|\\$|((\\.\\.?/)(\\.\\./)*)|(https?://\\w([.-]?\\w)*((/(\\w(-?\\w)*/)*(\\w(-?\\w)*))?@/)?)|(git://\\w([.-]?\\w)*/(\\w(-?\\w)*/)*(\\w(-?\\w)*@/)(\\w(-?\\w)*/)*(\\w(-?\\w)*\\^)(\\$|/)))?([\\w.-]*[\\w-]/)*([\\w.-]*[\\w-])(#(/\\w([\\w.-]*\\w)*)+)?)|(#(/\\w([\\w.-]*\\w)*)+)$"
+              },
+              "merge":    {
+                  "title": "Merge",
+                  "description": "List with net specifications, that would be merged with items, declared ABOVE:\n  - dictionaries are mixed recursively (existing items are replaced),\n  - lists are joined,\n  - scalars simply replaced,\n  - items with null/None value would delete existing items.\n\nSince specification allows 'source' - data for merge may be loaded from external file.",
+                  "type":    "array",
+                  "items": {"$ref": "#/$defs/netSpec"}
+              },
+              "virtual":  {
+                  "title": "Virtual",
+                  "description": "Specification is used only for referencing from other places",
+                  "type":  "boolean"
+              },
+              "src":      {"type":    "string", "pattern": "^(((/\\w+)+)|((/|((/\\w+)+))?((\\.\\w+)+)))$"},
+              "dst":      {"type":    "string", "pattern": "^(((/\\w+)+)|((/|((/\\w+)+))?((\\.\\w+)+)))$"},
+              "srcr":     {"type":    "string", "format": "regex"},
+              "dstr":     {"type":    "string", "format": "regex"},
+              "name":     {"type":    "string"},
+              "text":     {"type":    "string"},
+              "bus":      {"anyOf":[
+                          {"type":  "integer", "minimum": 0},
+                          {"type":  "string", "pattern": "^\\w+$"}
+                          ]},
+              "bus_left": {"anyOf": [
+                          {"type":  "integer", "minimum": 0},
+                          {"type":  "string", "pattern": "^\\w+$"}
+                          ]},
+              "bus_right": {"anyOf": [
+                          {"type":    "integer", "minimum": 0},
+                          {"type":    "string", "pattern": "^\\w+$"}
+                          ]},
+              "color":    {"type":    "string", "pattern": "^(white|black|red|green|blue|cyan|magenta|yellow|brown|orange|lightgreen|lightblue|lightyellow|purple|violet|(#([0-9a-fA-F]{3}){1,2}))$"},
+              "highlight":{"type":    "integer", "minimum": 0, "maximum": 6},
+              "reverse":  {"type":    "boolean"},
+              "hide":     {"const":   "TODO"},
+              "show":     {"const":   "TODO"},
+              "class":    {"const":   "TODO"},
+              "style":    {"const":   "TODO"},
+              "layers":   {"const":   "TODO"}
+          }
+      }
+  }
+}
