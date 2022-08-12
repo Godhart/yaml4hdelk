@@ -270,6 +270,11 @@
     </script>
 
     <script>
+        const co = {
+            'localChanges': 'yaml4schm-monaco-localChanges',
+            'activeFile': 'yaml4schm-monaco-activeFile',
+        }
+
         class FileData {
             problemsEditor = 0
             problemsRemote = 0
@@ -282,7 +287,7 @@
             lastActiveFile = ''
 
             constructor() {
-                const storedChanges = localStorage.getItem('localChanges');
+                const storedChanges = localStorage.getItem(co.localChanges);
                 if (storedChanges) {
                     console.log("Loading stored changes:" + storedChanges);
                     this.localChanges = {};
@@ -291,7 +296,7 @@
                         this.localChanges[key] = Object.assign(new FileData(), value);
                     }
                 }
-                const activeFile = localStorage.getItem('activeFile');
+                const activeFile = localStorage.getItem(co.activeFile);
                 if (activeFile) {
                     this.lastActiveFile = activeFile;
                 }
@@ -300,7 +305,7 @@
             lastActiveFileSet(value) {
                 if (this.localChanges[value] !== undefined) {
                     this.lastActiveFile = value;
-                    localStorage.setItem('activeFile', this.lastActiveFile);
+                    localStorage.setItem(co.activeFile, this.lastActiveFile);
                     console.log(this.lastActiveFile);
                 }
             }
@@ -311,7 +316,7 @@
                         this.localChanges[key] = new FileData();
                     }
                     this.localChanges[key].currentValue = value;
-                    localStorage.setItem('localChanges', JSON.stringify(this.localChanges));
+                    localStorage.setItem(co.localChanges, JSON.stringify(this.localChanges));
                 }
                 // TODO: cleanup localChanges that are not in data?
                 console.log(JSON.stringify(this.localChanges));
@@ -321,7 +326,7 @@
                 const filePath = data.path.substring(1);
                 if (this.localChanges[filePath] !== undefined) {
                     this.localChanges[filePath].problemsEditor = data.problemsCount;
-                    localStorage.setItem('localChanges', JSON.stringify(this.localChanges));
+                    localStorage.setItem(co.localChanges, JSON.stringify(this.localChanges));
                     console.log(JSON.stringify(this.localChanges));
                 }
             }
