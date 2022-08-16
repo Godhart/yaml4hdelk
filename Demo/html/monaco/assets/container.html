@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<!-- based on https://github.com/1milligram/html-dom/blob/master/public/demo/create-resizable-split-views/index.html -->
+<!-- got it from https://htmldom.dev/create-resizable-split-views/ -->
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>HTML DOM - Create resizable split views</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="/monaco/assets/controller.js"></script>
+    <script src="/monaco/assets/localdata.js"></script>
+    <script src="/monaco/assets/servertalk.js"></script>
+    <link href="/monaco/assets/containers.css" rel="stylesheet">
+    <link href="/monaco/assets/popup.css" rel="stylesheet">
+</head>
+
+<body>
+    <script>
+        const serverDomain = "http://127.0.0.1:8089";   // TODO: It's UGLY, do better
+        const iframeDomain = "http://127.0.0.1:8089";   // TODO: It's UGLY, do better
+        const dataDomain = "data";                      // TODO: select or get from server
+        const timestamp = new Date().getTime();         // NOTE: set to const when done with iframes. Currently fresh timestamp is required to avoid iframes caching.
+
+        const server     = new ServerTalk(serverDomain);
+        const controller = new Controller(server, iframeDomain);
+        let localData  = new LocalData(dataDomain);     // NOTE: localData may be recreated in case of dataDomain is changed
+
+        function reloadIframes() {
+            // Load iframes (NOTE: timestamp is used to avoid caching. In production timestamp is set to a const)
+            const editor_url = iframeDomain + "/monaco/index.html" + "?timestamp=" + timestamp;
+            document.getElementById("editor").src = editor_url;
+
+            const preview_url = iframeDomain + "/d3hw/show/data/sketch.yaml" + "?timestamp=" + timestamp;
+            document.getElementById("preview").src = preview_url;
+        }
+
+        window.addEventListener('message', (event) => {
+            console.log("Container received message: " + JSON.stringify(event), "\n origin - " + JSON.stringify(event.origin), "\n data   - " + JSON.stringify(event.data));
+            if (event.origin !== iframeDomain) {
+                return null;
+            }
+            if (event.data.func === 'call') {
+                if (event.data.obj === undefined) {
+                    return null;
+                }
+                if (event.data.method === undefined) {
+                    return null;
+                }
+                if (event.data.args === undefined) {
+                    return null;
+                }
+                if (event.data.obj !== undefined) {
+                    let obj = null;
+                    if (event.data.obj === 'controller') {
+                        obj = controller;
+                    } else if (event.data.obj === 'localData') {
+                        obj = localData;
+                    }
+                    if (obj == null) {
+                        return null;
+                    }
+                    if (obj[event.data.method] !== undefined) {
+                        const result = obj[event.data.method](...event.data.args);
+                        if (event.data.callback !== undefined) {
+                            const callback = event.data.callback;
+                            // TODO: window.parent.postMessage({
+                            //     'func': callback.func,
+                            //     'obj': callback.obj,
+                            //     'method': callback.method,
+                            //     'args': result,
+                            //     'callback': undefined,
+                            // }, callback.origin);
+                        }
+                    }
+                } else {
+                    return null;
+                }
+            }
+        });
+
+    </script>
+
+    <!--
+    <div class="container">
+        <div class="container__left">
+            <div class="container__tl">Top Left</div>
+            <div class="resizer" data-direction="vertical"></div>
+            <div class="container__bl">Bottom Left</div>
+        </div>
+        <div class="resizer" data-direction="horizontal"></div>
+        <div class="container__right">
+            <div class="container__tr">Top Right</div>
+            <div class="resizer" data-direction="vertical"></div>
+            <div class="container__br">Bottom Right</div>
+        </div>
+    </div>
+    -->
+
+    <!-- PopUp for files operations -->
+    <div class="hover_bkgr_fricc">
+        <span class="helper"></span>
+        <div>
+            <div class="popupCloseButton">&times;</div>
+            <p>Add any HTML content<br />inside the popup box!</p>
+        </div>
+    </div>
+
+    <!-- Main layout (containers) -->
+    <div class="container">
+        <div class="container__left">
+            <!-- Files operations -->
+            <div class="container__tl">
+                <a class="trigger_popup_fricc">Click here to show the popup</a>
+            </div>
+            <!-- Editor -->
+            <iframe class="container__bl" name="editor" id="editor" width="100%"></iframe>
+        </div>
+        <div class="resizer" data-direction="horizontal"></div>
+        <div class="container__right">
+            <!-- Preview selector -->
+            <div class="container__tr">Top Right</div>
+            <!-- Preview itself -->
+            <iframe class="container__br" name="preview" id="preview" width="100%"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Do once as windows loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            reloadIframes();
+
+            // Config resizable things
+            const resizable = function (resizer) {
+                const direction = resizer.getAttribute('data-direction') || 'horizontal';
+                const prevSibling = resizer.previousElementSibling;
+                const nextSibling = resizer.nextElementSibling;
+
+                // The current position of mouse
+                let x = 0;
+                let y = 0;
+                let prevSiblingHeight = 0;
+                let prevSiblingWidth = 0;
+
+                // Handle the mousedown event
+                // that's triggered when user drags the resizer
+                const mouseDownHandler = function (e) {
+                    // Get the current mouse position
+                    x = e.clientX;
+                    y = e.clientY;
+                    const rect = prevSibling.getBoundingClientRect();
+                    prevSiblingHeight = rect.height;
+                    prevSiblingWidth = rect.width;
+
+                    // Attach the listeners to `document`
+                    document.addEventListener('mousemove', mouseMoveHandler);
+                    document.addEventListener('mouseup', mouseUpHandler);
+                };
+
+                const mouseMoveHandler = function (e) {
+                    // How far the mouse has been moved
+                    const dx = e.clientX - x;
+                    const dy = e.clientY - y;
+
+                    switch (direction) {
+                        case 'vertical':
+                            const h =
+                                ((prevSiblingHeight + dy) * 100) /
+                                resizer.parentNode.getBoundingClientRect().height;
+                            prevSibling.style.height = `${h}%`;
+                            break;
+                        case 'horizontal':
+                        default:
+                            const w =
+                                ((prevSiblingWidth + dx) * 100) / resizer.parentNode.getBoundingClientRect().width;
+                            prevSibling.style.width = `${w}%`;
+                            break;
+                    }
+
+                    const cursor = direction === 'horizontal' ? 'col-resize' : 'row-resize';
+                    resizer.style.cursor = cursor;
+                    document.body.style.cursor = cursor;
+
+                    prevSibling.style.userSelect = 'none';
+                    prevSibling.style.pointerEvents = 'none';
+
+                    nextSibling.style.userSelect = 'none';
+                    nextSibling.style.pointerEvents = 'none';
+                };
+
+                const mouseUpHandler = function () {
+                    resizer.style.removeProperty('cursor');
+                    document.body.style.removeProperty('cursor');
+
+                    prevSibling.style.removeProperty('user-select');
+                    prevSibling.style.removeProperty('pointer-events');
+
+                    nextSibling.style.removeProperty('user-select');
+                    nextSibling.style.removeProperty('pointer-events');
+
+                    // Remove the handlers of `mousemove` and `mouseup`
+                    document.removeEventListener('mousemove', mouseMoveHandler);
+                    document.removeEventListener('mouseup', mouseUpHandler);
+                };
+
+                // Attach the handler
+                resizer.addEventListener('mousedown', mouseDownHandler);
+            };
+
+            // Query all resizers
+            document.querySelectorAll('.resizer').forEach(function (ele) {
+                resizable(ele);
+            });
+        });
+    </script>
+
+    <script>
+        // Setup popup actions
+        $(window).load(function () {
+            $(".trigger_popup_fricc").click(function(){
+                $('.hover_bkgr_fricc').show();
+                console.log("Show popup");
+            });
+            /*
+            $('.hover_bkgr_fricc').click(function(){
+                $('.hover_bkgr_fricc').hide();
+            });
+            */
+            $('.popupCloseButton').click(function(){
+                $('.hover_bkgr_fricc').hide();
+                console.log("Close popup");
+            });
+        });
+    </script>
+</body>
+
+</html>
