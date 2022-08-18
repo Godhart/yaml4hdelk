@@ -74,10 +74,12 @@ class Contexts {
   contexts: Record<string, Context>;
   current: string;
   editor: editor.IStandaloneCodeEditor;
+  zeroView : editor.ICodeEditorViewState;
 
   constructor(editor: editor.IStandaloneCodeEditor) {
     this.contexts = {};
     this.current = '';
+    this.zeroView = null;
     this.editor = editor;
   }
 
@@ -108,9 +110,6 @@ class Contexts {
 
   contextSwitch(contextName: string): number {
     console.log('contextSwitch: ' + contextName);
-    if (contextName === '') {
-      return -2;
-    }
     if (this.contexts[contextName] === undefined) {
       return -1;
     }
@@ -119,11 +118,24 @@ class Contexts {
     }
     if (this.current !== '') {
       this.contexts[this.current].state = ed.saveViewState();
+    } else {
+        if (this.zeroView == null) {
+            this.zeroView = ed.saveViewState();
+        }
     }
-    this.current = contextName;
-    ed.setModel(this.contexts[this.current].model);
-    ed.restoreViewState(this.contexts[this.current].state);
-    ed.focus();
+    if (contextName === '') {
+      this.current = '';
+      ed.setModel(this.contexts[this.current].model);
+      if (this.zeroView != null) {
+        ed.restoreViewState(this.zeroView);
+      }
+      ed.focus();
+    } else {
+      this.current = contextName;
+      ed.setModel(this.contexts[this.current].model);
+      ed.restoreViewState(this.contexts[this.current].state);
+      ed.focus();
+    }
     return 0;
   }
 

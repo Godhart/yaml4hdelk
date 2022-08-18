@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<!-- based on https://github.com/1milligram/html-dom/blob/master/public/demo/create-resizable-split-views/index.html -->
-<!-- got it from https://htmldom.dev/create-resizable-split-views/ -->
+<!-- resizables are based on https://htmldom.dev/create-resizable-split-views/ and https://github.com/1milligram/html-dom/blob/master/public/demo/create-resizable-split-views/index.html -->
+<!-- tabs are based on https://alvarotrigo.com/blog/html-css-tabs/ and https://codepen.io/alvarotrigo/pen/qBPzgLg -->
 <html lang="en">
 
 <head>
@@ -22,9 +22,11 @@
         const dataDomain = "data";                      // TODO: select or get from server
         const timestamp = new Date().getTime();         // NOTE: set to const when done with iframes. Currently fresh timestamp is required to avoid iframes caching.
 
-        const server     = new ServerTalk(serverDomain);
-        const controller = new Controller(server, iframeDomain);
-        let localData  = new LocalData(dataDomain);     // NOTE: localData may be recreated in case of dataDomain is changed
+        const server = new ServerTalk(serverDomain);
+        const remoteFiles = new RemoteFiles(server);
+        const controller = new Controller(remoteFiles, iframeDomain);
+        const remoteData = new RemoteData(remoteFiles, dataDomain);
+        const localData = new LocalData(dataDomain);
 
         function reloadIframes() {
             // Load iframes (NOTE: timestamp is used to avoid caching. In production timestamp is set to a const)
@@ -217,7 +219,7 @@
     <script>
         // Setup popup actions
         $(window).load(function () {
-            $(".trigger_popup_fricc").click(function(){
+            $(".trigger_popup_fricc").click(function () {
                 $('.hover_bkgr_fricc').show();
                 console.log("Show popup");
             });
@@ -226,7 +228,7 @@
                 $('.hover_bkgr_fricc').hide();
             });
             */
-            $('.popupCloseButton').click(function(){
+            $('.popupCloseButton').click(function () {
                 $('.hover_bkgr_fricc').hide();
                 console.log("Close popup");
             });
