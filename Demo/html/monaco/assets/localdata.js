@@ -4,8 +4,7 @@ class FileData {
     problemsRemote = 0
     source = null
     hash = null
-    remoteLock = null
-} lock = null
+}
 
 
 class LocalData {
@@ -21,6 +20,9 @@ class LocalData {
     }
 
     switchDomain(dataDomain) {
+        if (this.dataDomain !== "") {
+            this.storeAll();
+        }
         if (this.session !== null) {
             this.releaseSession();
         }
@@ -147,7 +149,7 @@ class LocalData {
         })
     }
 
-    flush() {
+    storeAll() {
         return new Promise((resolve, reject) => {
             this._store(this.co.filesData, this.filesData)
                 .then(
@@ -159,20 +161,19 @@ class LocalData {
                     () => { reject("Session changed!"); }
                 )
                 .then(
-                    resolve("Success!")
+                    () => resolve("Success!"),
+                    () => { reject("Session changed!"); }
                 )
         })
     }
 
-    addFile(filePath, source, hash, remoteLock) {
+    addFile(filePath, source, hash) {
         return new Promise((resolve, reject) => {
             if (this.filesData[filePath] === undefined) {
                 this.filesData[filePath] = Object.assign(new FileData(), {
                     "currentValue": source,
                     "source": source,
-                    "hash": hash,
-                    "lock": null,
-                    "remoteLock": remoteLock
+                    "hash": hash
                 });
                 this._store(this.co.filesData, this.filesData)
                     .then(
@@ -207,7 +208,7 @@ class LocalData {
         })
     }
 
-    updateFileStatics(filePath, source, hash, remoteLock) {
+    updateFileStatics(filePath, source, hash) {
         return new Promise((resolve, reject) => {
             if (this.filesData[filePath] !== undefined) {
                 let f = this.filesData[filePath];
@@ -216,9 +217,6 @@ class LocalData {
                 }
                 if (hash !== undefined && hash !== null) {
                     f.hash = hash
-                }
-                if (remoteLock !== undefined && remoteLock !== null) {
-                    f.remoteLock = remoteLock
                 }
                 this._store(this.co.filesData, this.filesData)
                     .then(
@@ -293,45 +291,6 @@ class LocalData {
                     () => { reject("Session changed!") }
                 )
         })
-    }
-
-    lockFile(filePath, lockId, force) {
-        return new Promise((resolve, reject) => {
-            if (this.filesData[filePath] !== undefined) {
-                if (force || this.filesData[filePath].remoteLock === null) {
-                    this.filesData[filePath].lock = lockId;
-                    this.filesData[filePath].remoteLock = lockId;
-                    this._store(this.co.filesData, this.filesData)
-                        .then(
-                            () => { resolve("Success") },
-                            () => { reject("Session changed!") }
-                        )
-                } else {
-                    console.error("LocalData.lockFile(): File " + filePath + " is already locked on remote");
-                    resolve("File " + filePath + " is already locked on remote");
-                }
-            } else {
-                console.error("LocalData.lockFile(): File " + filePath + " is not in database");
-                reject("File " + filePath + " is not in database");
-            }
-        });
-    }
-
-    unlockFile(filePath) {
-        return new Promise((resolve, reject) => {
-            if (this.filesData[filePath] !== undefined) {
-                this.filesData[filePath].lock = null;
-                this.filesData[filePath].remoteLock = null;
-                this._store(this.co.filesData, this.filesData)
-                    .then(
-                        () => { resolve("Success") },
-                        () => { reject("Session changed!") }
-                    )
-            } else {
-                console.error("LocalData.unlockFile(): File " + filePath + " is not in database");
-                reject("File " + filePath + " is not in database");
-            }
-        });
     }
 
     switchTab(filePath) {

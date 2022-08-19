@@ -1,106 +1,129 @@
 class RemoteFiles {
 
     serverTalk = null
+    secret = null
 
     constructor(serverTalk) {
         this.serverTalk = serverTalk;
+        let secret = localStorage.getItem("yaml4schm-monaco-secret")
+        if (secret === undefined) {
+            secret = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem("yaml4schm-monaco-secret", secret)
+        }
+        this.secret = secret
     }
 
     async remoteDomainsList() {
         // Returns available remote domains list
         return new Promise((resolve, reject) => {
-            const remoteDomains = JSON.parse(await this.serverTalk.get(
+            const response = JSON.parse(await this.serverTalk.get(
                 "rest/1.0/domains/domainsList"
             ).catch(function (e) {
                 console.error('RemoteFiles.remoteFilesList() exception:', e);
                 reject(e)
             })
-            ).domains;
-            resolve(remoteDomains)
+            );
+            if (!response.SUCCESS) {
+                console.error("RemoteFiles.remoteDomainsList() failed due to reason:" + response.ERROR)
+                reject(response.ERROR)
+            }
+            resolve(response.domains)
         });
     }
 
     async remoteFilesList(dataDomain) {
         // Returns remote files list for specified domain as an Array
         return new Promise((resolve, reject) => {
-            const remoteFiles = JSON.parse(await this.serverTalk.get(
+            const response = JSON.parse(await this.serverTalk.get(
                 "rest/1.0/domain/" + dataDomain + "/filesList"
             ).catch(function (e) {
                 console.error('RemoteFiles.remoteFilesList() exception:', e);
                 reject(e)
             })
-            ).files;
-            resolve(remoteFiles)
+            );
+            if (!response.SUCCESS) {
+                console.error("RemoteFiles.remoteFilesList() failed due to reason:" + response.ERROR)
+                reject(response.ERROR)
+            }
+            resolve(response.files)
         });
     }
 
     async remoteFilesHash(dataDomain, filesList) {
         // Returns hash for specified remote files as a Dictionary
         return new Promise((resolve, reject) => {
-            const remoteHashes = JSON.parse(await this.serverTalk.postJson(
+            const response = JSON.parse(await this.serverTalk.postJson(
                 "rest/1.0/domain/" + dataDomain + "/filesHash",
                 { "filesList": filesList }
             ).catch(function (e) {
                 console.error('RemoteFiles.remoteFilesHash() exception:', e);
                 reject(e)
             })
-            ).hashes;
-            resolve(remoteHashes)
+            );
+            if (!response.SUCCESS) {
+                console.error("RemoteFiles.remoteFilesHash() failed due to reason:" + response.ERROR)
+                reject(response.ERROR)
+            }
+            resolve(response.hashes)
         });
     }
 
     async remoteFilesLock(dataDomain, filesList) {
         // Returns lock id for specified remote files a Dictionary
         return new Promise((resolve, reject) => {
-            const remoteLocks = JSON.parse(await this.serverTalk.postJson(
+            const response = JSON.parse(await this.serverTalk.postJson(
                 "rest/1.0/domain/" + dataDomain + "/filesLock",
                 { "filesList": filesList }
             ).catch(function (e) {
                 console.error('RemoteFiles.remoteFilesLock() exception:', e);
                 reject(e)
             })
-            ).locks;
-            resolve(remoteLocks)
+            )
+            if (!response.SUCCESS) {
+                console.error("RemoteFiles.remoteFilesLock() failed due to reason:" + response.ERROR)
+                reject(response.ERROR)
+            }
+            resolve(response.locks);
         });
     }
 
     // TODO: domain/<domain>/info/<file_path> to obtain per file info
 
-    async remoteLock(dataDomain, filePath) {
+    async remoteLock(dataDomain, filePath, force, test) {
         // Returns lock id for specified remote files a Dictionary
         return new Promise((resolve, reject) => {
             const response = JSON.parse(await this.serverTalk.postJson(
                 "rest/1.0/domain/" + dataDomain + "/lock/" + filePath,
-                { "set": True }
+                { "set": True, "secret": this.secret, "force": force, "test": test}
             ).catch(function (e) {
                 console.error('RemoteFiles.remoteLock() exception:', e);
                 reject(e)
             })
             );
-            if (response.ok) {
+            if (response.SUCCESS) {
                 resolve(response.lock);
             } else {
-                console.error("RemoteFiles.remoteLock() failed due to reason:" + response.reason)
+                console.error("RemoteFiles.remoteLock() failed due to reason:" + response.ERROR)
                 reject(null);
             }
         });
     }
 
-    async remoteUnlock(dataDomain, filePath, lock) {
+    async remoteUnlock(dataDomain, filePath) {
         // Returns lock id for specified remote files a Dictionary
         return new Promise((resolve, reject) => {
             const response = JSON.parse(await this.serverTalk.postJson(
                 "rest/1.0/domain/" + dataDomain + "/unlock/" + filePath,
-                { "lock": lock }
+                { "secret": this.secret }
             ).catch(function (e) {
                 console.error('RemoteFiles.remoteUnlock() exception:', e);
                 reject(e)
             })
             );
-            if (response.ok) {
+            if (response.SUCCESS) {
                 resolve(response.lock);
             } else {
-                console.error("RemoteFiles.remoteUnlock() failed due to reason:" + response.reason)
+                console.error("RemoteFiles.remoteUnlock() failed due to reason:" + response.ERROR)
                 reject(null);
             }
         });
@@ -115,7 +138,7 @@ class RemoteFiles {
             lock:       server's lock for the file
         */
         return new Promise((resolve, reject) => {
-            const fileData = JSON.parse(await this.serverTalk.post(
+            const response = JSON.parse(await this.serverTalk.post(
                 "rest/1.0/domain/" + dataDomain + "/files/" + filePath,
                 { "fields": ["content", "hash", "lock"] }
             ).catch(function (e) {
@@ -123,7 +146,11 @@ class RemoteFiles {
                 reject(e)
             })
             );
-            resolve(fileData);
+            if (!response.SUCCESS) {
+                console.error("RemoteFiles.getFile() failed due to reason:" + response.ERROR)
+                reject(response.ERROR)
+            }
+            resolve(response.data);
         });
     }
 
@@ -136,18 +163,21 @@ class RemoteFiles {
         return new Promise((resolve, reject) => {
             const response = JSON.parse(await this.serverTalk.postJson(
                 "rest/1.0/domain/" + dataDomain + "/save/" + filePath,
-                { "content": fileData.content, "hash": fileData.hash, "lock": fileData.lock }
+                {
+                    "content": fileData.content, "hash": fileData.hash, "lock": fileData.lock,
+                    "fields": ["content", "hash"]
+                }
             ).catch(function (e) {
                 console.error('RemoteFiles.saveFile() exception:', e);
                 reject(e)
             })
             );
-            if (response.ok) {
-                fileData.source = response.content;
-                fileData.hash = response.hash;
+            if (response.SUCCESS) {
+                fileData.source = response.data.content;
+                fileData.hash = response.data.hash;
                 resolve(fileData)
             } else {
-                console.error("RemoteFiles.saveFile() failed due to reason:" + response.reason)
+                console.error("RemoteFiles.saveFile() failed due to reason:" + response.ERROR)
                 reject(null);
             }
         });
@@ -164,10 +194,10 @@ class RemoteFiles {
                 reject(e)
             })
             );
-            if (response.ok) {
+            if (response.SUCCESS) {
                 resolve(response.dia)
             } else {
-                console.error("RemoteFiles.diagramData() failed due to reason:" + response.reason)
+                console.error("RemoteFiles.diagramData() failed due to reason:" + response.ERROR)
                 reject(null);
             }
         });

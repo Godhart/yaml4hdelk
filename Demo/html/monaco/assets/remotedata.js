@@ -1,40 +1,72 @@
 class RemoteData {
     remoteFiles = null
     dataDomain = null
-    domains = null      // list with all available domains
-    files = null        // list with file paths
-    hashes = null       // dict, key is file path
-    locks = null        // dict, key is file path
+    domains = []        // list with all available domains
+    files = []          // list with file paths
+    hashes = {}         // dict, key is file path
+    locks = {}          // dict, key is file path
+    lock = null         // value for files locks when they are locked by me
 
     constructor(remoteFiles, dataDomain) {
         this.remoteFiles = remoteFiles;
-        this.dataDomain = dataDomain;
-        this.update();
+        this.switchDomain(dataDomain);
+        this.remoteFiles.remoteLock(this.dataDomain, "test", False, True)
+            .then(
+                (lock) => this.lock = lock
+            )
     }
 
-    update() {
+    switchDomain(dataDomain) {
+        this.dataDomain = dataDomain;
+        this.updateAll()
+    }
+
+    updateAll() {
+        this.domains = []
+        this.files = []
+        this.hashes = {}
+        this.locks = {}
         this.remoteFiles.remoteDomainsList()
             .then(
-                (domainsList) => { this.domains = domainsList },
-                () => { this.domains = null }
+                (domains) => { this.domains = domains }
             )
-
-        this.remoteFiles.remoteFilesList(this.dataDomain)
             .then(
-                (filesList) => { this.files = filesList },
-                () => { this.files = null }
+                () => { return this.remoteFiles.remoteFilesList(this.dataDomain) }
             )
-
-        this.remoteFiles.remoteFilesHash(this.dataDomain, this.filesList)
             .then(
-                (hashes) => { this.hashes = hashes },
-                () => { this.hashes = null }
+                (files) => { this.files = files }
             )
-
-        this.remoteFiles.remoteFilesLock(this.dataDomain, this.filesList)
             .then(
-                (locks) => { this.remoteFilesLock },
-                () => { this.locks = null }
+                () => { return this.remoteFiles.remoteFilesHash(this.dataDomain, this.files) }
+            )
+            .then(
+                (hashes) => { this.hashes = hashes }
+            )
+            .then(
+                () => { return this.remoteFiles.remoteFilesLock(this.dataDomain, this.files) }
+            )
+            .then(
+                (locks) => { this.locks = locks }
             )
     }
+
+    quickUpdate(files) {
+        this.remoteFiles.remoteFilesHash(this.dataDomain, files)
+            .then(
+                (hashes) => {
+                    for (const [key, value] of Object.entries(hashes)) {
+                        this.hashes[key] = value;
+                    }
+                }
+            )
+        this.remoteFiles.remoteFilesLock(this.dataDomain, files)
+            .then(
+                (locks) => {
+                    for (const [key, value] of Object.entries(locks)) {
+                        this.locks[key] = value;
+                    }
+                }
+            )
+    }
+
 }

@@ -24,9 +24,9 @@
 
         const server = new ServerTalk(serverDomain);
         const remoteFiles = new RemoteFiles(server);
-        const controller = new Controller(remoteFiles, iframeDomain);
         const remoteData = new RemoteData(remoteFiles, dataDomain);
         const localData = new LocalData(dataDomain);
+        const controller = new Controller(remoteFiles, iframeDomain);
 
         function reloadIframes() {
             // Load iframes (NOTE: timestamp is used to avoid caching. In production timestamp is set to a const)
