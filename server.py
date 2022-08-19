@@ -25,6 +25,17 @@ _VERSION_HISTORY = {
     "1.0": "Renders schematics from files on server",
 }
 
+_DOMAINS = None
+def get_domains():
+    if _DOMAINS is None:
+        _DOMAINS = ["Demo"]
+        env = [*os.environ.keys()]
+        domain_prefix = "YAML4SCHM_FILES_DOMAIN_"
+        for k in env:
+            if k[:len(domain_prefix)] == domain_prefix:
+                _DOMAINS.append(k[len(domain_prefix):])
+    return [*_DOMAINS]
+get_domains()
 
 reload_template = os.environ.get("RELOAD_TEMPLATE", "FALSE").upper() == "TRUE"
 
@@ -267,9 +278,9 @@ def show_json(tool, path):
         return json.dumps(
             {"ERROR": f"Tool '{tool}' is not supported!", **common})
 
-    try:
+    if True: # try:
         _, _, schm = build_schm(tool, path, make_shell=False)
-    except Exception as e:
+    else: # except Exception as e:
         return json.dumps(
             {"ERROR": f"Failed due to exception {e}", **common})
     return json.dumps({"SUCCESS": True, "schematic": schm, **common})
@@ -322,8 +333,7 @@ def edit(tool, path):
 
     _, file_path = _internal_path(path)
     if os.path.exists(file_path):
-        with open(file_path, "rb") as f:
-            hash = hashlib.md5(f.read()).hexdigest()
+        hash = _file_hash(file_path)
     else:
         hash = None
 
@@ -412,8 +422,7 @@ def save(tool, path):
     # Check there were no changes since editor were opened
     _, file_path = _internal_path(path)
     if os.path.exists(file_path):
-        with open(file_path, "rb") as f:
-            hash = hashlib.md5(f.read()).hexdigest()
+        hash = _file_hash(file_path)
     else:
         hash = None
 
@@ -424,8 +433,7 @@ def save(tool, path):
     with open(file_path, "w") as f:
         f.write(data)
 
-    with open(file_path, "rb") as f:
-        hash = hashlib.md5(f.read()).hexdigest()
+    hash = _file_hash(file_path)
 
     return json.dumps({"SUCCESS": True, "diagram": schm, "source": source, "hash": hash})
 
@@ -460,6 +468,366 @@ def monaco(path):
 
     return static_file(path, root="Demo/html/monaco")
 
+
+@app.route('/rest/1.0/domains/domainsList')
+def domains_list():
+    """ Return list of available domains """
+    common = {
+        "server_version": _VERSION,
+    }
+
+    response.content_type = 'application/json'
+    print(f"domains_list()")
+    return json.dumps({"SUCCESS": True, "domains": get_domains(), **common})
+
+
+@app.route('/rest/1.0/domain/<domain>/filesList')
+def files_list(domain):
+    """ Return list of available files within domain """
+    common = {
+        "server_version": _VERSION,
+    }
+
+    response.content_type = 'application/json'
+    print(f"files_list({domain})")
+
+    domains = get_domains()
+    if domain not in domains:
+       return json.dumps(
+            {"ERROR": f"Domain '{domain}' is not exists!", **common})
+
+    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
+    if domain_path is None:
+       return json.dumps(
+            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
+
+    files = list_files(domain_path)
+
+    return json.dumps({"SUCCESS": True, "files": files, **common})
+
+
+def list_files(root_path):
+    result = []
+    offs = len(root_path)
+    for root, dirs, files in os.walk(root_path):
+        result += [os.path.join(root[offs:], f) for f in files if f[-4:].lower() == ".yml" or f[-5:].lower() == ".yaml"]
+        if offs == len(root_path):
+            offs += 1
+
+    os_path_delimiter = os.path.join('a','b')[1]
+    sorted(result, key = lambda x: str(x.count(os_path_delimiter)) + x)
+    return sorted(result)
+
+
+@app.route('/rest/1.0/domain/<domain>/filesHash')
+def files_hash(domain):
+    """ Return hashes of available files within domain """
+    response.content_type = 'application/json'
+
+    print(f"files_hash({domain})")
+
+    return get_files_hash(domain, None)
+
+
+@app.route('/rest/1.0/domain/<domain>/filesHash', method="POST")
+def files_hash_post(domain):
+    """ Return hashes of specified files """
+    response.content_type = 'application/json'
+
+    print(f"files_hash_post({domain}, ...)")
+
+    files = request.json.get("filesList", "[]")
+    return get_files_hash(domain, files)
+
+
+def get_files_hash(domain, files):
+    """ Return hashes for specified files within domain """
+    common = {
+        "server_version": _VERSION,
+    }
+
+    domains = get_domains()
+    if domain not in domains:
+       return json.dumps(
+            {"ERROR": f"Domain '{domain}' is not exists!", **common})
+
+    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
+    if domain_path is None:
+       return json.dumps(
+            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
+
+    if files is None:
+        files = list_files(domain_path)
+
+    hashes = {}
+    for file_path in files:
+        full_path = os.path.join(domain_path, file_path)
+        if os.path.isfile(full_path):
+            hashes[file_path] = _file_hash(full_path)
+        else:
+            hashes[file_path] = None
+
+    return json.dumps({"SUCCESS": True, "hashes": hashes, **common})
+
+
+@app.route('/rest/1.0/domain/<domain>/filesLock')
+def files_lock(domain):
+    """ Return lock info of available files within domain """
+    response.content_type = 'application/json'
+
+    print(f"files_lock({domain})")
+
+    return get_files_lock(domain, None)
+
+
+@app.route('/rest/1.0/domain/<domain>/filesHash', method="POST")
+def files_hash_post(domain):
+    """ Return lock info of specified files """
+    response.content_type = 'application/json'
+
+    print(f"files_lock_post({domain}, ...)")
+
+    files = request.json.get("filesList", "[]")
+    return get_files_lock(domain, files)
+
+
+def get_files_lock(domain, files):
+    """ Return lock info for specified files within domain """
+    common = {
+        "server_version": _VERSION,
+    }
+
+    domains = get_domains()
+    if domain not in domains:
+       return json.dumps(
+            {"ERROR": f"Domain '{domain}' is not exists!", **common})
+
+    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
+    if domain_path is None:
+       return json.dumps(
+            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
+
+    if files is None:
+        files = list_files(domain_path)
+
+    locks = {}
+    for file_path in files:
+        full_path = os.path.join(domain_path, file_path)
+        if os.path.isfile(full_path):
+            if os.path.exists(full_path+".lock"):
+                try:
+                    with open(full_path+".lock", "r") as f:
+                        locks[file_path] = f.readline()
+                except:
+                    locks[file_path] = None
+            # NOTE: not locked files are not returned
+        else:
+            locks[file_path] = None
+
+    return json.dumps({"SUCCESS": True, "locks": locks, **common})
+
+
+@app.route('/rest/1.0/domain/<domain>/lock/<path:path>', method="POST")
+def file_lock(domain, path):
+    """ Sets lock on file """
+    response.content_type = 'application/json'
+
+    common = {
+        "server_version": _VERSION,
+    }
+
+    print(f"file_lock({domain},{path})")
+
+    domains = get_domains()
+    if domain not in domains:
+       return json.dumps(
+            {"ERROR": f"Domain '{domain}' is not exists!", **common})
+
+    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
+    if domain_path is None:
+       return json.dumps(
+            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
+
+
+    do_lock = request.json.get("set", "False")
+    force   = request.json.get("force", "False")
+    secret  = request.json.get("secret", None)
+    test    = request.json.get("test", "False")
+
+    if do_lock is not True and test is not True:
+       return json.dumps(
+            {"ERROR": f"Wrong parameter! Determine what you want!", **common})
+
+    if secret is None:
+       return json.dumps(
+            {"ERROR": f"No secret were provided!", **common})
+
+    lock = _lock_hash(secret)
+    if test:
+        return json.dumps({"SUCCESS": True, "lock": lock, **common})
+
+    full_path = os.path.join(domain_path, path)
+    if not os.path.isfile(full_path):
+       return json.dumps(
+            {"ERROR": f"File '{path}' is not found in domain '{domain}'", **common})
+    if not force and os.path.exists(full_path+".lock"):
+        return json.dumps(
+            {"ERROR": f"File '{path}' in domain '{domain}' is already locked", **common}
+        )
+    try:
+        with open(full_path+".lock", "w") as f:
+            f.write(lock)
+    except Exception as e:
+        return json.dumps(
+            {"ERROR": f"Failed to set lock due to exception: {e}! ", **common})
+
+    return json.dumps({"SUCCESS": True, "lock": lock, **common})
+
+
+@app.route('/rest/1.0/domain/<domain>/unlock/<path:path>', method="POST")
+def file_unlock(domain, path):
+    """ Removes lock from file """
+    response.content_type = 'application/json'
+
+    common = {
+        "server_version": _VERSION,
+    }
+
+    print(f"file_unlock({domain},{path})")
+
+    domains = get_domains()
+    if domain not in domains:
+       return json.dumps(
+            {"ERROR": f"Domain '{domain}' is not exists!", **common})
+
+    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
+    if domain_path is None:
+       return json.dumps(
+            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
+
+    force = request.json.get("force", "False")
+    secret = request.json.get("secret", None)
+
+    if secret is None:
+       return json.dumps(
+            {"ERROR": f"No secret were provided!", **common})
+
+    lock = _lock_hash(secret)
+
+    full_path = os.path.join(domain_path, path)
+    if not os.path.isfile(full_path):
+       return json.dumps(
+            {"ERROR": f"File '{path}' is not found in domain '{domain}'", **common})
+
+    if not os.path.exists(full_path+".lock"):
+        return json.dumps({"SUCCESS": True, **common})
+
+    try:
+        file_lock = _file_lock(full_path)
+        if not force and lock != file_lock:
+            return json.dumps({"ERROR": f"Secret is wrong!", **common})
+        os.remove(full_path+".lock")
+    except:
+        return json.dumps(
+            {"ERROR": f"Failed to set lock!", **common})
+
+    return json.dumps({"SUCCESS": True, **common})
+
+
+@app.route('/rest/1.0/domain/<domain>/files/<path:path>')
+def file_content(domain, path):
+    """ Returns file content """
+    response.content_type = 'application/json'
+
+    print(f"file_content({domain},{path})")
+
+    return get_file(domain, path, ["content"])
+
+
+@app.route('/rest/1.0/domain/<domain>/files/<path:path>')
+def file_content_post(domain, path):
+    """ Returns file content """
+    response.content_type = 'application/json'
+
+    print(f"file_content_post({domain},{path})")
+
+    fields = request.json.get("fields", ["content"])
+
+    return get_file(domain, path, fields)
+
+
+def get_file(domain, path, fields):
+    common = {
+        "server_version": _VERSION,
+    }
+
+    domains = get_domains()
+    if domain not in domains:
+       return json.dumps(
+            {"ERROR": f"Domain '{domain}' is not exists!", **common})
+
+    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
+    if domain_path is None:
+       return json.dumps(
+            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
+
+    full_path = os.path.join(domain_path, path)
+    if not os.path.isfile(full_path):
+       return json.dumps(
+            {"ERROR": f"File '{path}' is not found in domain '{domain}'", **common})
+
+    result = {}
+
+    if "content" in fields:
+        try:
+            with open(full_path, "r") as f:
+                result["content"] = f.read()
+        except Exception as e:
+            return json.dumps(
+                {"ERROR": f"File read '{path}' of domain '{domain}' failed due to exception: {e}", **common})
+
+    if "hash" in fields:
+        try:
+            result["hash"] = _file_hash(full_path)
+        except Exception as e:
+            return json.dumps(
+                {"ERROR": f"Getting file hash for file '{path}' of domain '{domain}' failed due to exception: {e}", **common})
+
+    if "lock" in fields:
+        try:
+            lock = _file_lock(full_path)
+            if lock is not None:
+                result["lock"] = lock
+        except Exception as e:
+            return json.dumps(
+                {"ERROR": f"Getting file lock for file '{path}' of domain '{domain}' failed due to exception: {e}", **common})
+
+    # TODO: modification date
+
+    return json.dumps(
+        {"SUCCESS": True, "data": result, **common})
+
+
+# TODO: save_file   save/<path:path>
+# TODO: diagram     dia/<path:path>
+# TODO: commit
+
+
+def _file_hash(full_path):
+    with open(full_path, "rb") as f:
+        return hashlib.md5(f.read()).hexdigest()
+
+
+def _file_lock(full_path):
+    if os.path.isfile(full_path):
+        with open(full_path+".lock", "r") as f:
+            file_lock = f.readline().strip()
+    else:
+        return None
+
+
+def _lock_hash(secret):
+    return hashlib.md5(str(secret).encode()).hexdigest()
 
 if __name__ == "__main__":
     host = os.environ.get("SERVER_HOST", "localhost")
