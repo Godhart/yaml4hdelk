@@ -154,7 +154,8 @@ class Controller {
                                 filePath,
                                 value.content,
                                 value.hash,
-                                value.lock
+                                value.lock,
+                                value.timestamp
                             )
                         }
                     )

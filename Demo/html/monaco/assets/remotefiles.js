@@ -87,8 +87,6 @@ class RemoteFiles {
         });
     }
 
-    // TODO: domain/<domain>/info/<file_path> to obtain per file info
-
     async remoteLock(dataDomain, filePath, force, test) {
         // Returns lock id for specified remote files a Dictionary
         return new Promise((resolve, reject) => {
@@ -136,11 +134,12 @@ class RemoteFiles {
             content:    content of the file
             hash:       server's hash for the file content that would be checked later on save
             lock:       server's lock for the file
+            timestamp:  last modification timestamp
         */
         return new Promise((resolve, reject) => {
             const response = JSON.parse(await this.serverTalk.post(
                 "rest/1.0/domain/" + dataDomain + "/files/" + filePath,
-                { "fields": ["content", "hash", "lock"] }
+                { "fields": ["content", "hash", "lock", "timestamp"] }
             ).catch(function (e) {
                 console.error('RemoteFiles.getFile() exception:', e);
                 reject(e)
@@ -164,8 +163,8 @@ class RemoteFiles {
             const response = JSON.parse(await this.serverTalk.postJson(
                 "rest/1.0/domain/" + dataDomain + "/save/" + filePath,
                 {
-                    "content": fileData.content, "hash": fileData.hash, "lock": fileData.lock,
-                    "fields": ["content", "hash"]
+                    "content": fileData.content, "hash": fileData.hash, "secret": this.secret,
+                    "fields": ["content", "hash", "timestamp"]
                 }
             ).catch(function (e) {
                 console.error('RemoteFiles.saveFile() exception:', e);
@@ -175,6 +174,7 @@ class RemoteFiles {
             if (response.SUCCESS) {
                 fileData.source = response.data.content;
                 fileData.hash = response.data.hash;
+                fileData.timestamp = response.data.timestamp;
                 resolve(fileData)
             } else {
                 console.error("RemoteFiles.saveFile() failed due to reason:" + response.ERROR)

@@ -11,8 +11,10 @@ from operators import parse_line, Expression
 from helpers import prints
 
 
+# TODO: add common header to all JSON responses (server version, args etc.)
 # TODO: add links to traverse into the deep
 # TODO: whiteboard mode
+
 #   https://bottlepy.org/docs/dev/async.html
 #   https://stackoverflow.com/questions/13318608/streaming-connection-using-python-bottle-multiprocessing-and-gevent
 
@@ -405,19 +407,36 @@ def live_debug_post(subject):
 def save(tool, path):
     """ Save schematic from editor onto hosing server drive """
     response.content_type = 'application/json'
+    common = {
+        "server_version": _VERSION,
+    }
     print(f"save(\n  tool={tool},\n  path={path})")
     if tool not in _allowed_tools:
         return json.dumps({"ERROR": f"Tool '{tool}' is not supported!"})
 
+    return json.dumps(save_file(request, tool, path), **common)
+
+
+def save_file(request, tool, path, test_schm=True, dry_run=False):
+
     data = request.json.get("text", None)
     if data is None:
-        return json.dumps({"ERROR": f"Source text is missing!"})
+        data = request.json.get("content", None)
+    else:
+        if request.json.get("content", None) is not None:
+            return {"ERROR": f"Only one of 'text' or 'content' field should be present at once"}
+    if data is None:
+        return {"ERROR": f"Source text is missing!"}
 
     # Build schematics to make sure data is OK
-    try:
-        source, _, schm = build_schm(tool, path, make_shell=False, override_source_text=data, create=True)
-    except Exception as e:
-        return json.dumps({"ERROR": f"Schematic check failed due to exception: {e}!"})
+    if test_schm is True:
+        try:
+            source, _, schm = build_schm(tool, path, make_shell=False, override_source_text=data, create=True)
+        except Exception as e:
+            return {"ERROR": f"Schematic check failed due to exception: {e}!"}
+    else:
+        source = data
+        schm = None
 
     # Check there were no changes since editor were opened
     _, file_path = _internal_path(path)
@@ -428,14 +447,25 @@ def save(tool, path):
 
     last_hash = request.json.get("hash", None)
     if hash != last_hash:
-        return json.dumps({"ERROR": f"File '{path}' were changed since last checkout.\nPlease save your work to offline file then update page and merge your changes."})
+        return {"ERROR": f"File '{path}' were changed since last checkout.\nPlease save your work to offline file then update page and merge your changes."}
 
-    with open(file_path, "w") as f:
-        f.write(data)
+    lock = _file_lock(file_path)
+    if lock is not None:
+        secret = request.json.get("secret", None)
+        if secret is None:
+            return {"ERROR": f"No secret were provided!"}
 
-    hash = _file_hash(file_path)
+        client_lock = _lock_hash(secret)
+        if client_lock != lock:
+            return {"ERROR": f"Secret is wrong!"}
 
-    return json.dumps({"SUCCESS": True, "diagram": schm, "source": source, "hash": hash})
+    if not dry_run:
+        with open(file_path, "w") as f:
+            f.write(data)
+
+        hash = _file_hash(file_path)
+
+    return {"SUCCESS": True, "diagram": schm, "source": source, "hash": hash}
 
 
 @app.route('/<tool>/test')
@@ -514,8 +544,7 @@ def list_files(root_path):
         if offs == len(root_path):
             offs += 1
 
-    os_path_delimiter = os.path.join('a','b')[1]
-    sorted(result, key = lambda x: str(x.count(os_path_delimiter)) + x)
+    sorted(result, key = lambda x: str(x.count(os.path.sep)) + x)
     return sorted(result)
 
 
@@ -802,16 +831,64 @@ def get_file(domain, path, fields):
             return json.dumps(
                 {"ERROR": f"Getting file lock for file '{path}' of domain '{domain}' failed due to exception: {e}", **common})
 
-    # TODO: modification date
+    if "timestamp" in fields:
+        try:
+            result["timestamp"] = int(os.path.getmtime(full_path))
+        except Exception as e:
+            return json.dumps(
+                {"ERROR": f"Getting file timestamp for file '{path}' of domain '{domain}' failed due to exception: {e}", **common})
 
     return json.dumps(
         {"SUCCESS": True, "data": result, **common})
 
 
-# TODO: save_file   save/<path:path>
+@app.route('/rest/1.0/domain/<domain>/save/<path:path>')
+def file_save(domain, path):
+    """ Saves incoming data, returns required fields """
+    response.content_type = 'application/json'
+
+    print(f"file_save({domain},{path})")
+
+    common = {
+        "server_version": _VERSION,
+    }
+
+    content = request.json.get("content", None)
+    hash = request.json.get("hash", None)
+
+    if content is None:
+        return json.dumps(
+            {"ERROR": f"No file content provided!", **common})
+
+    if hash is None:
+        return json.dumps(
+            {"ERROR": f"No hash provided!", **common})
+
+    domains = get_domains()
+    if domain not in domains:
+       return json.dumps(
+            {"ERROR": f"Domain '{domain}' is not exists!", **common})
+
+    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
+    if domain_path is None:
+       return json.dumps(
+            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
+
+    full_path = os.path.join(domain_path, path)
+    if not os.path.isfile(full_path):
+       return json.dumps(
+            {"ERROR": f"File '{path}' is not found in domain '{domain}'", **common})
+
+    save_result = save_file(request, TOOL_HDELK, os.path.join(domain, path), test_schm=True)
+    # TODO: may it break because of other unsaved changes?
+    if save_result.get("SUCCESS", False) is not True:
+        return json.dumps(save_result)
+
+    fields = request.json.get("fields", ["timestamp"])
+    return get_file(domain, path, fields)
+
 # TODO: diagram     dia/<path:path>
 # TODO: commit
-
 
 def _file_hash(full_path):
     with open(full_path, "rb") as f:
@@ -821,7 +898,7 @@ def _file_hash(full_path):
 def _file_lock(full_path):
     if os.path.isfile(full_path):
         with open(full_path+".lock", "r") as f:
-            file_lock = f.readline().strip()
+            return f.readline().strip()
     else:
         return None
 

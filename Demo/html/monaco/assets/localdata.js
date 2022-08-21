@@ -4,6 +4,7 @@ class FileData {
     problemsRemote = 0
     source = null
     hash = null
+    timestamp = 0
 }
 
 
@@ -167,13 +168,14 @@ class LocalData {
         })
     }
 
-    addFile(filePath, source, hash) {
+    addFile(filePath, source, hash, timestamp) {
         return new Promise((resolve, reject) => {
             if (this.filesData[filePath] === undefined) {
                 this.filesData[filePath] = Object.assign(new FileData(), {
                     "currentValue": source,
                     "source": source,
-                    "hash": hash
+                    "hash": hash,
+                    "timestamp": timestamp,
                 });
                 this._store(this.co.filesData, this.filesData)
                     .then(
@@ -234,7 +236,8 @@ class LocalData {
         return new Promise((resolve, reject) => {
             if (this.filesData[filePath] !== undefined) {
                 let f = this.filesData[filePath];
-                f.currentValue = value
+                f.currentValue = value;
+                f.timestamp = new Date().getTime();
                 this._store(this.co.filesData, this.filesData)
                     .then(
                         () => { resolve("Success") },
