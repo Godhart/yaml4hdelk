@@ -280,9 +280,9 @@ def show_json(tool, path):
         return json.dumps(
             {"ERROR": f"Tool '{tool}' is not supported!", **common})
 
-    if True: # try:
+    try:
         _, _, schm = build_schm(tool, path, make_shell=False)
-    else: # except Exception as e:
+    except Exception as e:
         return json.dumps(
             {"ERROR": f"Failed due to exception {e}", **common})
     return json.dumps({"SUCCESS": True, "schematic": schm, **common})
@@ -379,9 +379,9 @@ def live_debug_post(subject):
     data = request.json.get("text", "{}")
     result = {}
 
-    if True: #try:
+    try:
         for line in data.split("\n"):
-            if True: #try:
+            try:
                 expr = Expression("", [0])
                 parse_line(line, expr)
                 units = {}
@@ -393,9 +393,9 @@ def live_debug_post(subject):
                     "units": units,
                     "nets": nets,
                 }
-            else: #except Exception as e:
+            except Exception as e:
                 result[line] = {"ERROR": f"Parsing line failed due to exception: {e}"}
-    else: #except Exception as e:
+    except Exception as e:
         return json.dumps({"ERROR": f"Processing expressions failed due to exception: {e}"})
 
     s_result = yaml.dump(result)
