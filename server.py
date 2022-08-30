@@ -1,6 +1,6 @@
+from typing import Tuple
 import os
 from bottle import Bottle, run, SimpleTemplate, request, static_file, response
-import hashlib
 import json
 import yaml
 import yaml4schm
@@ -8,35 +8,58 @@ from yaml4schm import load_unit, render_unit, connect, renderer, tool_adaptation
 from yaml4schm_defs import TOOL_HDELK, TOOL_D3HW
 from yaml4schm_defs import RENDER_ADD_MISSING_UNITS, RENDER_ADD_MISSING_PORTS
 from operators import parse_line, Expression
-from helpers import prints
+from server_data import new_domain, DataDomain
 
+
+# TODO: in the middle of migration to domain dict
 
 # TODO: add common header to all JSON responses (server version, args etc.)
-# TODO: add links to traverse into the deep
+# TODO: add domains config file
+# TODO: validate requests with JSON schema
+# TODO: add links onto schematic items to traverse into the deep (interactive inplace or open in a new page)
 # TODO: whiteboard mode
 
 #   https://bottlepy.org/docs/dev/async.html
 #   https://stackoverflow.com/questions/13318608/streaming-connection-using-python-bottle-multiprocessing-and-gevent
 
 
-_VERSION = "1.3b0.0"
+_VERSION = "1.4a0.0"
 _VERSION_HISTORY = {
+    "1.4": "added RESTful interface",
     "1.3": "supported changes in view/edit templates (svg styling)",
     "1.2": "+ live debug",
     "1.1": "+ editor mode, JSON output",
     "1.0": "Renders schematics from files on server",
 }
 
-_DOMAINS = None
+_versions = {
+    "yaml4schm_version": yaml4schm._VERSION,
+    "server_version": _VERSION,
+}
+
+
+_DOMAINS = {}
+
+_POST = "POST"
+_GET  = "GET"
+
 def get_domains():
-    if _DOMAINS is None:
-        _DOMAINS = ["Demo"]
+    if len(_DOMAINS) == 0:
+        _DOMAINS["Demo"] = new_domain("Demo", "./Demo")
         env = [*os.environ.keys()]
         domain_prefix = "YAML4SCHM_FILES_DOMAIN_"
         for k in env:
+            # TODO: read configs
+            # TODO: create domain that corresponds to it's kind (fs, http, git)
             if k[:len(domain_prefix)] == domain_prefix:
-                _DOMAINS.append(k[len(domain_prefix):])
-    return [*_DOMAINS]
+                domain_name = k[len(domain_prefix):].lower()
+                _DOMAINS[domain_name] = new_domain(
+                    name=domain_name,
+                    path=os.environ.get(k)
+                )
+    return _DOMAINS
+
+
 get_domains()
 
 reload_template = os.environ.get("RELOAD_TEMPLATE", "FALSE").upper() == "TRUE"
@@ -108,18 +131,23 @@ for _tool in templates:
 
 def _internal_path(path):
     """Convert URL path into the path on the hosting server"""
+    # TODO: remove this
 
     path_items = path.split('/')
     if len(path_items) < 2:
-        raise ValueError("<pre>Use following URL Format: /&lt;tool_name&gt;/show/&lt;files_domain&gt;/&lt;file_path&gt;</pre>")  # TODO: 404
+        raise ValueError(
+            "<pre>Use following URL Format: /&lt;tool_name&gt;/show/&lt;files_domain&gt;/&lt;file_path&gt;</pre>")  # TODO: 404
     if "/../" in path:
-        raise ValueError("<pre>Hierarchy ('..' items) in the file path is not supported!<pre>")
+        raise ValueError(
+            "<pre>Hierarchy ('..' items) in the file path is not supported!<pre>")
     if path_items[0] == "demo":
         files_domain = "Demo"
     else:
-        files_domain = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+path_items[0].upper(), None)
+        files_domain = os.environ.get(
+            "YAML4SCHM_FILES_DOMAIN_"+path_items[0].upper(), None)
         if files_domain is None:
-            raise ValueError(f"<pre>Files domain '{path_items[0]}' is not defined!</pre>")  # TODO: 404
+            raise ValueError(
+                f"<pre>Files domain '{path_items[0]}' is not defined!</pre>")  # TODO: 404
     return files_domain, files_domain + "/" + "/".join(path_items[1:])
 
 
@@ -127,10 +155,10 @@ def build_schm(tool, source_data, make_shell, override_source_text=None, create=
     """Build schematic data out of YAML description"""
 
     print(f"build_schm(\n  tool={tool},\n  source_data={source_data},\n"
-    "  make_shell={make_shell},\n  override_source_text={override_source_text})")
+          "  make_shell={make_shell},\n  override_source_text={override_source_text})")
     load_from_file = False
 
-    if isinstance (source_data, str):
+    if isinstance(source_data, str):
         load_from_file = True
         path = source_data
         files_domain, file_path = _internal_path(path)
@@ -143,10 +171,11 @@ def build_schm(tool, source_data, make_shell, override_source_text=None, create=
         else:
             if not os.path.exists(file_path):
                 if not create:
-                    raise ValueError(f"File {source_data} is not found!")       # TODO: 404
+                    raise ValueError(
+                        f"File {source_data} is not found!")       # TODO: 404
                 else:
                     source = override_source_text = \
-r"""# You are about to create a new file
+                        r"""# You are about to create a new file
 # This is a text for a welcome-stub
 # Just replace it with your diagram description
 # Check the URL for typos if it's not what you are intended to do
@@ -160,7 +189,8 @@ nets:
   - [   EXAMPLES.GOT_IDEA,     YOUR_IMAGINATION.IDEAS,         name:DO_IT      ]
 """
             elif not os.path.isfile(file_path):
-                raise ValueError(f"Path {source_data} is directory, not file!") # TODO: 404
+                raise ValueError(
+                    f"Path {source_data} is directory, not file!")  # TODO: 404
             else:
                 with open(file_path, "r") as f:
                     source = f.read()
@@ -168,7 +198,8 @@ nets:
         unit_data = source_data
     else:
         source_string = yaml.dump(source_data)
-        unit_data = f"@{file_path}"  # TODO: looks like file_path isn't set in case if source data isn't filepath
+        # TODO: looks like file_path isn't set in case if source data isn't filepath
+        unit_data = f"@{file_path}"
 
     if make_shell is True and override_source_text is None:
         hunit = yaml.dump({
@@ -185,7 +216,8 @@ nets:
     old_root = yaml4schm._ROOT_PATH
     yaml4schm._ROOT_PATH = files_domain
     try:
-        data = load_unit(file_path, "", "", {}, None, yaml_string=source_string)
+        data = load_unit(file_path, "", "", {}, None,
+                         yaml_string=source_string)
         if hunit is not None:
             hdata = load_unit(file_path, "", "", {}, None, yaml_string=hunit)
         else:
@@ -218,13 +250,13 @@ def render(tool, source_data, make_shell, draw_only=False, title=""):
         tooler = renderers[tool][VIEW]
 
     if draw_only:
-        meta=""
-        stylesheet=""
-        static_svg="false"
+        meta = ""
+        stylesheet = ""
+        static_svg = "false"
     else:
-        meta='<meta charset="utf-8">'
-        stylesheet=""
-        static_svg="false"
+        meta = '<meta charset="utf-8">'
+        stylesheet = ""
+        static_svg = "false"
 
     return tooler.render(
         yaml4schm_version=yaml4schm._VERSION,
@@ -269,23 +301,19 @@ def show_json(tool, path):
 
     common = {
         "tool": tool,
-        "path": path,
-        "yaml4schm_version": yaml4schm._VERSION,
-        "server_version": _VERSION,
+        "path": path
     }
 
     response.content_type = 'application/json'
     print(f"show_json(\n  tool={tool},\n  path={path})")
     if tool not in _allowed_tools:
-        return json.dumps(
-            {"ERROR": f"Tool '{tool}' is not supported!", **common})
+        return _error(f"Tool '{tool}' is not supported!", common)
 
     try:
         _, _, schm = build_schm(tool, path, make_shell=False)
     except Exception as e:
-        return json.dumps(
-            {"ERROR": f"Failed due to exception {e}", **common})
-    return json.dumps({"SUCCESS": True, "schematic": schm, **common})
+        return _error(f"Failed due to exception {e}", common)
+    return _success({"schematic": schm}, common)
 
 
 @app.route('/<tool>/edit/<path:path>', method="GET")
@@ -300,9 +328,9 @@ def editor(tool, path):
     else:
         tooler = renderers[tool][EDIT]
 
-    meta='<meta charset="utf-8">'
-    stylesheet=''
-    static_svg="false"
+    meta = '<meta charset="utf-8">'
+    stylesheet = ''
+    static_svg = "false"
 
     return tooler.render(
         yaml4schm_version=yaml4schm._VERSION,
@@ -318,28 +346,32 @@ def editor(tool, path):
         display_customizations="")
 
 
-@app.route('/<tool>/edit/<path:path>', method="POST")
+@app.route('/<tool>/edit/<path:path>', method=_POST)
 def edit(tool, path):
     """ Server-side business logic to react on changes in the editor """
     response.content_type = 'application/json'
     print(f"edit(\n  tool={tool},\n  path={path})")
     if tool not in _allowed_tools:
-        return json.dumps({"ERROR": f"Tool '{tool}' is not supported!"})
+        return _error(f"Tool '{tool}' is not supported!", {})
 
     data = request.json.get("text", "{}")
 
     try:
-        source, _, schm = build_schm(tool, path, make_shell=False, override_source_text=data, create=True)
+        source, _, schm = build_schm(
+            tool, path, make_shell=False, override_source_text=data, create=True)
     except Exception as e:
-        return json.dumps({"ERROR": f"Rendering schematic failed due to exception: {e}"})
+        return _error(f"Rendering schematic failed due to exception: {e}", {})
 
-    _, file_path = _internal_path(path)
-    if os.path.exists(file_path):
-        hash = _file_hash(file_path)
+    path_items = path.split("/")
+    domain = path_items[0]
+    file_path = "/".join(path_items[1:])
+    domain, error = _get_domain(domain)
+    if error is None:
+        hash = domain.get_files_hash([file_path])[file_path]
     else:
         hash = None
 
-    return json.dumps({"SUCCESS": True, "diagram": schm, "source": source, "hash": hash})
+    return _success({"diagram": schm, "source": source, "hash": hash}, {})
 
 
 @app.route('/live/debug/<subject>', method="GET")
@@ -356,8 +388,8 @@ def live_debug_get(subject):
         r"% include('editor_tpl.html', tool=tool, editor=editor, file_path=file_path)"
     )
 
-    meta='<meta charset="utf-8">'
-    stylesheet=''
+    meta = '<meta charset="utf-8">'
+    stylesheet = ''
 
     return tooler.render(
         yaml4schm_version=yaml4schm._VERSION,
@@ -370,7 +402,7 @@ def live_debug_get(subject):
         title="Expressions")
 
 
-@app.route('/live/debug/<subject>', method="POST")
+@app.route('/live/debug/<subject>', method=_POST)
 def live_debug_post(subject):
     """ Server-side business logic to react on changes in the editor """
     response.content_type = 'application/json'
@@ -387,85 +419,64 @@ def live_debug_post(subject):
                 units = {}
                 nets = []
                 output_net = expr.export(units, nets, "Top")
-                result[line] =  {
-                    "expr" : expr.as_dict(),
+                result[line] = {
+                    "expr": expr.as_dict(),
                     "output_net": output_net,
                     "units": units,
                     "nets": nets,
                 }
             except Exception as e:
-                result[line] = {"ERROR": f"Parsing line failed due to exception: {e}"}
+                result[line] = {
+                    "ERROR": f"Parsing line failed due to exception: {e}"}
     except Exception as e:
-        return json.dumps({"ERROR": f"Processing expressions failed due to exception: {e}"})
+        return _error({f"Processing expressions failed due to exception: {e}"}, {})
 
     s_result = yaml.dump(result)
     print(s_result)
-    return json.dumps({"SUCCESS": True, "diagram": s_result, "source": data, "hash": None})
+    return _success({"diagram": s_result, "source": data, "hash": None}, {})
 
 
-@app.route('/<tool>/save/<path:path>', method="POST")
-def save(tool, path):
+@app.route('/<tool>/save/<path:path>', method=_POST)
+def save_by_path(tool, path):
     """ Save schematic from editor onto hosing server drive """
     response.content_type = 'application/json'
-    common = {
-        "server_version": _VERSION,
-    }
     print(f"save(\n  tool={tool},\n  path={path})")
     if tool not in _allowed_tools:
-        return json.dumps({"ERROR": f"Tool '{tool}' is not supported!"})
+        return _error(f"Tool '{tool}' is not supported!", {})
 
-    return json.dumps(save_file(request, tool, path), **common)
+    path_items = path.split("/")
+    domain = path_items[0]
+    file_path = "/".join(path_items[1:])
 
+    domain, error = _get_domain(domain)
+    if error is not None:
+        return _error(error, {})
 
-def save_file(request, tool, path, test_schm=True, dry_run=False):
-
-    data = request.json.get("text", None)
-    if data is None:
-        data = request.json.get("content", None)
-    else:
-        if request.json.get("content", None) is not None:
-            return {"ERROR": f"Only one of 'text' or 'content' field should be present at once"}
-    if data is None:
-        return {"ERROR": f"Source text is missing!"}
+    data = {file_path: {}}
+    text = request.json.get("text", None)
+    if text is not None:
+        data[file_path]["content"] = text
+    hash = request.json.get("hash", None)
+    if hash is not None:
+        data[file_path]["hash"] = hash
 
     # Build schematics to make sure data is OK
-    if test_schm is True:
-        try:
-            source, _, schm = build_schm(tool, path, make_shell=False, override_source_text=data, create=True)
-        except Exception as e:
-            return {"ERROR": f"Schematic check failed due to exception: {e}!"}
-    else:
-        source = data
-        schm = None
+    try:
+        content, _, diagram = build_schm(
+            tool, path, make_shell=False, override_source_text=text, create=True)
+    except Exception as e:
+        return _error(f"Schematic check failed due to exception: {e}!", {})
 
-    # Check there were no changes since editor were opened
-    _, file_path = _internal_path(path)
-    if os.path.exists(file_path):
-        hash = _file_hash(file_path)
-    else:
-        hash = None
+    result, error = save_then_get(
+        domain, data, ["hash"])
+    if error is not None:
+        return _error(error, {})
 
-    last_hash = request.json.get("hash", None)
-    if hash != last_hash:
-        return {"ERROR": f"File '{path}' were changed since last checkout.\nPlease save your work to offline file then update page and merge your changes."}
-
-    lock = _file_lock(file_path)
-    if lock is not None:
-        secret = request.json.get("secret", None)
-        if secret is None:
-            return {"ERROR": f"No secret were provided!"}
-
-        client_lock = _lock_hash(secret)
-        if client_lock != lock:
-            return {"ERROR": f"Secret is wrong!"}
-
-    if not dry_run:
-        with open(file_path, "w") as f:
-            f.write(data)
-
-        hash = _file_hash(file_path)
-
-    return {"SUCCESS": True, "diagram": schm, "source": source, "hash": hash}
+    return _success({
+        "diagram": diagram,
+        "source": content,
+        "hash": result["files"][file_path]["hash"]
+    }, {})
 
 
 @app.route('/<tool>/test')
@@ -502,409 +513,319 @@ def monaco(path):
 @app.route('/rest/1.0/domains/domainsList')
 def domains_list():
     """ Return list of available domains """
-    common = {
-        "server_version": _VERSION,
-    }
-
     response.content_type = 'application/json'
     print(f"domains_list()")
-    return json.dumps({"SUCCESS": True, "domains": get_domains(), **common})
+
+    common = {}
+
+    return _success({"domains": sorted(get_domains().keys())}, common)
 
 
 @app.route('/rest/1.0/domain/<domain>/filesList')
 def files_list(domain):
     """ Return list of available files within domain """
-    common = {
-        "server_version": _VERSION,
-    }
-
     response.content_type = 'application/json'
-    print(f"files_list({domain})")
+    print(f"files_list({domain}, ...)")
 
-    domains = get_domains()
-    if domain not in domains:
-       return json.dumps(
-            {"ERROR": f"Domain '{domain}' is not exists!", **common})
+    common = {"domain": domain}
 
-    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
-    if domain_path is None:
-       return json.dumps(
-            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
+    domain, error = _get_domain(domain)
+    if error is not None:
+        return _error(error, common)
 
-    files = list_files(domain_path)
-
-    return json.dumps({"SUCCESS": True, "files": files, **common})
-
-
-def list_files(root_path):
-    result = []
-    offs = len(root_path)
-    for root, dirs, files in os.walk(root_path):
-        result += [os.path.join(root[offs:], f) for f in files if f[-4:].lower() == ".yml" or f[-5:].lower() == ".yaml"]
-        if offs == len(root_path):
-            offs += 1
-
-    sorted(result, key = lambda x: str(x.count(os.path.sep)) + x)
-    return sorted(result)
+    try:
+        files = domain.list_files()
+        return _success({"files": files}, common)
+    except Exception as e:
+        return _error(f"Failed due to exception: {e}", common)
 
 
 @app.route('/rest/1.0/domain/<domain>/filesHash')
 def files_hash(domain):
     """ Return hashes of available files within domain """
     response.content_type = 'application/json'
-
     print(f"files_hash({domain})")
 
-    return get_files_hash(domain, None)
+    common = {"domain": domain}
+
+    domain, error = _get_domain(domain)
+    if error is not None:
+        return _error(error, common)
+
+    try:
+        return _success({"hashes": domain.get_files_hash(None)}, common)
+    except Exception as e:
+        return _error(f"Failed due to exception: {e}", common)
 
 
-@app.route('/rest/1.0/domain/<domain>/filesHash', method="POST")
+@app.route('/rest/1.0/domain/<domain>/filesHash', method=_POST)
 def files_hash_post(domain):
     """ Return hashes of specified files """
     response.content_type = 'application/json'
-
+    files = request.json.get("filesList", None)
     print(f"files_hash_post({domain}, ...)")
 
-    files = request.json.get("filesList", "[]")
-    return get_files_hash(domain, files)
+    common = {"domain": domain}
 
+    domain, error = _get_domain(domain)
+    if error is not None:
+        return _error(error, common)
 
-def get_files_hash(domain, files):
-    """ Return hashes for specified files within domain """
-    common = {
-        "server_version": _VERSION,
-    }
-
-    domains = get_domains()
-    if domain not in domains:
-       return json.dumps(
-            {"ERROR": f"Domain '{domain}' is not exists!", **common})
-
-    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
-    if domain_path is None:
-       return json.dumps(
-            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
-
-    if files is None:
-        files = list_files(domain_path)
-
-    hashes = {}
-    for file_path in files:
-        full_path = os.path.join(domain_path, file_path)
-        if os.path.isfile(full_path):
-            hashes[file_path] = _file_hash(full_path)
-        else:
-            hashes[file_path] = None
-
-    return json.dumps({"SUCCESS": True, "hashes": hashes, **common})
+    try:
+        return _success({"hashes": domain.get_files_hash(files)}, common)
+    except Exception as e:
+        return _error(f"Failed due to exception: {e}", common)
 
 
 @app.route('/rest/1.0/domain/<domain>/filesLock')
 def files_lock(domain):
     """ Return lock info of available files within domain """
     response.content_type = 'application/json'
-
     print(f"files_lock({domain})")
 
-    return get_files_lock(domain, None)
+    common = {"domain": domain}
+
+    domain, error = _get_domain(domain)
+    if error is not None:
+        return _error(error, common)
+
+    try:
+        return _success({"locks": domain.get_files_lock(None)}, common)
+    except Exception as e:
+        return _error(f"Failed due to exception: {e}", common)
 
 
-@app.route('/rest/1.0/domain/<domain>/filesHash', method="POST")
-def files_hash_post(domain):
+@app.route('/rest/1.0/domain/<domain>/filesLock', method=_POST)
+def files_lock_post(domain):
     """ Return lock info of specified files """
     response.content_type = 'application/json'
-
+    files = request.json.get("filesList", None)
     print(f"files_lock_post({domain}, ...)")
 
-    files = request.json.get("filesList", "[]")
-    return get_files_lock(domain, files)
+    common = {"domain": domain}
+
+    domain, error = _get_domain(domain)
+    if error is not None:
+        return _error(error, common)
+
+    try:
+        return _success({"locks": domain.get_files_lock(files)}, common)
+    except Exception as e:
+        return _error(f"Failed due to exception: {e}", common)
 
 
-def get_files_lock(domain, files):
-    """ Return lock info for specified files within domain """
-    common = {
-        "server_version": _VERSION,
-    }
-
-    domains = get_domains()
-    if domain not in domains:
-       return json.dumps(
-            {"ERROR": f"Domain '{domain}' is not exists!", **common})
-
-    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
-    if domain_path is None:
-       return json.dumps(
-            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
-
-    if files is None:
-        files = list_files(domain_path)
-
-    locks = {}
-    for file_path in files:
-        full_path = os.path.join(domain_path, file_path)
-        if os.path.isfile(full_path):
-            if os.path.exists(full_path+".lock"):
-                try:
-                    with open(full_path+".lock", "r") as f:
-                        locks[file_path] = f.readline()
-                except:
-                    locks[file_path] = None
-            # NOTE: not locked files are not returned
-        else:
-            locks[file_path] = None
-
-    return json.dumps({"SUCCESS": True, "locks": locks, **common})
-
-
-@app.route('/rest/1.0/domain/<domain>/lock/<path:path>', method="POST")
+@app.route('/rest/1.0/domain/<domain>/lock/<path:path>', method=_POST)
 def file_lock(domain, path):
     """ Sets lock on file """
     response.content_type = 'application/json'
-
-    common = {
-        "server_version": _VERSION,
-    }
-
-    print(f"file_lock({domain},{path})")
-
-    domains = get_domains()
-    if domain not in domains:
-       return json.dumps(
-            {"ERROR": f"Domain '{domain}' is not exists!", **common})
-
-    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
-    if domain_path is None:
-       return json.dumps(
-            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
-
-
     do_lock = request.json.get("set", "False")
-    force   = request.json.get("force", "False")
-    secret  = request.json.get("secret", None)
-    test    = request.json.get("test", "False")
+    force = request.json.get("force", "False")
+    secret = request.json.get("secret", None)
+    test = request.json.get("test", "False")
+    print(
+        f"file_lock({domain},{path},do_lock={do_lock},force={force},secret={secret},test={test})")
 
     if do_lock is not True and test is not True:
-       return json.dumps(
-            {"ERROR": f"Wrong parameter! Determine what you want!", **common})
+        return _error("Wrong parameter! Determine what you want!", common)
 
     if secret is None:
-       return json.dumps(
-            {"ERROR": f"No secret were provided!", **common})
+        return _error(f"No secret were provided!", common)
 
-    lock = _lock_hash(secret)
-    if test:
-        return json.dumps({"SUCCESS": True, "lock": lock, **common})
+    common = {"domain": domain, "do_lock": do_lock,
+              "force": force, "secret": secret, "test": test}
 
-    full_path = os.path.join(domain_path, path)
-    if not os.path.isfile(full_path):
-       return json.dumps(
-            {"ERROR": f"File '{path}' is not found in domain '{domain}'", **common})
-    if not force and os.path.exists(full_path+".lock"):
-        return json.dumps(
-            {"ERROR": f"File '{path}' in domain '{domain}' is already locked", **common}
-        )
-    try:
-        with open(full_path+".lock", "w") as f:
-            f.write(lock)
-    except Exception as e:
-        return json.dumps(
-            {"ERROR": f"Failed to set lock due to exception: {e}! ", **common})
+    domain, error = _get_domain(domain)
+    if error is not None:
+        return _error(error, common)
 
-    return json.dumps({"SUCCESS": True, "lock": lock, **common})
+    lock, error = domain.lock(path, force, secret, dry_run=test)
+    if error is not None:
+        return _error(error, common)
+    else:
+        return _success({"lock": lock}, common)
 
 
-@app.route('/rest/1.0/domain/<domain>/unlock/<path:path>', method="POST")
+@app.route('/rest/1.0/domain/<domain>/unlock/<path:path>', method=_POST)
 def file_unlock(domain, path):
     """ Removes lock from file """
     response.content_type = 'application/json'
-
-    common = {
-        "server_version": _VERSION,
-    }
-
+    secret = request.json.get("secret", None)
+    force = request.json.get("force", "False")
     print(f"file_unlock({domain},{path})")
 
-    domains = get_domains()
-    if domain not in domains:
-       return json.dumps(
-            {"ERROR": f"Domain '{domain}' is not exists!", **common})
+    common = {"domain": domain, "path": path, "secret": secret, "force": force}
 
-    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
-    if domain_path is None:
-       return json.dumps(
-            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
+    domain, error = _get_domain(domain)
+    if error is not None:
+        return _error(error, common)
 
-    force = request.json.get("force", "False")
-    secret = request.json.get("secret", None)
-
-    if secret is None:
-       return json.dumps(
-            {"ERROR": f"No secret were provided!", **common})
-
-    lock = _lock_hash(secret)
-
-    full_path = os.path.join(domain_path, path)
-    if not os.path.isfile(full_path):
-       return json.dumps(
-            {"ERROR": f"File '{path}' is not found in domain '{domain}'", **common})
-
-    if not os.path.exists(full_path+".lock"):
-        return json.dumps({"SUCCESS": True, **common})
-
-    try:
-        file_lock = _file_lock(full_path)
-        if not force and lock != file_lock:
-            return json.dumps({"ERROR": f"Secret is wrong!", **common})
-        os.remove(full_path+".lock")
-    except:
-        return json.dumps(
-            {"ERROR": f"Failed to set lock!", **common})
-
-    return json.dumps({"SUCCESS": True, **common})
+    _, error = domain.unlock(path, secret, force)
+    if error is not None:
+        return _error(error, common)
+    else:
+        return _success({}, common)
 
 
 @app.route('/rest/1.0/domain/<domain>/files/<path:path>')
 def file_content(domain, path):
     """ Returns file content """
     response.content_type = 'application/json'
-
     print(f"file_content({domain},{path})")
 
-    return get_file(domain, path, ["content"])
+    common = {"domain": domain, "path": path}
+
+    domain, error = _get_domain(domain)
+    if error is not None:
+        return _error(error, common)
+
+    result, error = domain.get_file(path, ["content"])
+    if error is not None:
+        return _error(error, common)
+    else:
+        return _success({"data": result}, common)
 
 
-@app.route('/rest/1.0/domain/<domain>/files/<path:path>')
+@app.route('/rest/1.0/domain/<domain>/files/<path:path>', method=_POST)
 def file_content_post(domain, path):
     """ Returns file content """
     response.content_type = 'application/json'
-
-    print(f"file_content_post({domain},{path})")
-
     fields = request.json.get("fields", ["content"])
+    print(f"file_content_post({domain},{path},fields={fields})")
 
-    return get_file(domain, path, fields)
+    common = {"domain": domain, "path": path, "fields": fields}
 
+    domain, error = _get_domain(domain)
+    if error is not None:
+        return _error(error, common)
 
-def get_file(domain, path, fields):
-    common = {
-        "server_version": _VERSION,
-    }
-
-    domains = get_domains()
-    if domain not in domains:
-       return json.dumps(
-            {"ERROR": f"Domain '{domain}' is not exists!", **common})
-
-    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
-    if domain_path is None:
-       return json.dumps(
-            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
-
-    full_path = os.path.join(domain_path, path)
-    if not os.path.isfile(full_path):
-       return json.dumps(
-            {"ERROR": f"File '{path}' is not found in domain '{domain}'", **common})
-
-    result = {}
-
-    if "content" in fields:
-        try:
-            with open(full_path, "r") as f:
-                result["content"] = f.read()
-        except Exception as e:
-            return json.dumps(
-                {"ERROR": f"File read '{path}' of domain '{domain}' failed due to exception: {e}", **common})
-
-    if "hash" in fields:
-        try:
-            result["hash"] = _file_hash(full_path)
-        except Exception as e:
-            return json.dumps(
-                {"ERROR": f"Getting file hash for file '{path}' of domain '{domain}' failed due to exception: {e}", **common})
-
-    if "lock" in fields:
-        try:
-            lock = _file_lock(full_path)
-            if lock is not None:
-                result["lock"] = lock
-        except Exception as e:
-            return json.dumps(
-                {"ERROR": f"Getting file lock for file '{path}' of domain '{domain}' failed due to exception: {e}", **common})
-
-    if "timestamp" in fields:
-        try:
-            result["timestamp"] = int(os.path.getmtime(full_path))
-        except Exception as e:
-            return json.dumps(
-                {"ERROR": f"Getting file timestamp for file '{path}' of domain '{domain}' failed due to exception: {e}", **common})
-
-    return json.dumps(
-        {"SUCCESS": True, "data": result, **common})
+    result, error = domain.get_file(path, fields)
+    if error is not None:
+        return _error(error, common)
+    else:
+        return _success({"data": result}, common)
 
 
-@app.route('/rest/1.0/domain/<domain>/save/<path:path>')
-def file_save(domain, path):
-    """ Saves incoming data, returns required fields """
+@app.route('/rest/1.0/domain/<domain>/save')
+def save_rest(domain):
+    """ Saves incoming data (multiple files), returns requested fields of saved content """
     response.content_type = 'application/json'
 
-    print(f"file_save({domain},{path})")
+    print(f"save_rest({domain})")
 
-    common = {
-        "server_version": _VERSION,
-    }
+    fields = request.get("fields", [])
+    dry_run = request.get("dry_run", [])
 
-    content = request.json.get("content", None)
-    hash = request.json.get("hash", None)
+    common = {"domain": domain, "fields": fields, "dry_run": dry_run}
 
-    if content is None:
-        return json.dumps(
-            {"ERROR": f"No file content provided!", **common})
+    domain, error = _get_domain(domain)
+    if error is not None:
+        return _error(error, common)
 
-    if hash is None:
-        return json.dumps(
-            {"ERROR": f"No hash provided!", **common})
+    data = request.json.get("data", None)
+    if data is None:
+        return _error("No data provided!", common)
 
-    domains = get_domains()
-    if domain not in domains:
-       return json.dumps(
-            {"ERROR": f"Domain '{domain}' is not exists!", **common})
+    if not isinstance(data, dict):
+        return _error("Data should be a dict with file paths as keys, and content + previous hash as data + secret of unlocking locked files!", common)
 
-    domain_path = os.environ.get("YAML4SCHM_FILES_DOMAIN_"+domain.upper(), None)
-    if domain_path is None:
-       return json.dumps(
-            {"ERROR": f"Failed to obtain path for domain '{domain}'!", **common})
+    save_result, error = save_then_get(
+        domain, data, fields, dry_run
+    )
+    if error is not None:
+        return _error(error, common)
 
-    full_path = os.path.join(domain_path, path)
-    if not os.path.isfile(full_path):
-       return json.dumps(
-            {"ERROR": f"File '{path}' is not found in domain '{domain}'", **common})
+    return _success({"data": save_result["files"]}, common)
 
-    save_result = save_file(request, TOOL_HDELK, os.path.join(domain, path), test_schm=True)
-    # TODO: may it break because of other unsaved changes?
-    if save_result.get("SUCCESS", False) is not True:
-        return json.dumps(save_result)
 
-    fields = request.json.get("fields", ["timestamp"])
-    return get_file(domain, path, fields)
+def save_then_get(domain: DataDomain, files, fields, dry_run=False):
+    # Check content, hash, lock
+    errors = []
+    current_hashes = domain.get_files_hash(files.keys())
+    current_locks = domain.get_files_lock(files.keys())
+    for file_path, v in files.items():
+        content = v.get("content", None)
+        if content is None:
+            errors.append(f"No file content provided for '{file_path}'!")
+        else:
+            if not isinstance(content, str):
+                errors.append(f"Content for '{file_path}' is not a string!")
+
+        previous_hash = v.get("hash", None)
+        if previous_hash is None:
+            errors.append(f"No hash provided for '{file_path}'!")
+        else:
+            if previous_hash != current_hashes.get(file_path, None):
+                errors.append(
+                    f"Content of '{file_path}' were changed on server since your last checkout."
+                    " Sync your data (stash, reload, apply) before saving!")
+
+        current_lock = current_locks.get(file_path, "")
+        if current_lock is not None and current_lock != "":
+            secret = v.get("secret", None)
+            if secret is None:
+                errors.append(
+                    f"File '{file_path}' is locked but no secret were provided to unlock!")
+
+            client_lock = domain._lock_hash(secret)
+            if client_lock != current_lock:
+                errors.append(
+                    f"Secret for unlocking file '{file_path}' is wrong!")
+
+    if len(errors) > 0:
+        return None, "Files related errors:\n  - " + '\n  - '.join(errors)
+
+    # Save data
+    _, error = _save_files(domain, files, dry_run)
+    if error is not None:
+        return None, error
+
+    # Return requested results
+    result = {"files": {}}
+
+    if not dry_run:
+        if len(fields) > 0:
+            for k in files.keys():
+                file_data, error = domain.get_file(k, fields)
+                if error is not None:
+                    result["files"][k] = {"ERROR": "Readback error - " + error}
+                else:
+                    result["files"][k] = {**file_data}
+
+    return result, None
+
+
+def _save_files(domain: DataDomain, files, dry_run=False):
+
+    errors = []
+    if not dry_run:
+        for file_path, v in files.items():
+            _, save_error = domain.save_file(file_path, v.get("content", None))
+            if save_error is not None:
+                errors.append(save_error)
+    if len(errors) > 0:
+        return None, "Files related errors:\n  - " + '\n  - '.join(errors)
+
+    return True, None
+
 
 # TODO: diagram     dia/<path:path>
 # TODO: commit
 
-def _file_hash(full_path):
-    with open(full_path, "rb") as f:
-        return hashlib.md5(f.read()).hexdigest()
+
+def _get_domain(domain) -> Tuple[DataDomain, str]:
+    domains = get_domains()
+    if domain not in domains:
+        return None, f"Domain '{domain}' is not exists!"
+    return domains[domain], None
 
 
-def _file_lock(full_path):
-    if os.path.isfile(full_path):
-        with open(full_path+".lock", "r") as f:
-            return f.readline().strip()
-    else:
-        return None
+def _error(message, rest):
+    return json.dumps({"ERROR": message, **rest, **_versions})
 
 
-def _lock_hash(secret):
-    return hashlib.md5(str(secret).encode()).hexdigest()
+def _success(data, rest):
+    return json.dumps({"SUCCESS": True, **data, **rest, **_versions})
+
 
 if __name__ == "__main__":
     host = os.environ.get("SERVER_HOST", "localhost")
