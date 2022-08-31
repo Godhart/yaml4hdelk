@@ -41,7 +41,8 @@ _versions = {
 _DOMAINS = {}
 
 _POST = "POST"
-_GET  = "GET"
+_GET = "GET"
+
 
 def get_domains():
     if len(_DOMAINS) == 0:

@@ -250,7 +250,8 @@ class DataDomain:
 
         if _TIMESTAMP in fields:
             try:
-                result[_TIMESTAMP] = self._file_timestamp(file_path, custom_data)
+                result[_TIMESTAMP] = self._file_timestamp(
+                    file_path, custom_data)
             except Exception as e:
                 return None, f"Getting file timestamp for file '{file_path}' of domain '{self.name}' failed due to exception: {e}"
 
