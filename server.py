@@ -11,7 +11,9 @@ from operators import parse_line, Expression
 from server_data import new_domain, DataDomain
 
 
-# TODO: in the middle of migration to domain dict
+# TODO: REST lookup to get files by path pattern
+# TODO: REST diagram     dia/<path:path>
+# TODO: REST commit
 
 # TODO: add common header to all JSON responses (server version, args etc.)
 # TODO: add domains config file
@@ -807,10 +809,6 @@ def _save_files(domain: DataDomain, files, dry_run=False):
         return None, "Files related errors:\n  - " + '\n  - '.join(errors)
 
     return True, None
-
-
-# TODO: diagram     dia/<path:path>
-# TODO: commit
 
 
 def _get_domain(domain) -> Tuple[DataDomain, str]:
