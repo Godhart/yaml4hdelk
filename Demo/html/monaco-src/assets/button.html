@@ -1,0 +1,48 @@
+<html>
+
+<head>
+    <link href="dark.css" rel="stylesheet">
+</head>
+
+<body class="tool">
+    <table>
+        <tr>
+            <td>
+                <button class="tool b-but" title="Tooltip!"
+                    onclick="this.classList.add('tool-hidden'); this.classList.remove('tool')" ;>Text</button>
+                <button class="tool b-red" onclick="this.classList.add('tool-hidden'); this.classList.remove('tool')"
+                    ;>Red</button>
+                <button class="tool b-green" onclick="this.classList.add('tool-hidden'); this.classList.remove('tool')"
+                    ;>Green</button>
+                <button class="tool b-blue" onclick="this.classList.add('tool-hidden'); this.classList.remove('tool')"
+                    ;>Blue</button>
+                <button class="tool b-yellow" onclick="this.classList.add('tool-hidden'); this.classList.remove('tool')"
+                    ;>Yellow</button>
+                <button class="tool b-orange" onclick="this.classList.add('tool-hidden'); this.classList.remove('tool')"
+                    ;>Orange</button>
+                <button class="tool b-but f-greyed disabled" onclick="" ;>Greyed</button>
+                <button class="tool b-t" onclick="this.classList.add('tool-hidden'); this.classList.remove('tool')"
+                    ;>Transp</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button class="tool bf-t" title="Tooltip!"
+                    onclick="this.classList.add('tool-hidden'); this.classList.remove('tool')" ;>Text</button>
+                <button class="tool bf-t f-red disabled" title="Can't do this right now!" onclick="" ;>Red</button>
+                <button class="tool bf-t f-green"
+                    onclick="this.classList.add('tool-hidden'); this.classList.remove('tool')" ;>Green</button>
+                <button class="tool bf-t f-blue"
+                    onclick="this.classList.add('tool-hidden'); this.classList.remove('tool')" ;>Blue</button>
+                <button class="tool bf-t f-yellow" data-xxx="green"
+                    onclick="this.classList.add('tool-hidden'); this.classList.remove('tool')" ;>Yellow</button>
+                <button class="tool bf-t f-orange"
+                    onclick="this.classList.add('tool-hidden'); this.classList.remove('tool')" ;>Orange</button>
+                <button class="tool bf-t f-greyed disabled" onclick="" ;>Greyed</button>
+                <button class="tool b-red disabled" title="Can't do this right now!" onclick="" ;>Red Disabled</button>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

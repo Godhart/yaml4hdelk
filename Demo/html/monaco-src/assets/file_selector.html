@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<!-- Inspired with https://codepen.io/aardrian/pen/VoQbLm, https://adrianroselli.com/2019/09/table-with-expando-rows.html -->
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Test for file browser</title>
+    <link href="dark.css" rel="stylesheet">
+</head>
+
+<body class="tool">
+
+    <script>
+        const Eye = "&#128065;"
+        const Star = "&#9733;"
+        const Pencil = "&#128393;"
+        const Lock = "&#9919;"
+        const ClosedFolder = "&#128448;"
+        const ExpandedFolder = "&#128449;"
+        const Save = "&#128427;"
+        const Recycle = "&#9851;"
+        const Undo = "&#9100;"
+        const Warning = "&#9888;"
+        const Stop = "&#11203;"
+        const Refresh = "&#128472;"
+        const DocText = "&#128441;"
+        const DocPic = "&#128443;"
+        const Circle = "&#9679;"
+        const Link = "&#128279;"
+
+        // Populate table
+        const filez = {
+            "/file1": { "changed": true, "open": true, "fav": true, "outdate": true, "timestamp": new Date().getTime() },
+            "/folder1/file1-1": { "changed": true, "open": true, "fav": true, "outdate": true, "timestamp": new Date().getTime() - 60 },
+            "/folder1/file1-2": { "changed": true, "open": true, "fav": true, "outdate": true, "timestamp": new Date().getTime() - 120 },
+            "/folder1/file1-3": { "changed": true, "open": true, "fav": true, "outdate": true, "timestamp": new Date().getTime() - 240 },
+            "/folder1/sub1/file1-1-1": { "changed": true, "open": true, "fav": true, "outdate": true, "timestamp": new Date().getTime() - 60 },
+            "/folder1/sub2/file1-2-1": { "changed": true, "open": true, "fav": true, "outdate": true, "timestamp": new Date().getTime() - 120 },
+            "/folder2/file2-1": { "changed": true, "open": true, "fav": true, "outdate": true, "timestamp": new Date().getTime() - 300 },
+            "/folder2/file2-2": { "changed": true, "open": true, "fav": true, "outdate": true, "timestamp": new Date().getTime() - 360 },
+        }
+
+        const folders = {}    // NOTE: folders are populated during table population
+        const filesFilter = {
+            "path": "",
+            "lock": undefined,
+            "changed": undefined,
+            "open": undefined,
+            "fav": undefined,
+            "outdate": undefined,
+            "errors": undefined,
+            "critical": undefined
+        }
+
+        function toggleTab(path) {
+            alert("toggleTab:" + path)
+        }
+
+        function toggleFolder(path) {
+            if (folders[path].expanded) {
+                folders[path].expanded = false
+            } else {
+                folders[path].expanded = true
+            }
+            refreshView(filez, folders)
+        }
+
+        function toggleFilter(path) {
+            const filter = document.getElementById("filePathFilter")
+            if (filter.value == path) {
+                filter.value = ""
+            } else {
+                filter.value = path
+            }
+            onFilterPathChange(filter.value)
+        }
+
+        // TODO: colorize files and folders depending on their state like VSCode does
+
+        function populate(table, filez, folders) {
+            const foldersList = []
+            for (const [filePath, value] of Object.entries(filez)) {
+                value.id = "file-" + filePath
+                value.visible = true
+
+                let folderPath = filePath.split('/').slice(0, -1).join('/')
+                let folder = null
+                if (folders[folderPath] === undefined) {
+                    folders[folderPath] = { "id": "folder-" + folderPath, "filez": {}, "folder": null, visible: true, "expanded": true }
+                    foldersList.push(folderPath)
+                    folder = folders[folderPath]
+                    // Add folder row
+                    if (folderPath != "") {
+                        let folderRow = table.insertRow()
+                        folder.row = folderRow
+                        folderRow.setAttribute("dataFolder", "true")
+                        folderRow.classList.add("shown")
+                        folderRow.id = folder.id + "-row"
+                        let cell = null
+
+                        cell = folderRow.insertCell()
+                        cell.id = folder.id + "-icon"
+                        cell.innerHTML = ExpandedFolder
+
+                        cell = folderRow.insertCell()
+                        cell.id = folder.id + "-main"
+                        cell.innerHTML = folderPath  // TODO: renaming section
+
+                        cell = folderRow.insertCell()
+                        cell.id = folder.id + "-changes"
+                        cell.innerHTML = ""
+
+                        cell = folderRow.insertCell()
+                        cell.id = folder.id + "-lastChanged"
+                        cell.innerHTML = ""
+
+                        cell = folderRow.insertCell()
+                        cell.id = folder.id + "-actions"
+                        cell.innerHTML = ""         // TODO: add file / lock all / open-close all / save all / reset all changes / stash all / clone dir / remove dir
+
+                        cell = folderRow.insertCell()
+                        cell.id = folder.id + folderPath + "-state"
+                        cell.innerHTML = ""         // TODO: cumulative state for files in the folder
+
+                        cell = folderRow.insertCell()
+                        cell.id = folder.id + folderPath + "-link"
+                        cell.innerHTML = ""
+                    }
+                } else {
+                    folder = folders[folderPath]
+                }
+
+                value.folder = folder
+                folder.filez[filePath] = value
+
+                // Add file row
+                let fileRow = table.insertRow()
+                value.row = fileRow
+                fileRow.setAttribute("dataFile", "true")
+                fileRow.classList.add("shown")
+                fileRow.id = value.id + "-row"
+                let cell = null
+
+                cell = fileRow.insertCell()
+                cell.id = value.id + "-icon"
+                cell.innerHTML = DocPic
+
+                cell = fileRow.insertCell()
+                cell.id = value.id + "-main"
+                cell.innerHTML = filePath  // TODO: renaming section
+
+                cell = fileRow.insertCell()
+                cell.id = value.id + "-changes"
+                cell.innerHTML = ""
+
+                cell = fileRow.insertCell()
+                cell.id = value.id + "-lastChanged"
+                cell.innerHTML = new Date(value.timestamp).toLocaleString()
+
+                cell = fileRow.insertCell()
+                cell.id = value.id + "-actions"
+                cell.innerHTML = ""  // TODO: actions section - lock / open-close / save / reset changes / stash changes / clone / remove
+
+                cell = fileRow.insertCell()
+                cell.id = value.id + folderPath + "-state"
+                cell.innerHTML = ""  // TODO: state section - errors, remote changed
+
+                cell = fileRow.insertCell()
+                cell.id = value.id + folderPath + "-link"
+                cell.innerHTML = ""  // TODO: link button
+            }
+
+            // After all folders are populated it's time to link subfolders to their parents
+            foldersList.forEach(folderPath => {
+                let parentPath = folderPath
+                while (parentPath.length > 0) {
+                    parentPath = parentPath.split('/').slice(0, -1).join('/')
+                    if (folders[parentPath] == undefined) {
+                        continue
+                    }
+                    folders[folderPath].folder = folders[parentPath]
+                    break
+                }
+            })
+        }
+
+        function parentIsCollapsed(node) {
+            if (node.folder == null) {
+                return false;
+            } else {
+                if (!node.folder.expanded) {
+                    return true;
+                } else {
+                    return parentIsCollapsed(node.folder)
+                }
+            }
+        }
+
+        function refreshView(filez, folders) {
+            for (const [filePath, value] of Object.entries(filez)) {
+                if (!value.visible || !value.folder.visible || parentIsCollapsed(value)) {
+                    value.row.classList.add("hidden")
+                    value.row.classList.remove("shown")
+                } else {
+                    value.row.classList.add("shown")
+                    value.row.classList.remove("hidden")
+                }
+            }
+            for (const [folderPath, value] of Object.entries(folders)) {
+                if (value.row !== undefined) {
+                    if (!value.visible || parentIsCollapsed(value)) {
+                        value.row.classList.add("hidden")
+                        value.row.classList.remove("shown")
+                    } else {
+                        value.row.classList.add("shown")
+                        value.row.classList.remove("hidden")
+                    }
+                    if (value.expanded) {
+                        document.getElementById(value.id + '-icon').innerHTML = ExpandedFolder
+                    } else {
+                        document.getElementById(value.id + '-icon').innerHTML = ClosedFolder
+                    }
+                }
+            }
+        }
+
+        const PathStartsWidth = 0
+        const PathContains = 1
+        const PathAny = -1
+
+        function pathMatch(matchType, path, pattern) {
+            return matchType == PathAny
+                || (matchType == PathStartsWidth && path.startsWith(pattern.substring(1)))
+                || (matchType == PathContains && path.search(pattern) >= 0)
+        }
+
+        function updateFilter(filez, folders, filter) {
+            if (true) {
+                const matchType = filter.path === undefined || filter.path === "" ? PathAny :
+                    filter.path[0] == "^" ? PathStartsWidth : PathContains
+                for (const [filePath, value] of Object.entries(filez)) {
+                    value.visible = pathMatch(matchType, filePath, filter.path)
+                }
+                for (const [folderPath, value] of Object.entries(folders)) {
+                    value.visible = false
+                    for (const [filePath, fileValue] of Object.entries(value.filez)) {
+                        if (fileValue.visible) {
+                            value.visible = true
+                            break
+                        }
+                    }
+                }
+            }
+
+            refreshView(filez, folders)
+        }
+
+        function onFilterPathChange(value) {
+            filesFilter.path = value
+            updateFilter(filez, folders, filesFilter)
+        }
+
+        function createOption(selector, text, value) {
+            let opt = document.createElement("option");
+            opt.value = value;
+            opt.text = text;
+            selector.options.add(opt);
+        }
+    </script>
+
+    <div id="domainsSelector">
+        Data domain: <select id="domains" class="tool" onchange="console.log(this.value)"></select>
+    </div>
+
+    <div id="filesBrowserPlaceholder">
+        <table class="tool" id="filesBrowser">
+            <thead>
+                <tr>
+                    <th>Extra</th>
+                    <th colspan="2">File path</th>
+                    <th>Last changed</th>
+                    <th>Actions</th>
+                    <th>State</th>
+                    <th>Link</th>
+                </tr>
+                <tr>
+                    <th> + / - </th>
+                    <th><input id="filePathFilter" class="tool" value="" onchange="onFilterPathChange(this.value)"
+                            onkeyup="onFilterPathChange(this.value)"
+                            onkeypress="if (event.keyCode == 13) {return false}"></input> </th>
+                    <th>C</th>
+                    <th>Sort</th>
+                    <th colspan="2">Fav Open Changed Locked Errors</th>
+                    <th><select id="viewer" class="tool" onchange="console.log(this.value)">
+                            <option>HDELK</option>
+                            <option>D3HW</option>
+                        </select> </th>
+                </tr>
+            </thead>
+            <tbody id="filesList">
+                <tr class="f-green" data-path="/folder1" dataFolder="true">
+                    <td>
+                        <button class="tool-icon f-white"
+                            onclick="toggleFolder(this.parentNode.parentNode.getAttribute('data-path'))">&#128449;</button>
+                    </td>
+                    <td>
+                        <button class="tool b-t f-green"
+                            onclick="toggleFilter(this.parentNode.parentNode.getAttribute('data-path'))">/folder/path</button>
+                    </td>
+                    <td>
+                        &#9679;
+                    </td>
+                    <td>
+                    </td>
+                    <td>
+                        <button class="tool-icon f-orange" onclick="return false">&#9888;</button>
+                    </td>
+                    <td>
+                        <button class="tool-icon f-orange" onclick="return false">&#9888;</button>
+                    </td>
+                    <td>
+                        <button class="tool-icon" onclick="return false">&#128279;</button>
+                    </td>
+                </tr>
+                <tr class="f-red" data-path="/folder1/file1-1" dataFile="true">
+                    <td>
+                        <button class="tool-icon f-white"
+                            onclick="toggleTab(this.parentNode.parentNode.getAttribute('data-path'))">&#128441;</button>
+                    </td>
+                    <td>
+                        <button class="tool b-t f-red"
+                            onclick="toggleTab(this.parentNode.parentNode.getAttribute('data-path'))">/file/path</button>
+                    </td>
+                    <td>
+                        &#9679;
+                    </td>
+                    <td>
+                        Date, Time
+                    </td>
+                    <td>
+                        <button class="tool-icon f-orange" onclick="return false">&#9888;</button>
+                    </td>
+                    <td>
+                        <button class="tool-icon f-orange" onclick="return false">&#9888;</button>
+                    </td>
+                    <td>
+                        <button class="tool-icon" onclick="return false">&#128279;</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        ["demo", "test"].forEach(item => {
+            createOption(document.getElementById("domains"), item, item)
+        })
+
+        document.getElementById("domains").value = "test"
+
+        populate(document.getElementById("filesBrowser"), filez, folders)
+    </script>
+
+</body>
+
+</html>

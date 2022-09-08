@@ -1,0 +1,246 @@
+.tool {
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto,
+    Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    background-color: #1A1A1A;
+    color: #FFF;
+}
+
+body.tool {
+    line-height: 1.4;
+    margin: 0 1em;
+}
+
+.tool table {
+    margin: 1em 0;
+    border-collapse: collapse;
+}
+
+.tool caption {
+    text-align: left;
+    font-style: italic;
+    padding: 0.25em 0.5em 0.5em 0.5em;
+}
+
+.tool th,
+.tool td {
+    padding: 0.25em 0.5em 0.25em 1em;
+    vertical-align: text-top;
+    text-align: left;
+    text-indent: -0.5em;
+}
+
+.tool th {
+    vertical-align: bottom;
+    background-color: rgba(0, 0, 0, 0.75);
+    font-weight: bold;
+}
+
+.tool td:nth-of-type(1) {
+    font-weight: bold;
+    font-size: large;
+}
+
+.tool td:nth-of-type(4) {
+    font-style: italic;
+}
+
+/*
+.tool th:nth-of-type(6),
+.tool td:nth-of-type(6) {
+    text-align: right;
+}
+*/
+
+[dataFile="true"] {
+    background-color: #222222;
+}
+
+[dataFolder="true"] {
+    background-color: #333333;
+}
+
+[dataFolder="true"]:hover, [dataFile="true"]:hover {
+    background-color: #3A3A3A;
+}
+
+tr.shown,
+tr.hidden {
+    display: table-row;
+}
+
+tr.hidden {
+    display: none;
+}
+
+/* Proven method to visually hide something but */
+/* still make it available to assistive technology */
+.visually-hidden {
+    position: absolute;
+    top: auto;
+    overflow: hidden;
+    clip: rect(1px 1px 1px 1px);
+    /* IE 6/7 */
+    clip: rect(1px, 1px, 1px, 1px);
+    width: 1px;
+    height: 1px;
+    white-space: nowrap;
+}
+
+.tool input {
+    background-color: #3A3A3A;
+    font-size: 16px;
+    border-radius: 4px;
+    border: none;
+}
+
+.tool select {
+    background-color: #3A3A3A;
+    font-size: 16px;
+    border-radius: 4px;
+    border: none;
+}
+
+button.tool-hidden {
+    display: none;
+}
+
+button.tool {
+    border: none;
+    border-radius: 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    padding: 5px 10px;
+    font-size: 16px;
+    transition-duration: 0.2s;
+}
+
+button.tool-icon {
+    background-color: rgba(0,0,0,0);
+    border: none;
+    border-radius: 2px;
+    vertical-align: top;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    padding: 0px 0px;
+    width: fit-content;
+    line-height:26px;
+    font-size: 26px;
+    font-weight: bold;
+    transition-duration: 0.2s;
+}
+
+button.tool-icon:hover{
+    background-color: #525252;
+}
+
+.b-t {
+    background-color: rgba(0,0,0,0);
+}
+
+button.b-t:hover {
+    background-color: #525252;
+}
+
+.bf-t {
+    background-color: rgba(0,0,0,0);
+    font-weight: bold;
+}
+
+button.bf-t:hover {
+    background-color: #525252;
+}
+
+.b-but {
+    background-color: #3A3A3A;
+}
+
+button.b-but:hover{
+    background-color: #636363;
+}
+
+.b-red {
+    background-color: #662c2c;
+}
+
+button.b-red:hover {
+    background-color: #8b3b3b;
+}
+
+.b-green {
+    background-color: #2c6634;
+}
+
+button.b-green:hover {
+    background-color: #3d8d48;
+}
+
+.b-blue {
+    background-color: #2c3766;
+}
+
+button.b-blue:hover {
+    background-color: #3f4f97;
+}
+
+.b-yellow {
+    background-color: #6f751a;
+}
+
+button.b-yellow:hover {
+    background-color: #a1a323;
+}
+
+.b-orange {
+    background-color: #865711;
+}
+
+button.b-orange:hover {
+    background-color: #af7114;
+}
+
+
+.f-bold {
+    font-weight: bold;
+}
+
+.f-white {
+    color: #fff;
+}
+
+.f-red {
+    color: #bd3a3a;
+}
+
+.f-green {
+    color: #00be29;
+}
+
+.f-blue {
+    color: #0059be;
+}
+
+.f-yellow {
+    color: #e6f700;
+}
+
+.f-orange {
+    color: #f7a100;
+}
+
+.f-greyed {
+    color: #747474;
+}
+
+button.f-greyed:hover {
+    background-color: #414141;
+}
+
+.disabled {
+    cursor: not-allowed;
+}
+
+button.disabled:hover {
+    background-color: #3A3A3A;
+}
