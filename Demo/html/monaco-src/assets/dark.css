@@ -44,6 +44,22 @@ body.tool {
     font-style: italic;
 }
 
+.datetime {
+    display: block;
+}
+
+.toolbox {
+    display: none;
+}
+
+.tool tr:hover td:nth-of-type(4) .datetime {
+    display: none;
+}
+
+.tool tr:hover td:nth-of-type(4) .toolbox {
+    display: block;
+}
+
 /*
 .tool th:nth-of-type(6),
 .tool td:nth-of-type(6) {
@@ -51,15 +67,15 @@ body.tool {
 }
 */
 
-[dataFile="true"] {
+[data-file="true"] {
     background-color: #222222;
 }
 
-[dataFolder="true"] {
+[data-folder="true"] {
     background-color: #333333;
 }
 
-[dataFolder="true"]:hover, [dataFile="true"]:hover {
+[data-file="true"]:hover, [data-file="true"]:hover {
     background-color: #3A3A3A;
 }
 
@@ -133,6 +149,10 @@ button.tool-icon {
 
 button.tool-icon:hover{
     background-color: #525252;
+}
+
+button.normalize-size{
+    font-size: 20px
 }
 
 .b-t {
@@ -243,4 +263,124 @@ button.f-greyed:hover {
 
 button.disabled:hover {
     background-color: #3A3A3A;
+}
+
+.x-add {
+    color: #fff;
+}
+
+button.x-add:hover {
+    color: #f7a100;
+    background-color: rgba(0,0,0,0);
+}
+
+.x-rename {
+    color: #fff;
+}
+
+button.x-rename:hover {
+    color: #0059be;
+    background-color: rgba(0,0,0,0);
+}
+
+button.x-rename {
+    font-size: 20px;
+}
+
+.x-save {
+    color: #747474;
+}
+
+button.x-save:hover {
+    background-color: rgba(0,0,0,0);
+}
+
+.x-reset {
+    color: #747474;
+}
+
+button.x-reset:hover {
+    background-color: rgba(0,0,0,0);
+}
+
+.x-delete {
+    color: #fff;
+}
+
+button.x-delete:hover {
+    color: #bd3a3a;
+    background-color: rgba(0,0,0,0);
+}
+
+.x-reload {
+    color: #747474;
+}
+
+button.x-reload:hover {
+    background-color: rgba(0,0,0,0);
+}
+
+.x-lock {
+    color: #fff;
+}
+
+button.x-lock:hover {
+    color: #f7a100;
+    background-color: rgba(0,0,0,0);
+}
+
+.tool tr:hover .s-changes button.x-save {
+    color: #fff;
+}
+
+.tool tr:hover .s-changes button.x-save:hover {
+    color: #f7a100;
+}
+
+.tool tr:hover .s-changes button.x-reset {
+    color: #fff;
+}
+
+.tool tr:hover .s-changes button.x-reset:hover {
+    color: #bd3a3a;
+}
+
+.tool tr:hover .s-outdate button.x-reload {
+    color: #fff;
+}
+
+.tool tr:hover .s-outdate button.x-reload:hover {
+    color: #bd3a3a;
+}
+
+.tool tr:hover .s-errors button.x-save {
+    cursor: not-allowed;
+}
+
+.tool tr:hover .s-outdate button.x-save {
+    cursor: not-allowed;
+}
+
+.tool tr:hover .f-locked button.x-save {
+    cursor: not-allowed;
+}
+
+.s-changes {
+    color: #fff
+}
+
+.tool tr:hover .s-locked button.x-lock {
+    color: #f7a100;
+}
+
+.tool tr:hover .s-locked button.x-lock:hover {
+    color: #fff;
+}
+
+.tool tr:hover .s-flocked button.x-lock {
+    color: #bd3a3a;
+}
+
+.tool tr:hover .s-flocked button.x-lock:hover {
+    color: #fff;
 }
