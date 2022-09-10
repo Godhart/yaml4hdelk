@@ -1,3 +1,7 @@
+/* ========================================================================== */
+/* === Common styles === */
+
+/* -= General setup =- */
 .tool {
     font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto,
     Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
@@ -10,82 +14,9 @@ body.tool {
     margin: 0 1em;
 }
 
-.tool table {
-    margin: 1em 0;
-    border-collapse: collapse;
-}
-
-.tool caption {
-    text-align: left;
-    font-style: italic;
-    padding: 0.25em 0.5em 0.5em 0.5em;
-}
-
-.tool th,
-.tool td {
-    padding: 0.25em 0.5em 0.25em 1em;
-    vertical-align: text-top;
-    text-align: left;
-    text-indent: -0.5em;
-}
-
-.tool th {
-    vertical-align: bottom;
-    background-color: rgba(0, 0, 0, 0.75);
-    font-weight: bold;
-}
-
-.tool td:nth-of-type(1) {
-    font-weight: bold;
-    font-size: large;
-}
-
-.tool td:nth-of-type(4) {
-    font-style: italic;
-}
-
-.datetime {
-    display: block;
-}
-
-.toolbox {
-    display: none;
-}
-
-.tool tr:hover td:nth-of-type(4) .datetime {
-    display: none;
-}
-
-.tool tr:hover td:nth-of-type(4) .toolbox {
-    display: block;
-}
-
-/*
-.tool th:nth-of-type(6),
-.tool td:nth-of-type(6) {
-    text-align: right;
-}
-*/
-
-[data-file="true"] {
-    background-color: #222222;
-}
-
-[data-folder="true"] {
-    background-color: #333333;
-}
-
-[data-file="true"]:hover, [data-file="true"]:hover {
-    background-color: #3A3A3A;
-}
-
-tr.shown,
-tr.hidden {
-    display: table-row;
-}
-
-tr.hidden {
-    display: none;
+/* Show special cursor on disabled areas */
+.disabled {
+    cursor: not-allowed;
 }
 
 /* Proven method to visually hide something but */
@@ -102,59 +33,14 @@ tr.hidden {
     white-space: nowrap;
 }
 
-.tool input {
-    background-color: #3A3A3A;
-    font-size: 16px;
-    border-radius: 4px;
-    border: none;
-}
-
-.tool select {
-    background-color: #3A3A3A;
-    font-size: 16px;
-    border-radius: 4px;
-    border: none;
-}
-
-button.tool-hidden {
-    display: none;
-}
-
-button.tool {
-    border: none;
-    border-radius: 4px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    padding: 5px 10px;
-    font-size: 16px;
-    transition-duration: 0.2s;
-}
-
-button.tool-icon {
-    background-color: rgba(0,0,0,0);
-    border: none;
-    border-radius: 2px;
-    vertical-align: top;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    padding: 0px 0px;
-    width: fit-content;
-    line-height:26px;
-    font-size: 26px;
+/* General class to make bold font */
+.f-bold {
     font-weight: bold;
-    transition-duration: 0.2s;
 }
 
-button.tool-icon:hover{
-    background-color: #525252;
-}
+/* -= Theme colors for areas and buttons =- */
 
-button.normalize-size{
-    font-size: 20px
-}
-
+/* Transparent background with theme colored highlight on hover */
 .b-t {
     background-color: rgba(0,0,0,0);
 }
@@ -163,6 +49,7 @@ button.b-t:hover {
     background-color: #525252;
 }
 
+/* Bold on all transparent background */
 .bf-t {
     background-color: rgba(0,0,0,0);
     font-weight: bold;
@@ -172,6 +59,9 @@ button.bf-t:hover {
     background-color: #525252;
 }
 
+/* -= Background colors and highlights =- */
+
+/* Generic (theme) color */
 .b-but {
     background-color: #3A3A3A;
 }
@@ -179,6 +69,8 @@ button.bf-t:hover {
 button.b-but:hover{
     background-color: #636363;
 }
+
+/* Mnemonic colors */
 
 .b-red {
     background-color: #662c2c;
@@ -220,11 +112,9 @@ button.b-orange:hover {
     background-color: #af7114;
 }
 
+/* -= Foreground colors =- */
 
-.f-bold {
-    font-weight: bold;
-}
-
+/* Mnemonic colors */
 .f-white {
     color: #fff;
 }
@@ -234,15 +124,15 @@ button.b-orange:hover {
 }
 
 .f-green {
-    color: #00be29;
+    color: #0c8f29;
 }
 
 .f-blue {
-    color: #0059be;
+    color: #1b6bc7;
 }
 
 .f-yellow {
-    color: #e6f700;
+    color: #d4bf00;
 }
 
 .f-orange {
@@ -257,14 +147,175 @@ button.f-greyed:hover {
     background-color: #414141;
 }
 
-.disabled {
-    cursor: not-allowed;
+/* -= Interaction Items =- */
+
+/* Text entry style */
+.tool input {
+    background-color: #3A3A3A;
+    font-size: 16px;
+    border-radius: 4px;
+    border: none;
 }
 
+/* Dropdown style */
+.tool select {
+    background-color: #3A3A3A;
+    font-size: 16px;
+    border-radius: 4px;
+    border: none;
+}
+
+/* Button */
+button.tool {
+    border: none;
+    border-radius: 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    padding: 5px 10px;
+    font-size: 16px;
+    transition-duration: 0.2s;
+}
+
+/* Disabled button highlight */
 button.disabled:hover {
     background-color: #3A3A3A;
 }
 
+/* Class to hide buttons */
+button.tool-hidden {
+    display: none;
+}
+
+/* Iconic button */
+/* Is used for buttons in toolbox and folder/file icons*/
+button.tool-icon {
+    background-color: rgba(0,0,0,0);
+    border: none;
+    border-radius: 2px;
+    vertical-align: top;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    padding: 0px 0px;
+    width: fit-content;
+    line-height:26px;
+    font-size: 26px;
+    font-weight: bold;
+    transition-duration: 0.2s;
+}
+
+button.tool-icon:hover{
+    background-color: #525252;
+}
+
+/* Table General */
+.tool table {
+    margin: 1em 0;
+    border-collapse: collapse;
+}
+
+.tool caption {
+    text-align: left;
+    font-style: italic;
+    padding: 0.25em 0.5em 0.5em 0.5em;
+}
+
+.tool th,
+.tool td {
+    padding: 0.25em 0.5em 0.25em 1em;
+    vertical-align: text-top;
+    text-align: left;
+    text-indent: -0.5em;
+}
+
+.tool th {
+    vertical-align: bottom;
+    background-color: rgba(0, 0, 0, 0.75);
+    font-weight: bold;
+}
+
+/* ========================================================================== */
+/* === Special types === */
+
+/* Files table specific */
+
+.tool td:nth-of-type(1) {
+    font-weight: bold;
+    font-size: large;
+}
+
+.tool td:nth-of-type(4) {
+    font-style: italic;
+}
+
+/*
+.tool th:nth-of-type(6),
+.tool td:nth-of-type(6) {
+    text-align: right;
+}
+*/
+
+/* Styles to show / hide rows */
+tr.shown,
+tr.hidden {
+    display: table-row;
+}
+
+tr.hidden {
+    display: none;
+}
+
+/* Background for file row */
+[data-file="true"] {
+    background-color: #222222;
+}
+
+/* Background for folder row */
+[data-folder="true"] {
+    background-color: #333333;
+}
+
+/* Background for hovered row */
+[data-file="true"]:hover, [data-file="true"]:hover {
+    background-color: #3A3A3A;
+}
+
+/* Cell's span with info about node (File or Folder) - date-time for file or modifications flags for folder */
+.node-info {
+    display: block;
+}
+
+/* Cell' span with actions toolbox. Displayed over node info when row is hovered */
+.toolbox {
+    display: none;
+}
+
+/* Alteration between node info and actions toolbox on hover */
+.tool tr:hover td:nth-of-type(4) .node-info {
+    display: none;
+}
+
+.tool tr:hover td:nth-of-type(4) .toolbox {
+    display: block;
+}
+
+/* Toggle folder icon depending on state - collapsed state */
+[data-folder-expanded="false"] .tool-icon-folder::after {
+    content: '\1f5c0';
+}
+
+/* Toggle folder icon depending on state - expanded state */
+[data-folder-expanded="true"] .tool-icon-folder::after {
+    content: '\1f5c1';
+}
+
+/* Toggle file icon depending on state - opened tab state */
+[data-file-open="true"] .tool-icon-file::after {
+    content: '\1f5b9';
+}
+
+/* -= Toolbox buttons and their defaults =- */
 .x-add {
     color: #fff;
 }
@@ -303,20 +354,23 @@ button.x-reset:hover {
     background-color: rgba(0,0,0,0);
 }
 
+/* Changes icon on reset button depending on state */
+button.x-reset::after {
+    /* by default - just reset changes */
+    content: '\238c';
+}
+
+[data-status~="outdate"] button.x-reset::after {
+    /* when outdate - reload file */
+    content: '\27f2';
+}
+
 .x-delete {
     color: #fff;
 }
 
 button.x-delete:hover {
     color: #bd3a3a;
-    background-color: rgba(0,0,0,0);
-}
-
-.x-reload {
-    color: #747474;
-}
-
-button.x-reload:hover {
     background-color: rgba(0,0,0,0);
 }
 
@@ -329,58 +383,248 @@ button.x-lock:hover {
     background-color: rgba(0,0,0,0);
 }
 
-.tool tr:hover .s-changes button.x-save {
+/* Changing toolbox icons colors depending on state */
+
+/* Activate save on changes */
+.tool tr:hover,[data-status~="changes"] button.x-save {
     color: #fff;
 }
 
-.tool tr:hover .s-changes button.x-save:hover {
+.tool tr:hover,[data-status~="changes"] button.x-save:hover {
     color: #f7a100;
 }
 
-.tool tr:hover .s-changes button.x-reset {
-    color: #fff;
-}
-
-.tool tr:hover .s-changes button.x-reset:hover {
+/* Disable save on errors */
+.tool tr:hover,[data-status~="errors"]  button.x-save {
     color: #bd3a3a;
 }
 
-.tool tr:hover .s-outdate button.x-reload {
-    color: #fff;
+.tool tr:hover,[data-status~="errors"]  button.x-save:hover {
+    color: #888;
 }
 
-.tool tr:hover .s-outdate button.x-reload:hover {
+.tool tr:hover,[data-status~="outdate"]  button.x-save {
     color: #bd3a3a;
 }
 
-.tool tr:hover .s-errors button.x-save {
-    cursor: not-allowed;
+.tool tr:hover,[data-status~="outdate"]  button.x-save:hover {
+    color: #888;
 }
 
-.tool tr:hover .s-outdate button.x-save {
-    cursor: not-allowed;
+.tool tr:hover,[data-status~="flocked"]  button.x-save {
+    color: #bd3a3a;
 }
 
-.tool tr:hover .f-locked button.x-save {
-    cursor: not-allowed;
+.tool tr:hover,[data-status~="flocked"]  button.x-save:hover {
+    color: #888;
 }
 
-.s-changes {
-    color: #fff
+/* Activate reset on changes */
+.tool tr:hover,[data-status~="changes"] button.x-reset {
+    color: #fff;
 }
 
-.tool tr:hover .s-locked button.x-lock {
+.tool tr:hover,[data-status~="changes"] button.x-reset:hover {
+    color: #9244ec;
+}
+
+/* Activate unlock when locked */
+.tool tr:hover,[data-status~="locked"] button.x-lock {
     color: #f7a100;
 }
 
-.tool tr:hover .s-locked button.x-lock:hover {
+.tool tr:hover,[data-status~="locked"] button.x-lock:hover {
     color: #fff;
 }
 
-.tool tr:hover .s-flocked button.x-lock {
+/* Activate forced unlock when locked */
+.tool tr:hover,[data-status~="flocked"] button.x-lock {
+    color: #9244ec;
+}
+
+.tool tr:hover,[data-status~="flocked"] button.x-lock:hover {
+    color: #fff;
+}
+
+/* -= Status icons =- */
+
+/* File status icon */
+button.tool-status {
+    background-color: rgba(0,0,0,0);
+}
+
+/* Folder status icon */
+button.tool-f-status {
+    background-color: rgba(0,0,0,0);
+}
+
+/* Changing status icons depending on their state */
+
+/* On clean status - there is invisible circle icon */
+[data-status=""] .tool-f-status::after {
+    content: '\25cf';
+    color: rgba(0,0,0,0)
+}
+
+[data-status=""] .tool-status::after {
+    content: '\25cf';
+    color: rgba(0,0,0,0)
+}
+
+/* Show Lock when Locked (would be overriden by following states if coincident) */
+[data-status*="locked"] .tool-f-status::after {
+    content: '\1F512';
+}
+
+[data-status*="locked"] .tool-status::after {
+    content: '\1F512';
+}
+
+/* Draw border when Locked (always visible when locked) */
+
+[data-status~="locked"] button.tool-status {
+    border: solid;
+    border-width: 1px;
+    font-size: 12px;
+}
+
+[data-status~="flocked"] button.tool-status {
+    border: dashed;
+    border-width: 1px;
+    font-size: 12px;
+}
+
+/* States are applied in order of priority */
+/* States with higher priority are described later */
+/* Dot on folder if there any changes */
+/* Mnemonic icon for file state */
+/* Colorize path and status depending on state */
+
+.tool-status-color {
+    color: #fff;
+}
+
+[data-status~="changes"] .tool-f-status::after {
+    content: '\25cf';
+}
+
+/* Renamed/moved */
+[data-status~="renamed"] .tool-status-color {
+    color: #1b6bc7;
+}
+
+[data-status~="renamed"] .tool-f-status::after {
+    content: '\25cf';
+}
+
+[data-status~="renamed"] .tool-status::after {
+    content: 'R';
+}
+
+/* Added */
+[data-status~="added"] .tool-status-color {
+    color: #0c8f29;
+}
+
+[data-status~="added"] .tool-status::after {
+    content: 'A';
+}
+
+/* Modified */
+[data-status~="modified"] .tool-status-color {
+    color: #d4bf00;
+}
+
+[data-status~="modified"] .tool-f-status::after {
+    content: '\25cf';
+}
+
+[data-status~="modified"] .tool-status::after {
+    content: 'M';
+}
+
+/* Removed */
+[data-status~="removed"] .tool-status-color {
+    color: #888;
+}
+
+[data-status~="removed"] .tool-f-status::after {
+    content: '\25cf';
+}
+
+[data-status~="removed"] .tool-status::after {
+    content: 'D';
+}
+
+[data-status~="removed"] .tool-text {
+    text-decoration: line-through;
+}
+
+/* Errors */
+[data-status~="errors"] .tool-status-color {
     color: #bd3a3a;
 }
 
-.tool tr:hover .s-flocked button.x-lock:hover {
-    color: #fff;
+/* -= Icons for folder info =- */
+/* by default are hidden, shown when associated changes in folder are detected */
+button.tool-f-added {
+    color: #0c8f29;
+    background-color: rgba(0,0,0,0);
+    display: none;
 }
+
+[data-status~="added"] .tool-f-added {
+    display: inline-block;
+}
+
+button.tool-f-modified {
+    color: #d4bf00;
+    background-color: rgba(0,0,0,0);
+    display: none;
+}
+
+[data-status~="modified"] .tool-f-modified {
+    display: inline-block;
+}
+
+button.tool-f-renamed {
+    color: #1b6bc7;
+    background-color: rgba(0,0,0,0);
+    display: none;
+}
+
+[data-status~="renamed"] .tool-f-renamed {
+    display: inline-block;
+}
+
+button.tool-f-removed {
+    color: #888;
+    background-color: rgba(0,0,0,0);
+    display: none;
+}
+
+[data-status~="removed"] .tool-f-removed {
+    display: inline-block;
+}
+
+/* Fav and Errors status */
+[data-errors=""] .tool-warning::after {
+    color: rgba(0,0,0,0);
+}
+
+[data-fav=""] .tool-fav {
+    color: rgba(0,0,0,0);
+}
+
+[data-fav=""] .tool-fav:hover {
+    color: #f7a100;
+}
+
+[data-fav="nested"] .tool-fav {
+    color: #FFF;
+}
+
+[data-fav="nested"] .tool-fav:hover {
+    color: #f7a100;
+}
+
