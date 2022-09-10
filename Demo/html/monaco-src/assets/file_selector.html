@@ -44,7 +44,7 @@
             "/folder3/file3-1": { "added": true, "errors": ["Some error"], "timestamp": new Date().getTime() - 60 },
             "/folder3/file3-2": { "locked": true, "removed": true, "timestamp": new Date().getTime() - 120 },
             "/folder3/file3-2": { "flocked": true, "modified": true, "timestamp": new Date().getTime() - 120 },
-            "/folder3/file3-3": { "open": true, "timestamp": new Date().getTime() - 240 },
+            "/folder3/file3-3": { "locked": true, "modified": true, "open": true, "timestamp": new Date().getTime() - 240 },
             "/folder3/sub1/file3-1-1": { "open": true, "timestamp": new Date().getTime() - 60 },
             "/folder3/sub2/file3-2-1": { "fav": true, "timestamp": new Date().getTime() - 120 },
             "/folder4/file1-1": { "timestamp": new Date().getTime() - 300 },
@@ -138,7 +138,7 @@
             } else {
                 folders[path].expanded = true
             }
-            refreshView(filez, folders)
+            refreshView(filez, folders, filesFilter)
         }
 
         function toggleFolderFilter(el) {
@@ -157,13 +157,19 @@
         function populate(table, filez, folders) {
             const foldersList = []
             for (const [filePath, value] of Object.entries(filez)) {
+                value.path = filePath
                 value.id = "file-" + filePath
                 value.visible = true
 
                 let folderPath = filePath.split('/').slice(0, -1).join('/')
                 let folder = null
                 if (folders[folderPath] === undefined) {
-                    folders[folderPath] = { "id": "folder-" + folderPath, "filez": {}, "folders": {}, "folder": null, visible: true, "expanded": true }
+                    folders[folderPath] = { "path": folderPath, "id": "folder-" + folderPath,
+                        "filez": {}, "folders": {}, "folder": null, visible: true, "expanded": false
+                    }
+                    if (folderPath == "") {
+                        folders[folderPath].expanded = true
+                    }
                     foldersList.push(folderPath)
                     folder = folders[folderPath]
                     // Add folder row
@@ -279,14 +285,16 @@
             })
         }
 
-        function parentIsCollapsed(node) {
+        function parentIsCollapsed(node, filters) {
             if (node.folder == null) {
                 return false;
             } else {
-                if (!node.folder.expanded) {
+                if (filters.path == node.folder.path || (filters.path.length > 0 && filters.path[0] != "/")) {
+                    return false;
+                } else if (!node.folder.expanded) {
                     return true;
                 } else {
-                    return parentIsCollapsed(node.folder)
+                    return parentIsCollapsed(node.folder, filters)
                 }
             }
         }
@@ -386,10 +394,10 @@
             }
         }
 
-        function refreshView(filez, folders) {
+        function refreshView(filez, folders, filters) {
             updateAttributes(filez, folders)
             for (const [filePath, value] of Object.entries(filez)) {
-                if (!value.visible || !value.folder.visible || parentIsCollapsed(value)) {
+                if (!value.visible || !value.folder.visible || parentIsCollapsed(value, filters)) {
                     value.row.classList.add("hidden")
                     value.row.classList.remove("shown")
                 } else {
@@ -400,7 +408,7 @@
             }
             for (const [folderPath, value] of Object.entries(folders)) {
                 if (value.row !== undefined) {
-                    if (!value.visible || parentIsCollapsed(value)) {
+                    if ((!value.visible || parentIsCollapsed(value, filters)) && filters.path != value.path) {
                         value.row.classList.add("hidden")
                         value.row.classList.remove("shown")
                     } else {
@@ -440,7 +448,7 @@
                 }
             }
 
-            refreshView(filez, folders)
+            refreshView(filez, folders, filter)
         }
 
         function onFilterPathChange(value) {
@@ -487,52 +495,6 @@
                 </tr>
             </thead>
             <tbody id="filesList">
-                <!--
-                <tr class="f-green" data-path="/folder1" dataFolder="true">
-                    <td>
-                        <button class="tool-icon f-white" onclick="toggleFolder(this)">&#128449;</button>
-                    </td>
-                    <td>
-                        <button class="tool b-t f-green" onclick="toggleFolderFilter(this)">/folder/path</button>
-                    </td>
-                    <td>
-                        &#9679;
-                    </td>
-                    <td>
-                    </td>
-                    <td>
-                        <button class="tool-icon f-orange" onclick="return false">&#9733;</button>
-                    </td>
-                    <td>
-                        <button class="tool-icon f-orange" onclick="return false">&#9888;</button>
-                    </td>
-                    <td>
-                    </td>
-                </tr>
-                <tr class="f-red" data-path="/folder1/file1-1" dataFile="true">
-                    <td>
-                        <button class="tool-icon f-white" onclick="focusTab(this)">&#128441;</button>
-                    </td>
-                    <td>
-                        <button class="tool b-t f-red" onclick="toggleTab(this)">/file/path</button>
-                    </td>
-                    <td>
-                        &#9679;
-                    </td>
-                    <td>
-                        Date, Time
-                    </td>
-                    <td>
-                        <button class="tool-icon f-orange" onclick="return false">&#9733;</button>
-                    </td>
-                    <td>
-                        <button class="tool-icon f-orange" onclick="return false">&#9888;</button>
-                    </td>
-                    <td>
-                        <button class="tool-icon f-white" onclick="return false">&#11179;</button>
-                    </td>
-                </tr>
-                -->
             </tbody>
         </table>
     </div>
