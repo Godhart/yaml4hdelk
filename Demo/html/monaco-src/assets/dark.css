@@ -277,7 +277,7 @@ tr.hidden {
 }
 
 /* Background for hovered row */
-[data-file="true"]:hover, [data-file="true"]:hover {
+[data-file="true"]:hover,[data-folder="true"]:hover {
     background-color: #3A3A3A;
 }
 
