@@ -381,7 +381,7 @@
             if (node.folder == null) {
                 return false;
             } else {
-                if (filters.path == node.folder.path || (filters.path.length > 0 && filters.path[0] != "/")) {
+                if (filters.pathRoot == node.folder.path || (filters.path.length > 0 && filters.path[0] != "/")) {
                     return false;
                 } else if (!node.folder.expanded) {
                     return true;
@@ -524,7 +524,7 @@
             }
             for (const [folderPath, value] of Object.entries(folders)) {
                 if (value.row !== undefined) {
-                    if ((filters.folders || !value.visible || parentIsCollapsed(value, filters)) && filters.path != value.path) {
+                    if ((filters.folders || !value.visible || parentIsCollapsed(value, filters)) && filters.pathRoot != value.path) {
                         value.row.classList.add("hidden")
                         value.row.classList.remove("shown")
                     } else {
