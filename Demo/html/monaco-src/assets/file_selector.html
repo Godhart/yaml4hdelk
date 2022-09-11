@@ -48,11 +48,13 @@
             "/folder3/sub1/file3-1-1": { "open": true, "timestamp": new Date().getTime() - 60 },
             "/folder3/sub2/file3-2-1": { "fav": true, "timestamp": new Date().getTime() - 120 },
             "/folder4/file1-1": { "timestamp": new Date().getTime() - 300 },
-            "/folder4/file1-2": { "timestamp": new Date().getTime() - 360 },
-            "/folder4/file1-3": { "timestamp": new Date().getTime() - 360 },
+            "/folder4/file1-2": { "errors": ["Error 1-2 1"], "timestamp": new Date().getTime() - 360 },
+            "/folder4/file1-3": { "errors": ["Error 1-3 1", "Error 1-3 2"], "timestamp": new Date().getTime() - 360 },
             "/folder4/file1-4": { "timestamp": new Date().getTime() - 360 },
             "/folder4/file1-5": { "timestamp": new Date().getTime() - 360 },
             "/folder4/file1-6": { "timestamp": new Date().getTime() - 360 },
+            "/folder4/sub1/file4-1-1": { "errors": ["Error 4-1-1 1"], "timestamp": new Date().getTime() - 60 },
+            "/folder4/sub1/file4-2-1": { "errors": ["Error 4-1-1 2"], "timestamp": new Date().getTime() - 120 },
         }
 
         const folders = {}    // NOTE: folders are populated during table population
@@ -131,6 +133,21 @@
             alert("lockNode:" + path)
         }
 
+        function favNode(el) {
+            const path = getPath(el)
+            alert("favNode:" + path)
+        }
+
+        function showNodeErrors(el) {
+            const path = getPath(el)
+            alert("showNodeErrors:" + path)
+        }
+
+        function openNodeLink(el) {
+            const path = getPath(el)
+            alert("openNodeLink:" + path)
+        }
+
         function toggleFolder(el) {
             const path = getPath(el)
             if (folders[path].expanded) {
@@ -190,6 +207,7 @@
 
                         cell = folderRow.insertCell()
                         cell.innerHTML = '<button id="' + folder.id + '-status" title="Status" class="tool tool-f-status tool-status-color""></button>'
+                        folder.stat_but = document.getElementById(folder.id + "-status")
 
                         cell = folderRow.insertCell()
                         cell.id = folder.id + "-nodeOps"
@@ -199,26 +217,26 @@
 <button class='tool tool-f-renamed'>R</button>\
 <button class='tool tool-f-removed'>D</button>\
 </span>\
-<span id=" + value.id + "-toolbox class='toolbox'>" + '\
-<button id=' + value.id + '"-add"     class="tool-icon x-add     " title="Add"              onclick="addNode(this)">&#128932;</button>\
-<button id=' + value.id + '"-delete"  class="tool-icon x-delete  " title="Remove Folder"    onclick="deleteNode(this)">&#10005;</button>\
-<button id=' + value.id + '"-rename"  class="tool-icon x-rename  " title="Move/Rename"      onclick="renameNode(this)">&#128393;</button>\
-<button id=' + value.id + '"-save"    class="tool-icon x-save    " title="Save changes"     onclick="saveChanges(this)">&#128427;</button>\
-<button id=' + value.id + '"-reset"   class="tool-icon x-reset   " title="Reset changes"    onclick="resetChanges(this)"></button>\
-<button id=' + value.id + '"-lock"    class="tool-icon x-lock    " title="Lock"             onclick="lockNode(this)">&#9919;</button>\
+<span   id='" + folder.id + "-toolbox' class='toolbox'>" + '\
+<button id="' + folder.id + '-add"     class="tool-icon x-add     " title="Add"              onclick="addNode(this)">&#128932;</button>\
+<button id="' + folder.id + '-delete"  class="tool-icon x-delete  " title="Remove Folder"    onclick="deleteNode(this)">&#10005;</button>\
+<button id="' + folder.id + '-rename"  class="tool-icon x-rename  " title="Move/Rename"      onclick="renameNode(this)">&#128393;</button>\
+<button id="' + folder.id + '-save"    class="tool-icon x-save    " title="Save changes"     onclick="saveChanges(this)">&#128427;</button>\
+<button id="' + folder.id + '-reset"   class="tool-icon x-reset   " title="Reset changes"    onclick="resetChanges(this)"></button>\
+<button id="' + folder.id + '-lock"    class="tool-icon x-lock    " title="Lock"             onclick="lockNode(this)">&#9919;</button>\
 ' + "</span>"
 
                         cell = folderRow.insertCell()
-                        cell.id = folder.id + "-actions"
-                        cell.innerHTML = ""         // TODO: add file / lock all / open-close all / save all / reset all changes / stash all / clone dir / remove dir
+                        cell.innerHTML = '\
+<button id="' + folder.id + '-fav"     class="tool-icon tool-fav     " title="Favorite"         onclick="favNode(this)">&#9733;</button>'
+                        folder.fav_cell = cell
 
                         cell = folderRow.insertCell()
-                        cell.id = folder.id + folderPath + "-state"
-                        cell.innerHTML = ""         // TODO: cumulative state for files in the folder
+                        cell.innerHTML = '\
+<button id="' + folder.id + '-error"   class="tool-icon tool-error   " title="Errors"        onclick="showNodeErrors(this)">&#9888;</button>'
+                        folder.err_but = document.getElementById(folder.id + "-error")
 
                         cell = folderRow.insertCell()
-                        cell.id = folder.id + folderPath + "-link"
-                        cell.innerHTML = ""
                     }
                 } else {
                     folder = folders[folderPath]
@@ -244,30 +262,33 @@
 
                 cell = fileRow.insertCell()
                 cell.innerHTML = '<button id="' + value.id + '-status" title="Status" class="tool tool-status tool-status-color""></button>'
+                value.stat_but = document.getElementById(value.id + "-status")
 
                 cell = fileRow.insertCell()
                 cell.id = value.id + "-nodeOps"
                 cell.innerHTML = "<span class='node-info f-greyed'>" + new Date(value.timestamp).toLocaleString() + "</span>\
-<span id=" + value.id + "-toolbox class='toolbox'>" + '\
-<button id=' + value.id + '"-add"     class="tool-icon x-add     " title="Add"              onclick="addNode(this)">&#128932;</button>\
-<button id=' + value.id + '"-delete"  class="tool-icon x-delete  " title="Remove"           onclick="deleteNode(this)">&#10005;</button>\
-<button id=' + value.id + '"-rename"  class="tool-icon x-rename  " title="Move/Rename"      onclick="renameNode(this)">&#128393;</button>\
-<button id=' + value.id + '"-save"    class="tool-icon x-save    " title="Save changes"     onclick="saveChanges(this)">&#128427;</button>\
-<button id=' + value.id + '"-reset"   class="tool-icon x-reset   " title="Reset changes"    onclick="resetChanges(this)"></button>\
-<button id=' + value.id + '"-lock"    class="tool-icon x-lock    " title="Lock"             onclick="lockNode(this)">&#9919;</button>\
+<span   id='" + value.id + "-toolbox' class='toolbox'>" + '\
+<button id="' + value.id + '-add"     class="tool-icon x-add     " title="Add"              onclick="addNode(this)">&#128932;</button>\
+<button id="' + value.id + '-delete"  class="tool-icon x-delete  " title="Remove"           onclick="deleteNode(this)">&#10005;</button>\
+<button id="' + value.id + '-rename"  class="tool-icon x-rename  " title="Move/Rename"      onclick="renameNode(this)">&#128393;</button>\
+<button id="' + value.id + '-save"    class="tool-icon x-save    " title="Save changes"     onclick="saveChanges(this)">&#128427;</button>\
+<button id="' + value.id + '-reset"   class="tool-icon x-reset   " title="Reset changes"    onclick="resetChanges(this)"></button>\
+<button id="' + value.id + '-lock"    class="tool-icon x-lock    " title="Lock"             onclick="lockNode(this)">&#9919;</button>\
 ' + "</span>"
 
                 cell = fileRow.insertCell()
-                cell.id = value.id + "-actions"
-                cell.innerHTML = ""  // TODO: actions section - lock / open-close / save / reset changes / stash changes / clone / remove
+                cell.innerHTML = '\
+<button id="' + value.id + '-fav"     class="tool-icon tool-fav     " title="Favorite"      onclick="favNode(this)">&#9733;</button>'
+                value.fav_cell = cell
 
                 cell = fileRow.insertCell()
-                cell.id = value.id + folderPath + "-state"
-                cell.innerHTML = ""  // TODO: state section - errors, remote changed
+                cell.innerHTML = '\
+<button id="' + value.id + '-error"   class="tool-icon tool-error   " title="Errors"        onclick="showNodeErrors(this)">&#9888;</button>'
+                value.err_but = document.getElementById(value.id + "-error")
 
                 cell = fileRow.insertCell()
-                cell.id = value.id + folderPath + "-link"
-                cell.innerHTML = ""  // TODO: link button
+                cell.innerHTML = '\
+<button id="' + value.id + '-link"    class="tool-icon tool-link    " title="Open Schematic" onclick="openNodeLink(this)">&#11179;</button>'
             }
 
             // After all folders are populated it's time to link subfolders to their parents
@@ -305,7 +326,7 @@
         function updateAttributes(filez, folders) {
             // Reset then update folder statuses
             for (const [folderPath, value] of Object.entries(folders)) {
-                value.attributes = { "status": {}, "folder-expanded": "true", "fav": "false", "errors": [] }
+                value.attributes = { "status": {}, "folder-expanded": "true", "fav": "false", "errors": [], "modified": [] }
                 // Apply expanded property only, other are defined by files
                 if (!value.expanded) {
                     value.attributes["folder-expanded"] = "false"
@@ -313,7 +334,7 @@
             }
             // Reset then update files statuses and statuses of their folders
             for (const [filePath, value] of Object.entries(filez)) {
-                value.attributes = { "status": {}, "file-open": "false", "fav": "false", "errors": "" }
+                value.attributes = { "status": {}, "file-open": "false", "fav": "false", "errors": [] }
                 if (value.open) {
                     value.attributes["file-open"] = "true"
                 }
@@ -321,21 +342,34 @@
                     value.attributes.fav = "true"
                     value.folder.attributes.fav = "true"
                 }
+                let ch = false
                 fileStatus.forEach(stat => {
                     if (value[stat]) {
                         value.attributes.status[stat] = true
                         value.folder.attributes.status[stat] = true
-                        if (fileStatusChanged.indexOf(stat) >= 0) {
+                        if (!ch && fileStatusChanged.indexOf(stat) >= 0) {
+                            ch = true
                             value.attributes.status["changes"] = true
                             value.folder.attributes.status["changes"] = true
+                            value.folder.attributes.modified.push(filePath)
                         }
                     }
                 })
+                let err = false
                 if (value.errors !== undefined && value.errors !== null && value.errors.length > 0) {
-                    value.attributes.status["errors"] = true
-                    value.folder.attributes.status["errors"] = true
-                    value.attributes.errors = value.errors
+                    value.attributes.status.errors = true
+                    value.folder.attributes.status.errors = true
+                    value.attributes.errors = value.attributes.errors.concat(value.errors)
                     value.folder.attributes.errors.push(filePath)
+                    err = true
+                }
+                if (value.outdate) {
+                    value.attributes.status.errors = true
+                    value.folder.attributes.status.errors = true
+                    value.attributes.errors.push("Source changed on server")
+                    if (!err) {
+                        value.folder.attributes.errors.push(filePath)
+                    }
                 }
             }
             // Propagate folder's statuses to parents
@@ -383,12 +417,23 @@
                 for (const [attr, value] of Object.entries(node.attributes)) {
                     if (attr == "status") {
                         node.row.setAttribute("data-status", Object.keys(value).join(" "))
+                        node.stat_but.title = Object.keys(value).join("\n") // TODO: describe status better
                     } else if (attr == "errors") {
-                        if (value.len > 0) {
+                        if (value.length > 0) {
                             node.row.setAttribute("data-errors", "true")
+                            node.err_but.title = value.join("\n")
+                        } else {
+                            node.row.setAttribute("data-errors", "false")
                         }
+                    } else if (attr == "modified") {
+                        node.stat_but.title = value.join("\n")
                     } else {
                         node.row.setAttribute("data-" + attr, value)
+                    }
+                    if (node.attributes.fav == "false") {
+                        node.fav_cell.classList.add("no-fav")
+                    } else {
+                        node.fav_cell.classList.remove("no-fav")
                     }
                 }
             }
@@ -473,22 +518,24 @@
             <thead>
                 <tr>
                     <th>Extra</th>
-                    <th colspan="2">File path</th>
-                    <th>Last changed</th>
+                    <th>File path</th>
+                    <th></th>
+                    <th id="th-toolbox" style="color: black; font-weight: normal; font-style: italic;"></th>
                     <th></th>
                     <th></th>
                     <th>Link</th>
                 </tr>
                 <tr>
                     <th> + / - </th>
-                    <th><input id="filePathFilter" class="tool" value="" onchange="onFilterPathChange(this.value)"
+                    <!-- TODO: <button id="but-collapse" title="Expand All" class="tool-icon f-white tool-icon-folder" style="color:white" onclick="toggleAllFolder(this)"> -->
+                    <th><input id="filePathFilter" title="File path filter" class="tool" value="" onchange="onFilterPathChange(this.value)"
                             onkeyup="onFilterPathChange(this.value)"
                             onkeypress="if (event.keyCode == 13) {return false}"></input> </th>
                     <th>&#9679;</th>
                     <th>Sort</th>
                     <th>&#9733;</th>
                     <th>&#9888;</th>
-                    <th><select id="viewer" class="tool" onchange="console.log(this.value)">
+                    <th><select id="viewer" title="Tool to show schematic" class="tool" onchange="console.log(this.value)">
                             <option>HDELK</option>
                             <option>D3HW</option>
                         </select> </th>
@@ -505,6 +552,14 @@
         })
 
         document.getElementById("domains").value = "test"
+        const special_date = new Date()
+        special_date.setFullYear(2022)
+        special_date.setMonth(11)
+        special_date.setDate(30)
+        special_date.setHours(22)
+        special_date.setMinutes(59)
+        special_date.setSeconds(59)
+        document.getElementById("th-toolbox").innerHTML = special_date.toLocaleString()
 
         populate(document.getElementById("filesBrowser"), filez, folders)
         updateFilter(filez, folders, filesFilter)

@@ -386,63 +386,63 @@ button.x-lock:hover {
 /* Changing toolbox icons colors depending on state */
 
 /* Activate save on changes */
-.tool tr:hover,[data-status~="changes"] button.x-save {
+[data-status~="changes"] button.x-save {
     color: #fff;
 }
 
-.tool tr:hover,[data-status~="changes"] button.x-save:hover {
+[data-status~="changes"] button.x-save:hover {
     color: #f7a100;
 }
 
 /* Disable save on errors */
-.tool tr:hover,[data-status~="errors"]  button.x-save {
+[data-status~="errors"]  button.x-save {
     color: #bd3a3a;
 }
 
-.tool tr:hover,[data-status~="errors"]  button.x-save:hover {
+[data-status~="errors"]  button.x-save:hover {
     color: #888;
 }
 
-.tool tr:hover,[data-status~="outdate"]  button.x-save {
+[data-status~="outdate"]  button.x-save {
     color: #bd3a3a;
 }
 
-.tool tr:hover,[data-status~="outdate"]  button.x-save:hover {
+[data-status~="outdate"]  button.x-save:hover {
     color: #888;
 }
 
-.tool tr:hover,[data-status~="flocked"]  button.x-save {
+[data-status~="flocked"]  button.x-save {
     color: #bd3a3a;
 }
 
-.tool tr:hover,[data-status~="flocked"]  button.x-save:hover {
+[data-status~="flocked"]  button.x-save:hover {
     color: #888;
 }
 
 /* Activate reset on changes */
-.tool tr:hover,[data-status~="changes"] button.x-reset {
+[data-status~="changes"] button.x-reset {
     color: #fff;
 }
 
-.tool tr:hover,[data-status~="changes"] button.x-reset:hover {
+[data-status~="changes"] button.x-reset:hover {
     color: #9244ec;
 }
 
 /* Activate unlock when locked */
-.tool tr:hover,[data-status~="locked"] button.x-lock {
+[data-status~="locked"] button.x-lock {
     color: #f7a100;
 }
 
-.tool tr:hover,[data-status~="locked"] button.x-lock:hover {
+[data-status~="locked"] button.x-lock:hover {
     color: #fff;
 }
 
 /* Activate forced unlock when locked */
-.tool tr:hover,[data-status~="flocked"] button.x-lock {
+[data-status~="flocked"] button.x-lock {
     color: #9244ec;
 }
 
-.tool tr:hover,[data-status~="flocked"] button.x-lock:hover {
+[data-status~="flocked"] button.x-lock:hover {
     color: #fff;
 }
 
@@ -463,12 +463,18 @@ button.tool-f-status {
 /* On clean status - there is invisible circle icon */
 [data-status=""] .tool-f-status::after {
     content: '\25cf';
-    color: rgba(0,0,0,0)
+}
+
+[data-status=""] .tool-f-status {
+    color: rgba(0,0,0,0);
 }
 
 [data-status=""] .tool-status::after {
     content: '\25cf';
-    color: rgba(0,0,0,0)
+}
+
+[data-status=""] .tool-status {
+    color: rgba(0,0,0,0);
 }
 
 /* Show Lock when Locked (would be overriden by following states if coincident) */
@@ -607,24 +613,55 @@ button.tool-f-removed {
     display: inline-block;
 }
 
-/* Fav and Errors status */
-[data-errors=""] .tool-warning::after {
+/* Favorite */
+button.tool-fav {
     color: rgba(0,0,0,0);
+    background-color: rgba(0,0,0,0);
 }
 
-[data-fav=""] .tool-fav {
-    color: rgba(0,0,0,0);
+.tool tr:hover .no-fav button.tool-fav {
+    color: #888;
 }
 
-[data-fav=""] .tool-fav:hover {
+.tool tr:hover .no-fav button.tool-fav:hover {
     color: #f7a100;
 }
 
-[data-fav="nested"] .tool-fav {
-    color: #FFF;
-}
-
-[data-fav="nested"] .tool-fav:hover {
+.tool button.tool-fav:hover {
     color: #f7a100;
 }
 
+[data-fav="true"] button.tool-fav {
+    color: #f7a100;
+}
+
+[data-fav="true"] button.tool-fav:hover {
+    color: #aaa;
+}
+
+[data-fav="nested"] button.tool-fav {
+    color: #fff;
+}
+
+/* Errors */
+button.tool-error {
+    color: #f7a100;
+}
+
+[data-errors="false"] button.tool-error {
+    color: rgba(0,0,0,0);
+}
+
+[data-errors="false"] button.tool-error:hover {
+    background-color: rgba(0,0,0,0);
+}
+
+/* Link */
+button.tool-link {
+    color: rgba(0,0,0,0);
+    background-color: rgba(0,0,0,0);
+}
+
+.tool tr:hover button.tool-link {
+    color: #fff;
+}
