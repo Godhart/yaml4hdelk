@@ -60,13 +60,14 @@
         const folders = {}    // NOTE: folders are populated during table population
         const filesFilter = {
             "path": "",
-            "lock": undefined,
+            "locked": undefined,
+            "flocked": undefined,
             "changed": undefined,
             "open": undefined,
             "fav": undefined,
             "outdate": undefined,
             "errors": undefined,
-            "critical": undefined
+            "folders": undefined,
         }
 
         function getPath(el) {
@@ -169,7 +170,38 @@
             onFilterPathChange(filter.value)
         }
 
-        // TODO: colorize files and folders depending on their state like VSCode does
+        function getFilterRow() {
+            return document.getElementById('filtersRow')
+        }
+
+        function toggleAllFolder(el) {
+            const fr = getFilterRow()
+            let expanded = fr.getAttribute("data-folder-expanded") == "true"
+            expanded = !expanded
+            toggleFolderExpanded(expanded)
+            fr.setAttribute("data-folder-expanded", "" + expanded)
+            refreshView(filez, folders, filesFilter)
+        }
+
+        function toggleFolderExpanded(expanded) {
+            for (const [folderPath, value] of Object.entries(folders)) {
+                value.expanded = expanded
+            }
+        }
+
+        function toggleFilter(filterField, filterAttribute) {
+            const fr = getFilterRow()
+            let value = fr.getAttribute(filterAttribute) == "true"
+            value = !value
+            if (value) {
+                filesFilter[filterField] = true
+            } else {
+                filesFilter[filterField] = undefined
+            }
+            fr.setAttribute(filterAttribute, "" + value)
+            updateFilter(filez, folders, filesFilter)
+            refreshView(filez, folders, filesFilter)
+        }
 
         function populate(table, filez, folders) {
             const foldersList = []
@@ -181,7 +213,8 @@
                 let folderPath = filePath.split('/').slice(0, -1).join('/')
                 let folder = null
                 if (folders[folderPath] === undefined) {
-                    folders[folderPath] = { "path": folderPath, "id": "folder-" + folderPath,
+                    folders[folderPath] = {
+                        "path": folderPath, "id": "folder-" + folderPath,
                         "filez": {}, "folders": {}, "folder": null, visible: true, "expanded": false
                     }
                     if (folderPath == "") {
@@ -200,10 +233,12 @@
                         let cell = null
 
                         cell = folderRow.insertCell()
-                        cell.innerHTML = '<button id="' + folder.id + '-icon" title="Collapse/Expand" class="tool-icon f-white tool-icon-folder" onclick="toggleFolder(this)"></button>'
+                        cell.innerHTML = '<button id="' + folder.id + '-icon" title="Collapse/Expand" class="tool-icon f-theme tool-icon-folder" onclick="toggleFolder(this)"></button>'
 
                         cell = folderRow.insertCell()
-                        cell.innerHTML = '<button id="' + folder.id + '-main" title="Toggle path filter" class="tool b-t tool-status-color" onclick="toggleFolderFilter(this)">' + folderPath + '</button>'
+                        cell.innerHTML =
+                            '<button id="' + folder.id + '-main" title="Toggle path filter" class="tool b-t tool-status-color" onclick="toggleFolderFilter(this)">' + folderPath + '</button>'
+                        // TODO: +   '<button id="' + folder.id + '-enter" title="Enter folder" class="tool bf-t tool-folder-entry" onclick="enterFolder(this)">&#8628;</button>'
 
                         cell = folderRow.insertCell()
                         cell.innerHTML = '<button id="' + folder.id + '-status" title="Status" class="tool tool-f-status tool-status-color""></button>'
@@ -255,7 +290,7 @@
                 let cell = null
 
                 cell = fileRow.insertCell()
-                cell.innerHTML = '<button id="' + value.id + '-icon" title="Focus Tab" class="tool-icon f-white tool-icon-file" onclick="focusTab(this)"></button>'
+                cell.innerHTML = '<button id="' + value.id + '-icon" title="Focus Tab" class="tool-icon f-theme tool-icon-file" onclick="focusTab(this)"></button>'
 
                 cell = fileRow.insertCell()
                 cell.innerHTML = '<button id="' + value.id + '-main" title="Toggle Tab" class="tool b-t tool-text tool-status-color" onclick="toggleTab(this)">' + filePath + '</button>'
@@ -326,7 +361,7 @@
         function updateAttributes(filez, folders) {
             // Reset then update folder statuses
             for (const [folderPath, value] of Object.entries(folders)) {
-                value.attributes = { "status": {}, "folder-expanded": "true", "fav": "false", "errors": [], "modified": [] }
+                value.attributes = { "status": {}, "folder-expanded": "true", "fav": "folder", "errors": [], "modified": [] }
                 // Apply expanded property only, other are defined by files
                 if (!value.expanded) {
                     value.attributes["folder-expanded"] = "false"
@@ -395,7 +430,7 @@
                             }
                         })
                         if (current.attributes.fav == "true") {
-                            if (parent.attributes.fav == "false") {
+                            if (parent.attributes.fav == "folder") {
                                 parent.attributes.fav = "nested"
                             }
                         }
@@ -442,7 +477,7 @@
         function refreshView(filez, folders, filters) {
             updateAttributes(filez, folders)
             for (const [filePath, value] of Object.entries(filez)) {
-                if (!value.visible || !value.folder.visible || parentIsCollapsed(value, filters)) {
+                if (!value.visible || (!filters.folders && (!value.folder.visible || parentIsCollapsed(value, filters)))) {
                     value.row.classList.add("hidden")
                     value.row.classList.remove("shown")
                 } else {
@@ -453,7 +488,7 @@
             }
             for (const [folderPath, value] of Object.entries(folders)) {
                 if (value.row !== undefined) {
-                    if ((!value.visible || parentIsCollapsed(value, filters)) && filters.path != value.path) {
+                    if ((filters.folders || !value.visible || parentIsCollapsed(value, filters)) && filters.path != value.path) {
                         value.row.classList.add("hidden")
                         value.row.classList.remove("shown")
                     } else {
@@ -475,12 +510,34 @@
                 || (matchType == PathContains && path.search(pattern) >= 0)
         }
 
+        const filterStraight = ["locked", "flocked", "open", "fav", "outdate"]
+
         function updateFilter(filez, folders, filter) {
             if (true) {
                 const matchType = filter.path === undefined || filter.path === "" ? PathAny :
                     filter.path[0] == "^" ? PathStartsWidth : PathContains
                 for (const [filePath, value] of Object.entries(filez)) {
-                    value.visible = pathMatch(matchType, filePath, filter.path)
+                    let show = true;
+                    filterStraight.forEach(field => {
+                        if (filter[field] !== undefined) {
+                            show &= (value[field] == filter[field])
+                        }
+                    })
+
+                    if (show && filter.errors) {
+                        if (value.errors === undefined || value.errors === null || value.errors.length == 0) {
+                            show = false
+                        }
+                    }
+
+                    if (show && filter.changed) {
+                        show &= value.added | value.modified | value.removed | value.renamed
+                    }
+
+                    if (show) {
+                        show &= pathMatch(matchType, filePath, filter.path)
+                    }
+                    value.visible = show
                 }
                 for (const [folderPath, value] of Object.entries(folders)) {
                     value.visible = false
@@ -517,25 +574,69 @@
         <table class="tool" id="filesBrowser">
             <thead>
                 <tr>
-                    <th>Extra</th>
-                    <th>File path</th>
+                    <th></th>
+                    <th>Path Filter</th>
                     <th></th>
                     <th id="th-toolbox" style="color: black; font-weight: normal; font-style: italic;"></th>
                     <th></th>
                     <th></th>
                     <th>Link</th>
                 </tr>
-                <tr>
-                    <th> + / - </th>
-                    <!-- TODO: <button id="but-collapse" title="Expand All" class="tool-icon f-white tool-icon-folder" style="color:white" onclick="toggleAllFolder(this)"> -->
-                    <th><input id="filePathFilter" title="File path filter" class="tool" value="" onchange="onFilterPathChange(this.value)"
-                            onkeyup="onFilterPathChange(this.value)"
-                            onkeypress="if (event.keyCode == 13) {return false}"></input> </th>
-                    <th>&#9679;</th>
-                    <th>Sort</th>
-                    <th>&#9733;</th>
-                    <th>&#9888;</th>
-                    <th><select id="viewer" title="Tool to show schematic" class="tool" onchange="console.log(this.value)">
+                <tr id="filtersRow" data-path="all" data-folder-expanded="false" data-filter-changed="false"
+                    data-dont-display-folders="false" data-filter-open="false" data-filter-locked="false"
+                    data-filter-flocked="false" data-filter-outdate="false" data-filter-fav="false"
+                    data-filter-errors="false">
+                    <th>
+                        <button id="but-collapse" title="Expand All" class="tool-icon f-theme tool-icon-folder"
+                            onclick="toggleAllFolder(this)"></button>
+                    </th>
+                    <th>
+                        <span id="filePathFilterStatic">
+                            <!-- TODO: fill-in with static path like shown below
+                            <button class="tool b-but tool-folder-static-path">/folder1</button>
+                            <button class="tool b-but tool-folder-static-path">/sub1</button>
+                            -->
+                        </span>
+                        <input id="filePathFilter" title="File path filter" class="tool" value=""
+                            onchange="onFilterPathChange(this.value)" onkeyup="onFilterPathChange(this.value)"
+                            onkeypress="if (event.keyCode == 13) {return false}"></input>
+                    </th>
+                    <th>
+                        <button id="but-filterChanged" title="Show changed only"
+                            class="tool bf-t tool-filter-changed-color"
+                            onclick="toggleFilter('changed', 'data-filter-changed')">&#9679;</button>
+                    </th>
+                    <th>
+                        <!-- TODO: HidePath in names:   Path\ -->
+                        <!-- TODO: SortByName: A-z z-A -->
+                        <!-- TODO: SortByDate: &#128467; &#8645; &#8613; &#8615; -->
+                        <button id="but-dontDisaplyFolders" title="Don't display folders"
+                            class="tool-icon tool-dont-display-folders"
+                            onclick="toggleFilter('folders', 'data-dont-display-folders')">&#128448;</button>
+                        <button id="but-filterOpen" title="Show open files only"
+                            class="tool-icon tool-filter-open-color"
+                            onclick="toggleFilter('open', 'data-filter-open')">&#128441;</button>
+                        <button id="but-filterLocked" title="Show locked files only"
+                            class="tool-icon tool-filter-locked-color"
+                            onclick="toggleFilter('locked', 'data-filter-locked')">&#9919;</button>
+                        <button id="but-filterFlocked" title="Show f-locked files only"
+                            class="tool-icon tool-filter-flocked-color"
+                            onclick="toggleFilter('flocked', 'data-filter-flocked')">&#9919;</button>
+                        <button id="but-filterOutdate" title="Show outdated files only"
+                            class="tool-icon tool-filter-outdate-color"
+                            onclick="toggleFilter('outdate', 'data-filter-outdate')">&#10226;</button>
+                    </th>
+                    <th>
+                        <button id="but-filterStarred" title="Show starred only" class="tool-icon tool-filter-fav-color"
+                            onclick="toggleFilter('fav', 'data-filter-fav')">&#9733;</button>
+                    </th>
+                    <th>
+                        <button id="but-filterErrors" title="Show errors only"
+                            class="tool-icon tool-filter-errors-color"
+                            onclick="toggleFilter('errors', 'data-filter-errors')">&#9888;</button>
+                    </th>
+                    <th><select id="viewer" title="Tool to show schematic" class="tool"
+                            onchange="console.log(this.value)">
                             <option>HDELK</option>
                             <option>D3HW</option>
                         </select> </th>
@@ -552,6 +653,7 @@
         })
 
         document.getElementById("domains").value = "test"
+        // NOTE: this date produces longest text and is used to set size for node-info column
         const special_date = new Date()
         special_date.setFullYear(2022)
         special_date.setMonth(11)

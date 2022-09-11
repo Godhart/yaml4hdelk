@@ -115,8 +115,16 @@ button.b-orange:hover {
 /* -= Foreground colors =- */
 
 /* Mnemonic colors */
+.f-theme {
+    color: #fff;
+}
+
 .f-white {
     color: #fff;
+}
+
+.f-black {
+    color: #000;
 }
 
 .f-red {
@@ -305,9 +313,17 @@ tr.hidden {
     content: '\1f5c0';
 }
 
+[data-folder-expanded="false"] .tool-icon-folder:hover::after {
+    content: '\1f5c1';
+}
+
 /* Toggle folder icon depending on state - expanded state */
 [data-folder-expanded="true"] .tool-icon-folder::after {
     content: '\1f5c1';
+}
+
+[data-folder-expanded="true"] .tool-icon-folder:hover::after {
+    content: '\1f5c0';
 }
 
 /* Toggle file icon depending on state - opened tab state */
@@ -636,12 +652,26 @@ button.tool-fav {
 }
 
 [data-fav="true"] button.tool-fav:hover {
-    color: #aaa;
+    color: #888;
 }
 
 [data-fav="nested"] button.tool-fav {
     color: #fff;
 }
+
+[data-fav="nested"] button.tool-fav:hover {
+    color: #888;
+}
+
+[data-fav="folder"] button.tool-fav {
+    color: rgba(0,0,0,0);
+}
+
+[data-fav="folder"] button.tool-fav:hover {
+    color: rgba(0,0,0,0);
+    background-color: rgba(0,0,0,0);
+}
+
 
 /* Errors */
 button.tool-error {
@@ -664,4 +694,158 @@ button.tool-link {
 
 .tool tr:hover button.tool-link {
     color: #fff;
+}
+
+/* Folder Entry */
+button.tool-folder-entry {
+    color: rgba(0,0,0,0);
+}
+
+.tool tr:hover button.tool-folder-entry {
+    color: #fff;
+}
+
+/* Folder Static Path */
+button.tool-folder-static-path:hover {
+    text-decoration: line-through;
+}
+
+/* -= Filters togglers =- */
+
+/* Filter changed */
+button.tool-filter-changed-color {
+    color: #888;
+}
+
+button.tool-filter-changed-color:hover {
+    color: #1ba7c0;
+}
+
+[data-filter-changed="true"] button.tool-filter-changed-color {
+    color: #1ba7c0;
+}
+
+[data-filter-changed="true"] button.tool-filter-changed-color:hover {
+    color: #888;
+}
+
+/* Don't Display Folders */
+button.tool-dont-display-folders {
+    color: #888;
+    text-decoration: line-through;
+}
+
+button.tool-dont-display-folders:hover {
+    color: #1ba7c0;
+}
+
+[data-dont-display-folders="true"] button.tool-dont-display-folders {
+    color: #1ba7c0;
+}
+
+[data-dont-display-folders="true"] button.tool-dont-display-folders:hover {
+    color: #888;
+}
+
+/* Filter open */
+button.tool-filter-open-color {
+    color: #888;
+}
+
+button.tool-filter-open-color:hover {
+    color: #1ba7c0;
+}
+
+[data-filter-open="true"] button.tool-filter-open-color {
+    color: #1ba7c0;
+}
+
+[data-filter-open="true"] button.tool-filter-open-color:hover {
+    color: #888;
+}
+
+/* Filter locked */
+button.tool-filter-locked-color {
+    color: #888;
+}
+
+button.tool-filter-locked-color:hover {
+    color: #1ba7c0;
+}
+
+[data-filter-locked="true"] button.tool-filter-locked-color {
+    color: #1ba7c0;
+}
+
+[data-filter-locked="true"] button.tool-filter-locked-color:hover {
+    color: #888;
+}
+
+/* Filter flocked */
+button.tool-filter-flocked-color {
+    color: #888;
+    border: dashed;
+    border-width: 1px;
+}
+
+button.tool-filter-flocked-color:hover {
+    color: #9244ec;
+}
+
+[data-filter-flocked="true"] button.tool-filter-flocked-color {
+    color: #9244ec;
+}
+
+[data-filter-flocked="true"] button.tool-filter-flocked-color:hover {
+    color: #888;
+}
+
+/* Filter outdate */
+button.tool-filter-outdate-color {
+    color: #888;
+}
+
+button.tool-filter-outdate-color:hover {
+    color: #1ba7c0;
+}
+
+[data-filter-outdate="true"] button.tool-filter-outdate-color {
+    color: #1ba7c0;
+}
+
+[data-filter-outdate="true"] button.tool-filter-outdate-color:hover {
+    color: #888;
+}
+/* Filter fav */
+button.tool-filter-fav-color {
+    color: #888;
+}
+
+button.tool-filter-fav-color:hover {
+    color: #1ba7c0;
+}
+
+[data-filter-fav="true"] button.tool-filter-fav-color {
+    color: #1ba7c0;
+}
+
+[data-filter-fav="true"] button.tool-filter-fav-color:hover {
+    color: #888;
+}
+
+/* Filter errors */
+button.tool-filter-errors-color {
+    color: #888;
+}
+
+button.tool-filter-errors-color:hover {
+    color: #1ba7c0;
+}
+
+[data-filter-errors="true"] button.tool-filter-errors-color {
+    color: #1ba7c0;
+}
+
+[data-filter-errors="true"] button.tool-filter-errors-color:hover {
+    color: #888;
 }
