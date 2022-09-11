@@ -816,6 +816,25 @@ button.tool-filter-outdate-color:hover {
 [data-filter-outdate="true"] button.tool-filter-outdate-color:hover {
     color: #888;
 }
+
+/* Filter union */
+button.tool-filter-union-color{
+    color: #888;
+    font-size: 18px;
+}
+
+button.tool-filter-union-color:hover {
+    color: #1ba7c0;
+}
+
+[data-filter-union="true"] button.tool-filter-union-color {
+    color: #1ba7c0;
+}
+
+[data-filter-union="true"] button.tool-filter-union-color:hover {
+    color: #888;
+}
+
 /* Filter fav */
 button.tool-filter-fav-color {
     color: #888;

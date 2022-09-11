@@ -68,6 +68,7 @@
             "outdate": undefined,
             "errors": undefined,
             "folders": undefined,
+            "union": false,
         }
 
         function getPath(el) {
@@ -517,21 +518,35 @@
                 const matchType = filter.path === undefined || filter.path === "" ? PathAny :
                     filter.path[0] == "^" ? PathStartsWidth : PathContains
                 for (const [filePath, value] of Object.entries(filez)) {
-                    let show = true;
+                    let show = !filter.union;
                     filterStraight.forEach(field => {
                         if (filter[field] !== undefined) {
-                            show &= (value[field] == filter[field])
+                            if (filter.union) {
+                                show |= (value[field] == filter[field])
+                            } else {
+                                show &= (value[field] == filter[field])
+                            }
                         }
                     })
 
-                    if (show && filter.errors) {
-                        if (value.errors === undefined || value.errors === null || value.errors.length == 0) {
-                            show = false
+                    if (((show && !filter.union) || (!show && filter.union)) && filter.errors) {
+                        if (!filter.union) {
+                            if (value.errors === undefined || value.errors === null || value.errors.length == 0) {
+                                show = false
+                            }
+                        } else {
+                            if (value.errors !== undefined && value.errors !== null && value.errors.length > 0) {
+                                show = true
+                            }
                         }
                     }
 
-                    if (show && filter.changed) {
-                        show &= value.added | value.modified | value.removed | value.renamed
+                    if (((show && !filter.union) || (!show && filter.union)) && filter.changed) {
+                        if (filter.union) {
+                            show |= value.added | value.modified | value.removed | value.renamed
+                        } else {
+                            show &= value.added | value.modified | value.removed | value.renamed
+                        }
                     }
 
                     if (show) {
@@ -584,8 +599,8 @@
                 </tr>
                 <tr id="filtersRow" data-path="all" data-folder-expanded="false" data-filter-changed="false"
                     data-dont-display-folders="false" data-filter-open="false" data-filter-locked="false"
-                    data-filter-flocked="false" data-filter-outdate="false" data-filter-fav="false"
-                    data-filter-errors="false">
+                    data-filter-flocked="false" data-filter-outdate="false" data-filter-union="false"
+                    data-filter-fav="false" data-filter-errors="false">
                     <th>
                         <button id="but-collapse" title="Expand All" class="tool-icon f-theme tool-icon-folder"
                             onclick="toggleAllFolder(this)"></button>
@@ -625,6 +640,8 @@
                         <button id="but-filterOutdate" title="Show outdated files only"
                             class="tool-icon tool-filter-outdate-color"
                             onclick="toggleFilter('outdate', 'data-filter-outdate')">&#10226;</button>
+                        <button id="but-filterUnion" title="Join filtered" class="tool-icon tool-filter-union-color"
+                            onclick="toggleFilter('union', 'data-filter-union')">&#10756;</button>
                     </th>
                     <th>
                         <button id="but-filterStarred" title="Show starred only" class="tool-icon tool-filter-fav-color"
