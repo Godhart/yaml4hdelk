@@ -231,10 +231,9 @@ button.tool-icon:hover{
 
 .tool th,
 .tool td {
-    padding: 0.25em 0.5em 0.25em 1em;
+    padding: 4px;
     vertical-align: text-top;
     text-align: left;
-    text-indent: -0.5em;
 }
 
 .tool th {
@@ -257,12 +256,38 @@ button.tool-icon:hover{
     font-style: italic;
 }
 
-/*
-.tool th:nth-of-type(6),
-.tool td:nth-of-type(6) {
-    text-align: right;
+.tool-full th:nth-of-type(2),
+.tool-full td:nth-of-type(2) {
+    width: 300px;
 }
-*/
+
+.tool-full input {
+    width: 266px;
+}
+
+.tool-compact th:nth-of-type(2),
+.tool-compact td:nth-of-type(2) {
+    width: 200px;
+}
+
+.tool-compact input {
+    width: 166px;
+}
+
+
+.tool-compact th:nth-of-type(4),
+.tool-compact td:nth-of-type(4),
+.tool-compact th:nth-of-type(7),
+.tool-compact td:nth-of-type(7) {
+    display: none;
+}
+
+.tool-tiny th:nth-of-type(5),
+.tool-tiny td:nth-of-type(5),
+.tool-tiny th:nth-of-type(6),
+.tool-tiny td:nth-of-type(6) {
+    display: none;
+}
 
 /* Styles to show / hide rows */
 tr.shown,
