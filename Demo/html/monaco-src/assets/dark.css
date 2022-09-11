@@ -258,22 +258,13 @@ button.tool-icon:hover{
 
 .tool-full th:nth-of-type(2),
 .tool-full td:nth-of-type(2) {
-    width: 300px;
-}
-
-.tool-full input {
-    width: 266px;
+    width: none;
 }
 
 .tool-compact th:nth-of-type(2),
 .tool-compact td:nth-of-type(2) {
     width: 200px;
 }
-
-.tool-compact input {
-    width: 166px;
-}
-
 
 .tool-compact th:nth-of-type(4),
 .tool-compact td:nth-of-type(4),
@@ -892,4 +883,19 @@ button.tool-filter-errors-color:hover {
 
 [data-filter-errors="true"] button.tool-filter-errors-color:hover {
     color: #888;
+}
+
+/* Hiding file/folder location in tiny and compact views */
+.tool-tiny .path-location,
+.tool-compact .path-location {
+    display: none;
+}
+
+.path-margin {
+    color: rgba(0,0,0,0)
+}
+
+/* Hiding file/folder margin area in full view */
+.tool-full .path-margin {
+    display: none;
 }

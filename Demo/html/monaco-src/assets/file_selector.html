@@ -63,7 +63,8 @@
             "/folder4/file1-5": { "timestamp": special_date.getTime() - 360 },
             "/folder4/file1-6": { "timestamp": special_date.getTime() - 360 },
             "/folder4/sub1/file4-1-1": { "errors": ["Error 4-1-1 1"], "timestamp": special_date.getTime() - 60 },
-            "/folder4/sub1/file4-2-1": { "errors": ["Error 4-1-1 2"], "timestamp": special_date.getTime() - 120 },
+            "/folder4/sub1/file4-1-2": { "errors": ["Error 4-1-1 2"], "timestamp": special_date.getTime() - 120 },
+            "/folder4/sub1/file4-1-3-with-a-long-long-long-long-long-name": { "timestamp": special_date.getTime() - 120 },
         }
 
         const folders = {}    // NOTE: folders are populated during table population
@@ -173,11 +174,12 @@
         function toggleFolderFilter(el) {
             const path = getPath(el)
             const filter = document.getElementById("filePathFilter")
-            if (filter.value == path) {
-                filter.value = ""
+            if (filesFilter.pathRoot == path) {
+                filesFilter.pathRoot = ""
             } else {
-                filter.value = path
+                filesFilter.pathRoot = path
             }
+            filter.value = ""
             onFilterPathChange(filter.value)
         }
 
@@ -247,8 +249,19 @@
                         cell.innerHTML = '<button id="' + folder.id + '-icon" title="Collapse/Expand" class="tool-icon f-theme tool-icon-folder" onclick="toggleFolder(this)"></button>'
 
                         cell = folderRow.insertCell()
+                        let folderName = folderPath.split("/").slice(-1)
+                        let folderLocation = folderPath.split("/").slice(0, -1).join("/") + "/"
+                        let folderMargin = folderPath.split("/").length - 2
+                        let folderMarginContent = ""
+                        for (let i = 0; i < folderMargin; i++) {
+                            folderMarginContent += "M"
+                        }
+
                         cell.innerHTML =
-                            '<button id="' + folder.id + '-main" title="Toggle path filter" class="tool b-t tool-status-color" onclick="toggleFolderFilter(this)">' + folderPath + '</button>'
+                            '<button id="' + folder.id + '-main" title="Click to change focus\nFull path: ' + folderPath + '"\
+ class="tool b-t tool-status-color" onclick="toggleFolderFilter(this)">\
+<span class="path-margin">'+ folderMarginContent + '</span>\
+<span class="path-location">' + folderLocation + '</span><span>' + folderName + '</span></button>'
                         // TODO: +   '<button id="' + folder.id + '-enter" title="Enter folder" class="tool bf-t tool-folder-entry" onclick="enterFolder(this)">&#8628;</button>'
 
                         cell = folderRow.insertCell()
@@ -304,7 +317,19 @@
                 cell.innerHTML = '<button id="' + value.id + '-icon" title="Focus Tab" class="tool-icon f-theme tool-icon-file" onclick="focusTab(this)"></button>'
 
                 cell = fileRow.insertCell()
-                cell.innerHTML = '<button id="' + value.id + '-main" title="Toggle Tab" class="tool b-t tool-text tool-status-color" onclick="toggleTab(this)">' + filePath + '</button>'
+                let fileName = filePath.split("/").slice(-1)
+                let fileLocation = filePath.split("/").slice(0, -1).join("/") + "/"
+                let fileMargin = filePath.split("/").length - 2
+                let fileMarginContent = ""
+                for (let i = 0; i < fileMargin; i++) {
+                    fileMarginContent += "M"
+                }
+
+                cell.innerHTML =
+                    '<button id="' + value.id + '-main" title="Click to toggle Tab\nFull path: ' + filePath + '"\
+ class="tool b-t tool-text tool-status-color" onclick="toggleTab(this)">\
+ <span class="path-margin">'+ fileMarginContent + '</span>\
+ <span class=path-location>' + fileLocation + '</span><span>' + fileName + '</span></button>'
 
                 cell = fileRow.insertCell()
                 cell.innerHTML = '<button id="' + value.id + '-status" title="Status" class="tool tool-status tool-status-color""></button>'
@@ -523,14 +548,14 @@
 
         const filterSet = {
             "full": ["locked", "flocked", "open", "fav", "outdate", "errors", "changed"],
-            "compact": ["fav", "errors", "changed"],
-            "tiny": ["changed"]
+            "compact": ["fav", "errors", "open", "changed"],
+            "tiny": ["changed", "open"]
         }
 
         const filterStraight = {
             "full": ["locked", "flocked", "open", "fav", "outdate"],
-            "compact": ["fav"],
-            "tiny": []
+            "compact": ["fav", "open"],
+            "tiny": ["open"]
         }
 
         const views = ["tiny", "compact", "full"]
@@ -583,41 +608,57 @@
                     })
                 }
                 for (const [filePath, value] of Object.entries(filez)) {
+                    let skip = false
+                    if (filter.pathRoot != "") {
+                        if (filePath.indexOf(filter.pathRoot) != 0) {
+                            skip = true
+                        }
+                    }
+
                     let show = default_show
-                    filterStraight[view].forEach(field => {
-                        if (filter[field] !== undefined) {
-                            if (union) {
-                                show |= (value[field] == filter[field])
+
+                    if (skip) {
+                        show = false
+                    } else {
+                        filterStraight[view].forEach(field => {
+                            if (filter[field] !== undefined) {
+                                if (union) {
+                                    show |= (value[field] == filter[field])
+                                } else {
+                                    show &= (value[field] == filter[field])
+                                }
+                            }
+                        })
+
+                        if (view != "tiny" && ((show && !union) || (!show && union)) && filter.errors) {
+                            if (!union) {
+                                if (value.errors === undefined || value.errors === null || value.errors.length == 0) {
+                                    show = false
+                                }
                             } else {
-                                show &= (value[field] == filter[field])
+                                if (value.errors !== undefined && value.errors !== null && value.errors.length > 0) {
+                                    show = true
+                                }
                             }
                         }
-                    })
 
-                    if (view != "tiny" && ((show && !union) || (!show && union)) && filter.errors) {
-                        if (!union) {
-                            if (value.errors === undefined || value.errors === null || value.errors.length == 0) {
-                                show = false
-                            }
-                        } else {
-                            if (value.errors !== undefined && value.errors !== null && value.errors.length > 0) {
-                                show = true
+                        if (((show && !union) || (!show && union)) && filter.changed) {
+                            if (union) {
+                                show |= value.added | value.modified | value.removed | value.renamed
+                            } else {
+                                show &= value.added | value.modified | value.removed | value.renamed
                             }
                         }
-                    }
 
-                    if (((show && !union) || (!show && union)) && filter.changed) {
-                        if (union) {
-                            show |= value.added | value.modified | value.removed | value.renamed
-                        } else {
-                            show &= value.added | value.modified | value.removed | value.renamed
+                        if (show) {
+                            const matchType = filter.path === undefined || filter.path === "" ? PathAny :
+                                filter.path[0] == "^" ? PathStartsWidth : PathContains
+                            let matchString = filePath
+                            if (filter.pathRoot != "") {
+                                matchString = filePath.substring(filter.pathRoot.length)
+                            }
+                            show &= pathMatch(matchType, matchString, filter.path)
                         }
-                    }
-
-                    if (show) {
-                        const matchType = filter.path === undefined || filter.path === "" ? PathAny :
-                            filter.path[0] == "^" ? PathStartsWidth : PathContains
-                        show &= pathMatch(matchType, filePath, filter.path)
                     }
                     value.visible = show
                 }
@@ -669,15 +710,23 @@
                         <button class="tool b-but tool-folder-static-path">/folder1</button>
                         <button class="tool b-but tool-folder-static-path">/sub1</button>
                         -->
-                        <input id="filePathFilter" title="File path filter" class="tool" value=""
-                            onchange="onFilterPathChange(this.value)" onkeyup="onFilterPathChange(this.value)"
-                            onkeypress="if (event.keyCode == 13) {return false}"></input>
-                        <button id="but-dontDisaplyFolders" title="Don't display folders" style="width: 26px"
-                            class="tool-icon tool-dont-display-folders"
-                            onclick="toggleFilter('folders', 'data-dont-display-folders')">&#128448;</button>
+                        <div style="width: 100%; display:flex; flex-direction:row;">
+                            <input id="filePathFilter" title="File path filter" class="tool"
+                                style="width: 100%; flex:1;" value="" onchange="onFilterPathChange(this.value)"
+                                onkeyup="onFilterPathChange(this.value)"
+                                onkeypress="if (event.keyCode == 13) {return false}"></input>
+                            <span style="width: 4px">&nbsp;</span>
+                            <button id="but-dontDisaplyFolders" title="Don't display folders" style="width: 26px;"
+                                class="tool-icon tool-dont-display-folders"
+                                onclick="toggleFilter('folders', 'data-dont-display-folders')">&#128448;</button>
+                            <span style="width: 4px">&nbsp;</span>
+                            <button id="but-filterOpen" title="Display open files"
+                                class="tool-icon tool-filter-open-color"
+                                onclick="toggleFilter('open', 'data-filter-open')">&#128441;</button>
+                        </div>
                     </th>
                     <th style="width: 34px">
-                        <button id="but-filterChanged" title="Show changed only"
+                        <button id="but-filterChanged" title="Display changed files"
                             class="tool bf-t tool-filter-changed-color"
                             onclick="toggleFilter('changed', 'data-filter-changed')">&#9679;</button>
                     </th>
@@ -685,32 +734,29 @@
                         <!-- TODO: HidePath in names:   Path\ -->
                         <!-- TODO: SortByName: A-z z-A -->
                         <!-- TODO: SortByDate: &#128467; &#8645; &#8613; &#8615; -->
-                        <button id="but-filterOpen" title="Show open files only"
-                            class="tool-icon tool-filter-open-color"
-                            onclick="toggleFilter('open', 'data-filter-open')">&#128441;</button>
-                        <button id="but-filterLocked" title="Show locked files only"
+                        <button id="but-filterLocked" title="Display locked files"
                             class="tool-icon tool-filter-locked-color"
                             onclick="toggleFilter('locked', 'data-filter-locked')">&#9919;</button>
-                        <button id="but-filterFlocked" title="Show f-locked files only"
+                        <button id="but-filterFlocked" title="Display files locked by someone else"
                             class="tool-icon tool-filter-flocked-color"
                             onclick="toggleFilter('flocked', 'data-filter-flocked')">&#9919;</button>
-                        <button id="but-filterOutdate" title="Show outdated files only"
+                        <button id="but-filterOutdate" title="Display outdated files"
                             class="tool-icon tool-filter-outdate-color"
                             onclick="toggleFilter('outdate', 'data-filter-outdate')">&#10226;</button>
                         <button id="but-filterUnion" title="Join filtered" class="tool-icon tool-filter-union-color"
                             onclick="toggleFilter('union', 'data-filter-union')">&#10756;</button>
                     </th>
                     <th style="width: 20px">
-                        <button id="but-filterStarred" title="Show starred only" class="tool-icon tool-filter-fav-color"
+                        <button id="but-filterStarred" title="Display starred files" class="tool-icon tool-filter-fav-color"
                             onclick="toggleFilter('fav', 'data-filter-fav')">&#9733;</button>
                     </th>
                     <th style="width: 20px">
-                        <button id="but-filterErrors" title="Show errors only"
+                        <button id="but-filterErrors" title="Display errors"
                             class="tool-icon tool-filter-errors-color"
                             onclick="toggleFilter('errors', 'data-filter-errors')">&#9888;</button>
                     </th>
                     <th>
-                        <select id="viewer" title="Tool to show schematic" class="tool"
+                        <select id="viewer" title="Tool to draw schematic" class="tool"
                             onchange="console.log(this.value)">
                             <option>HDELK</option>
                             <option>D3HW</option>
