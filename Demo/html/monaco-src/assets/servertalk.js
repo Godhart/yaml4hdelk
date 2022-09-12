@@ -1,4 +1,6 @@
 class ServerTalk {
+    /* Abstraction for interactive http requests */
+
     serverUrl = null;
 
     constructor(serverUrl) {

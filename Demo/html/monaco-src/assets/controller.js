@@ -14,9 +14,13 @@ function iframeCall(iframe_id, data, origin) {
 
 // Controller
 class Controller {
+    /* Coordinate objects according to happening events */
+
     editorCreated = false;
     editorDomain = null;
     remoteFiles = null;
+    remoteData = null;
+    localData = null;
 
     /*  TODO:
         x. Get Files list from server
@@ -38,9 +42,11 @@ class Controller {
         8. Store actions on preview to update
     */
 
-    constructor(remoteFiles, editorDomain) {
-        this.remoteFiles = remoteFiles;
+    constructor(editorDomain, remoteFiles, remoteData, localData) {
         this.editorDomain = editorDomain;
+        this.remoteFiles = remoteFiles;
+        this.remoteData = remoteData;
+        this.localData = localData;
     }
 
     onEditorCreated() {
@@ -50,6 +56,7 @@ class Controller {
         // Reopen tabs
         let filesCount = 0; // Amount of locally saved files
         let lastFile = "";  // Last file is used to activate certain tab
+        const localData = this.localData;
         localData.activeTabs.forEach(key => {
             if ((localData.filesData[key] !== undefined) && (localData.filesData[key] !== null)) {
                 iframeCall("editor", {
@@ -113,7 +120,8 @@ class Controller {
     }
 
     onEditorChange(filePath) {
-        localData.switchTab(filePath)
+        // TODO: this should be reworked since currently it's too heavy for simple reaction on editor changes
+        this.localData.switchTab(filePath)
         iframeCall("editor", {
             "obj": "worker",
             "method": "contextDump",
@@ -128,46 +136,49 @@ class Controller {
     }
 
     onErrorsChange(info) {
-        localData.updateProblemsEditor(info)
+        this.localData.updateProblemsEditor(info)
     }
 
     addTab(filePath) {
         return new Promise((resolve, reject) => {
             let fileContent = "";
-            if (this.localData[filePath] === undefined) {
-                this.remoteFiles.getFile(filePath)
+            const remoteFiles = this.remoteFiles;
+            const localData = this.localData;
+
+            if (localData[filePath] === undefined) {
+                // If there is not local data for this file path then get file from server
+                remoteFiles.getFiles(localData.dataDomain, [filePath], ["content", "hash", "timestamp"])
                     .then(
                         (fileData) => {
-                            if (fileData.content !== null) {
+                            if (fileData[filePath].content !== null) {
                                 // File exists on server
                             } else {
                                 // File not exists on server
-                                fileData.content = "# A new file " + filePath;
+                                fileData[filePath].content = "# A new file " + filePath;
                             }
-                            return fileData;
+                            return fileData[filePath];
                         }
                     )
                     .then(
                         (value) => {
                             fileContent = value.content;
-                            return this.localData.addFile(
+                            return localData.addFile(
                                 filePath,
                                 value.content,
                                 value.hash,
-                                value.lock,
                                 value.timestamp
                             )
                         }
                     )
             }
-            if (this.localData[filePath] === undefined) {
+            if (localData[filePath] === undefined) {
                 reject("Failed to get data from remote")
             }
 
-            this.localData.addTab(filePath)
+            localData.addTab(filePath)
                 .then(
                     () => {
-                        return this.localData.switchTab(filePath)
+                        return localData.switchTab(filePath)
                     }
                 )
                 .then(

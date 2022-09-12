@@ -224,21 +224,29 @@ class DataDomain:
 
     def get_file(self, file_path, fields, custom_data=None):
         if not self._file_exists(file_path, custom_data):
-            return None, f"File '{file_path}' is not found in domain '{self.name}'"
+            file_exists = False
+        else:
+            file_exists = True
 
         result = {}
 
         if _CONTENT in fields:
-            try:
-                result[_CONTENT] = self._file_text(file_path, custom_data)
-            except Exception as e:
-                return None, f"File read '{file_path}' of domain '{self.name}' failed due to exception: {e}"
+            if not file_exists:
+                result[_CONTENT] = None
+            else:
+                try:
+                    result[_CONTENT] = self._file_text(file_path, custom_data)
+                except Exception as e:
+                    return None, f"File read '{file_path}' of domain '{self.name}' failed due to exception: {e}"
 
         if _HASH in fields:
-            try:
-                result[_HASH] = self._file_hash(file_path, custom_data)
-            except Exception as e:
-                return None, f"Getting file hash for file '{file_path}' of domain '{self.name}' failed due to exception: {e}"
+            if not file_exists:
+                result[_HASH] = None
+            else:
+                try:
+                    result[_HASH] = self._file_hash(file_path, custom_data)
+                except Exception as e:
+                    return None, f"Getting file hash for file '{file_path}' of domain '{self.name}' failed due to exception: {e}"
 
         if _LOCK in fields:
             try:
@@ -249,11 +257,14 @@ class DataDomain:
                 return None, f"Getting file lock for file '{file_path}' of domain '{self.name}' failed due to exception: {e}"
 
         if _TIMESTAMP in fields:
-            try:
-                result[_TIMESTAMP] = self._file_timestamp(
-                    file_path, custom_data)
-            except Exception as e:
-                return None, f"Getting file timestamp for file '{file_path}' of domain '{self.name}' failed due to exception: {e}"
+            if not file_exists:
+                result[_TIMESTAMP] = None
+            else:
+                try:
+                    result[_TIMESTAMP] = self._file_timestamp(
+                        file_path, custom_data)
+                except Exception as e:
+                    return None, f"Getting file timestamp for file '{file_path}' of domain '{self.name}' failed due to exception: {e}"
 
         return result, None
 

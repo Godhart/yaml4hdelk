@@ -201,7 +201,7 @@ class PrettyPrinter(object):
 
 class Expression(PrettyPrinter):
 
-    def __init__(self, current_token, pos, port=False, parent=None, relative_path=""):
+    def __init__(self, current_token, pos, port=False, parent=None, relative_path="/"):
         # Store token that were on creation (for debug purposes)
         self._initial_token = current_token
         self._start_pos = pos[0]

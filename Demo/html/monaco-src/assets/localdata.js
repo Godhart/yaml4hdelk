@@ -1,26 +1,39 @@
 class FileData {
-    currentValue = ""
-    problemsEditor = 0
-    problemsRemote = 0
-    source = null
-    hash = null
-    timestamp = 0
+    /* Class to store misc file related data */
+    currentValue = ""   // Current value
+    problemsEditor = 0  // Amount of problems detected by editor
+    problemsRemote = 0  // Amount of problems detected by server
+    source = null       // Initial value, that were received from server on checkout
+    source_timestamp = 0// Initial value timestamp, that were received from server on checkout
+    source_hash = null  // Hash that were received from server on checkout
+    timestamp = 0       // Last modification timestamp
 }
 
 
 class LocalData {
-    session = null
-    filesData = {}
-    activeTabs = []
-    currentTab = ""
-    dataDomain = ""
+    /* Local data storage */
+
+    session = null      // Current session timestamp. Used to understand if session is outdated
+                        // (detect if another session were opened on other browser tab)
+    filesData = {}      // Dict with file data. Key is file path, value is FileData instance
+    activeTabs = []     // List of active tabs, that should be displayed in editor. Value is file path
+    currentTab = ""     // Currently selected tab. Value is file path
+    dataDomain = ""     // Current data domain
     co = {}
 
-    constructor(dataDomain) {
+    constructor(fallbackDomain) {
+        if (dataDomain === undefined) {
+            this._restore("yaml4schm-monaco-domain")
+            .then(
+                (domain)    => { dataDomain = domain },
+                ()          => { dataDomain = fallbackDomain}
+            )
+        }
         this.switchDomain(dataDomain);
     }
 
     switchDomain(dataDomain) {
+        // Switches current active domain to work with
         if (this.dataDomain !== "") {
             this.storeAll();
         }
@@ -28,6 +41,7 @@ class LocalData {
             this.releaseSession();
         }
         this.dataDomain = dataDomain;
+        this._store("yaml4schm-monaco-domain", dataDomain);
         this.co = {
             "session": "yaml4schm-monaco-" + dataDomain + "-session",
             "filesData": "yaml4schm-monaco-" + dataDomain + "-filesData",
@@ -42,7 +56,7 @@ class LocalData {
 
     _store(key, value) {
         return new Promise((resolve, reject) => {
-            if (JSON.parse(localStorage.getItem(this.co.filesData)) === this.session) {
+            if (JSON.parse(localStorage.getItem(this.co.session)) === this.session) {
                 localStorage.setItem(this.co[key], JSON.stringify(value));
                 resolve("Success!")
             } else {
@@ -53,7 +67,7 @@ class LocalData {
 
     _restore(key) {
         return new Promise((resolve, reject) => {
-            if (localStorage.getItem(this.co.filesData) === this.session) {
+            if (localStorage.getItem(this.co.session) === this.session) {
                 let value = localStorage.getItem(this.co[key]);
                 if (value) {
                     resolve(JSON.parse(value))
@@ -174,7 +188,8 @@ class LocalData {
                 this.filesData[filePath] = Object.assign(new FileData(), {
                     "currentValue": source,
                     "source": source,
-                    "hash": hash,
+                    "source_timestamp": timestamp,
+                    "source_hash": hash,
                     "timestamp": timestamp,
                 });
                 this._store(this.co.filesData, this.filesData)
@@ -210,7 +225,7 @@ class LocalData {
         })
     }
 
-    updateFileStatics(filePath, source, hash) {
+    updateFileStatics(filePath, source, hash, timestamp) {
         return new Promise((resolve, reject) => {
             if (this.filesData[filePath] !== undefined) {
                 let f = this.filesData[filePath];
@@ -218,7 +233,10 @@ class LocalData {
                     f.source = source
                 }
                 if (hash !== undefined && hash !== null) {
-                    f.hash = hash
+                    f.source_hash = hash
+                }
+                if (timestamp !== undefined && hash !== null) {
+                    f.source_timestamp = timestamp
                 }
                 this._store(this.co.filesData, this.filesData)
                     .then(

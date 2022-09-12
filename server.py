@@ -470,15 +470,21 @@ def save_by_path(tool, path):
     except Exception as e:
         return _error(f"Schematic check failed due to exception: {e}!", {})
 
-    result, error = save_then_get(
-        domain, data, ["hash"])
+    _, error = _save_files(
+        domain, data)
     if error is not None:
         return _error(error, {})
+
+    update_result, error = _get_files(domain, [file_path], ["hash"])
+    if error is not None:
+        hash = None
+    else:
+        hash = update_result[file_path]["hash"]
 
     return _success({
         "diagram": diagram,
         "source": content,
-        "hash": result["files"][file_path]["hash"]
+        "hash": hash
     }, {})
 
 
@@ -543,80 +549,6 @@ def files_list(domain):
         return _error(f"Failed due to exception: {e}", common)
 
 
-@app.route('/rest/1.0/domain/<domain>/filesHash')
-def files_hash(domain):
-    """ Return hashes of available files within domain """
-    response.content_type = 'application/json'
-    print(f"files_hash({domain})")
-
-    common = {"domain": domain}
-
-    domain, error = _get_domain(domain)
-    if error is not None:
-        return _error(error, common)
-
-    try:
-        return _success({"hashes": domain.get_files_hash(None)}, common)
-    except Exception as e:
-        return _error(f"Failed due to exception: {e}", common)
-
-
-@app.route('/rest/1.0/domain/<domain>/filesHash', method=_POST)
-def files_hash_post(domain):
-    """ Return hashes of specified files """
-    response.content_type = 'application/json'
-    files = request.json.get("filesList", None)
-    print(f"files_hash_post({domain}, ...)")
-
-    common = {"domain": domain}
-
-    domain, error = _get_domain(domain)
-    if error is not None:
-        return _error(error, common)
-
-    try:
-        return _success({"hashes": domain.get_files_hash(files)}, common)
-    except Exception as e:
-        return _error(f"Failed due to exception: {e}", common)
-
-
-@app.route('/rest/1.0/domain/<domain>/filesLock')
-def files_lock(domain):
-    """ Return lock info of available files within domain """
-    response.content_type = 'application/json'
-    print(f"files_lock({domain})")
-
-    common = {"domain": domain}
-
-    domain, error = _get_domain(domain)
-    if error is not None:
-        return _error(error, common)
-
-    try:
-        return _success({"locks": domain.get_files_lock(None)}, common)
-    except Exception as e:
-        return _error(f"Failed due to exception: {e}", common)
-
-
-@app.route('/rest/1.0/domain/<domain>/filesLock', method=_POST)
-def files_lock_post(domain):
-    """ Return lock info of specified files """
-    response.content_type = 'application/json'
-    files = request.json.get("filesList", None)
-    print(f"files_lock_post({domain}, ...)")
-
-    common = {"domain": domain}
-
-    domain, error = _get_domain(domain)
-    if error is not None:
-        return _error(error, common)
-
-    try:
-        return _success({"locks": domain.get_files_lock(files)}, common)
-    except Exception as e:
-        return _error(f"Failed due to exception: {e}", common)
-
-
 @app.route('/rest/1.0/domain/<domain>/lock/<path:path>', method=_POST)
 def file_lock(domain, path):
     """ Sets lock on file """
@@ -669,46 +601,52 @@ def file_unlock(domain, path):
         return _success({}, common)
 
 
-@app.route('/rest/1.0/domain/<domain>/files/<path:path>')
-def file_content(domain, path):
-    """ Returns file content """
+@app.route('/rest/1.0/domain/<domain>/get', method=_POST)
+def get_files(domain):
+    """ Gets data for specified files """
     response.content_type = 'application/json'
-    print(f"file_content({domain},{path})")
 
-    common = {"domain": domain, "path": path}
+    print(f"save_rest({domain})")
+
+    fields = request.get("fields", [])
+
+    common = {"domain": domain, "fields": fields}
 
     domain, error = _get_domain(domain)
     if error is not None:
         return _error(error, common)
 
-    result, error = domain.get_file(path, ["content"])
-    if error is not None:
-        return _error(error, common)
+    if len(fields == 0):
+        return _error("fields is not provided!", common)
+
+    files = request.json.get("filesList", None)
+    if files is None:
+        return _error("filesList is not provided!", common)
+
+    result, error = _get_files(domain, files, fields)
+
+    if error is None:
+        return _success(result, common)
     else:
-        return _success({"data": result}, common)
-
-
-@app.route('/rest/1.0/domain/<domain>/files/<path:path>', method=_POST)
-def file_content_post(domain, path):
-    """ Returns file content """
-    response.content_type = 'application/json'
-    fields = request.json.get("fields", ["content"])
-    print(f"file_content_post({domain},{path},fields={fields})")
-
-    common = {"domain": domain, "path": path, "fields": fields}
-
-    domain, error = _get_domain(domain)
-    if error is not None:
         return _error(error, common)
 
-    result, error = domain.get_file(path, fields)
-    if error is not None:
-        return _error(error, common)
-    else:
-        return _success({"data": result}, common)
+
+def _get_files(domain: DataDomain, files, fields):
+
+    result = {"data": {}}
+
+    if len(fields) > 0:
+        for k in files.keys():
+            file_data, error = domain.get_file(k, fields)
+            if error is not None:
+                result["files"][k] = {"ERROR": "Error getting file: " + error}
+            else:
+                result["files"][k] = {**file_data}
+
+    return result, None
 
 
-@app.route('/rest/1.0/domain/<domain>/save')
+@app.route('/rest/1.0/domain/<domain>/save', method=_POST)
 def save_rest(domain):
     """ Saves incoming data (multiple files), returns requested fields of saved content """
     response.content_type = 'application/json'
@@ -731,16 +669,22 @@ def save_rest(domain):
     if not isinstance(data, dict):
         return _error("Data should be a dict with file paths as keys, and content + previous hash as data + secret of unlocking locked files!", common)
 
-    save_result, error = save_then_get(
-        domain, data, fields, dry_run
-    )
+    _, error = save(domain, data, dry_run)
     if error is not None:
         return _error(error, common)
 
-    return _success({"data": save_result["files"]}, common)
+    if not dry_run and len(fields) > 0:
+        result, error = _get_files(domain, data.keys(), fields)
+    else:
+        result, error = {}, None
+
+    if error is None:
+        return _success(result, common)
+    else:
+        return _error(error, common)
 
 
-def save_then_get(domain: DataDomain, files, fields, dry_run=False):
+def save(domain: DataDomain, files, dry_run=False):
     # Check content, hash, lock
     errors = []
     current_hashes = domain.get_files_hash(files.keys())
@@ -782,19 +726,7 @@ def save_then_get(domain: DataDomain, files, fields, dry_run=False):
     if error is not None:
         return None, error
 
-    # Return requested results
-    result = {"files": {}}
-
-    if not dry_run:
-        if len(fields) > 0:
-            for k in files.keys():
-                file_data, error = domain.get_file(k, fields)
-                if error is not None:
-                    result["files"][k] = {"ERROR": "Readback error - " + error}
-                else:
-                    result["files"][k] = {**file_data}
-
-    return result, None
+    return True, None
 
 
 def _save_files(domain: DataDomain, files, dry_run=False):

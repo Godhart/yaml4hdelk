@@ -5,7 +5,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>HTML DOM - Create resizable split views</title>
+    <title>Yaml4Schm Editor</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script src="/monaco/assets/controller.js"></script>
@@ -19,14 +19,14 @@
     <script>
         const serverDomain = "http://127.0.0.1:8089";   // TODO: It's UGLY, do better
         const iframeDomain = "http://127.0.0.1:8089";   // TODO: It's UGLY, do better
-        const dataDomain = "data";                      // TODO: select or get from server
         const timestamp = new Date().getTime();         // NOTE: set to const when done with iframes. Currently fresh timestamp is required to avoid iframes caching.
 
         const server = new ServerTalk(serverDomain);
         const remoteFiles = new RemoteFiles(server);
+        const localData = new LocalData("demo");
+        let   dataDomain = localData.dataDomain;
         const remoteData = new RemoteData(remoteFiles, dataDomain);
-        const localData = new LocalData(dataDomain);
-        const controller = new Controller(remoteFiles, iframeDomain);
+        const controller = new Controller(iframeDomain, remoteFiles, remoteData, localData);
 
         function reloadIframes() {
             // Load iframes (NOTE: timestamp is used to avoid caching. In production timestamp is set to a const)

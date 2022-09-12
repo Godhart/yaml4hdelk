@@ -1,4 +1,5 @@
 class RemoteFiles {
+    /* Interacts with server to get and save data */
 
     serverTalk = null
     secret = null
@@ -49,44 +50,6 @@ class RemoteFiles {
         });
     }
 
-    async remoteFilesHash(dataDomain, filesList) {
-        // Returns hash for specified remote files as a Dictionary
-        return new Promise((resolve, reject) => {
-            const response = JSON.parse(await this.serverTalk.postJson(
-                "rest/1.0/domain/" + dataDomain + "/filesHash",
-                { "filesList": filesList }
-            ).catch(function (e) {
-                console.error('RemoteFiles.remoteFilesHash() exception:', e);
-                reject(e)
-            })
-            );
-            if (!response.SUCCESS) {
-                console.error("RemoteFiles.remoteFilesHash() failed due to reason:" + response.ERROR)
-                reject(response.ERROR)
-            }
-            resolve(response.hashes)
-        });
-    }
-
-    async remoteFilesLock(dataDomain, filesList) {
-        // Returns lock id for specified remote files a Dictionary
-        return new Promise((resolve, reject) => {
-            const response = JSON.parse(await this.serverTalk.postJson(
-                "rest/1.0/domain/" + dataDomain + "/filesLock",
-                { "filesList": filesList }
-            ).catch(function (e) {
-                console.error('RemoteFiles.remoteFilesLock() exception:', e);
-                reject(e)
-            })
-            )
-            if (!response.SUCCESS) {
-                console.error("RemoteFiles.remoteFilesLock() failed due to reason:" + response.ERROR)
-                reject(response.ERROR)
-            }
-            resolve(response.locks);
-        });
-    }
-
     async remoteLock(dataDomain, filePath, force, test) {
         // Returns lock id for specified remote files a Dictionary
         return new Promise((resolve, reject) => {
@@ -127,57 +90,64 @@ class RemoteFiles {
         });
     }
 
-    async getFile(dataDomain, filePath) {
+    async getFiles(dataDomain, filesList, fields) {
         /*
-        Returns remote file content and meta for specified domain / file path as an dictionary
-        fileData Contains:
+        Returns remote files content and meta for specified domain as an dictionary
+        filesList is expected to be a list with files paths
+        Returned data is a dict with file path as key and dict with specified fields as value.
+        If fields are note specified then following fields would be in result:
             content:    content of the file
             hash:       server's hash for the file content that would be checked later on save
             lock:       server's lock for the file
             timestamp:  last modification timestamp
         */
+        if (fields === undefined) {
+            fields = ["content", "hash", "lock", "timestamp"]
+        }
         return new Promise((resolve, reject) => {
             const response = JSON.parse(await this.serverTalk.post(
-                "rest/1.0/domain/" + dataDomain + "/files/" + filePath,
-                { "fields": ["content", "hash", "lock", "timestamp"] }
+                "rest/1.0/domain/" + dataDomain + "/get",
+                {
+                    "filesList": filesList,
+                    "fields": ["content", "hash", "lock", "timestamp"]
+                }
             ).catch(function (e) {
-                console.error('RemoteFiles.getFile() exception:', e);
+                console.error('RemoteFiles.getFiles() exception:', e);
                 reject(e)
             })
             );
             if (!response.SUCCESS) {
-                console.error("RemoteFiles.getFile() failed due to reason:" + response.ERROR)
+                console.error("RemoteFiles.getFiles() failed due to reason:" + response.ERROR)
                 reject(response.ERROR)
             }
             resolve(response.data);
         });
     }
 
-    async saveFile(dataDomain, filePath, fileData) {
+    async saveFiles(dataDomain, filesData) {
         /*
-        Saves content of specified file
-        In case of success updates fileData with new hash and content,
-        received from server
+        Saves content of specified files
+        fileData should be a dict with file path as key and dict with following fields as value:
+        - content
+        - hash from previous read file operation
+        - secret to unlock locked file
         */
         return new Promise((resolve, reject) => {
             const response = JSON.parse(await this.serverTalk.postJson(
-                "rest/1.0/domain/" + dataDomain + "/save/" + filePath,
+                "rest/1.0/domain/" + dataDomain + "/save/",
                 {
-                    "content": fileData.content, "hash": fileData.hash, "secret": this.secret,
+                    "data": filesData,
                     "fields": ["content", "hash", "timestamp"]
                 }
             ).catch(function (e) {
-                console.error('RemoteFiles.saveFile() exception:', e);
+                console.error('RemoteFiles.saveFiles() exception:', e);
                 reject(e)
             })
             );
             if (response.SUCCESS) {
-                fileData.source = response.data.content;
-                fileData.hash = response.data.hash;
-                fileData.timestamp = response.data.timestamp;
-                resolve(fileData)
+                resolve(response.data)
             } else {
-                console.error("RemoteFiles.saveFile() failed due to reason:" + response.ERROR)
+                console.error("RemoteFiles.saveFiles() failed due to reason:" + response.ERROR)
                 reject(null);
             }
         });

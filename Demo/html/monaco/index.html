@@ -1,17 +1,4 @@
-<!doctype html>
-<html lang="en">
-
-<head>
-  <meta charset="utf-8" />
-  <link rel="icon" type="image/svg+xml" href="aaac092d09e0a367c407.svg" />
-  <title>Monaco YAML4SCHM Editor Frame</title>
-  <meta name="description" content="Monaco editor with support of YAML4SCHM" />
-  <meta name="theme-color" content="#42e3ff" />
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <script defer="defer" src="4154d1fcd0b1e1383799.js"></script>
-  <link href="e1182fd3eae5e7486586.css" rel="stylesheet">
-  <style>
-    /* Tabs */
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="icon" type="image/svg+xml" href="aaac092d09e0a367c407.svg"/><title>Monaco YAML4SCHM Editor Frame</title><meta name="description" content="Monaco editor with support of YAML4SCHM"/><meta name="theme-color" content="#42e3ff"/><style>/* Tabs */
 
     .tabs {
       display: inline-block;
@@ -88,27 +75,7 @@
 
     .closeTab:hover {
       background: #db3636;
-    }
-  </style>
-</head>
-
-<body>
-  <main>
-    <ul class="tabs">
-      <li class="tab tabSelected"><a href="#">Some Real Big Thing</a><a class="closeTab" href="">✕</a>
-      </li>
-      <li class="tab selected"><a href="#">Some Thing 2</a><a class="closeTab" href="">✕</a></li>
-      <li class="tab selected"><a href="#">Some Thing 3</a><a class="closeTab" href="">✕</a></li>
-      <li class="tab selected"><a href="#">Some Thing 4</a><a class="closeTab" href="">✕</a></li>
-    </ul>
-    <select id="schema-selection">
-      <option value="schm.yaml">YAML4SCHM</option>
-    </select>
-    <div id="breadcrumbs"></div>
-    <div id="editor"></div>
-    <div id="problems"></div>
-  </main>
-  <script>window.addEventListener('message', (event) => {
+    }</style><meta name="viewport" content="width=device-width,initial-scale=1"><script defer="defer" src="6cf8d5bb75923860f78d.js"></script><link href="e1182fd3eae5e7486586.css" rel="stylesheet"></head><body><main><ul class="tabs"><li class="tab tabSelected"><a href="#">Some Real Big Thing</a><a class="closeTab" href="">✕</a></li><li class="tab selected"><a href="#">Some Thing 2</a><a class="closeTab" href="">✕</a></li><li class="tab selected"><a href="#">Some Thing 3</a><a class="closeTab" href="">✕</a></li><li class="tab selected"><a href="#">Some Thing 4</a><a class="closeTab" href="">✕</a></li></ul><select id="schema-selection"><option value="schm.yaml">YAML4SCHM</option></select><div id="breadcrumbs"></div><div id="editor"></div><div id="problems"></div></main><script>window.addEventListener('message', (event) => {
       console.log("Editor received message: " + JSON.stringify(event), "\n origin - " + JSON.stringify(event.origin), "\n data   - " + JSON.stringify(event.data));
 
       /* TODO: if (event.origin !== my_domain) {
@@ -165,10 +132,7 @@
         'args': [],
         'callback': undefined
       }, '*')
-    });
-  </script>
-  <script>
-    // explosion animation adapted from https://codepen.io/nicksheffield
+    });</script><script>// explosion animation adapted from https://codepen.io/nicksheffield
 
     var close = document.getElementsByClassName('closeTab');
     var tabs = document.getElementsByClassName('tab');
@@ -291,8 +255,4 @@
     }
 
     var angleTools = { getAngle: function (t, n) { var a = n.x - t.x, e = n.y - t.y; return Math.atan2(e, a) / Math.PI * 180 }, getDistance: function (t, n) { var a = t.x - n.x, e = t.y - n.y; return Math.sqrt(a * a + e * e) }, moveOnAngle: function (t, n) { var a = this.getOneFrameDistance(t, n); t.x += a.x, t.y += a.y }, getOneFrameDistance: function (t, n) { return { x: n * Math.cos(t.rotation * Math.PI / 180), y: n * Math.sin(t.rotation * Math.PI / 180) } } };
-    function r(a, b, c) { return parseFloat((Math.random() * ((a ? a : 1) - (b ? b : 0)) + (b ? b : 0)).toFixed(c ? c : 0)); }
-  </script>
-</body>
-
-</html>
+    function r(a, b, c) { return parseFloat((Math.random() * ((a ? a : 1) - (b ? b : 0)) + (b ? b : 0)).toFixed(c ? c : 0)); }</script></body></html>
