@@ -6,30 +6,13 @@
     <meta charset="utf-8" />
     <title>Test for file browser</title>
     <link href="dark.css" rel="stylesheet">
+    <script type="text/javascript" src="./browser.js"></script>
 </head>
 
 <body class="tool">
 
     <script>
-        const Add = "&#128932;"
-        const Eye = "&#128065;"
-        const Star = "&#9733;"
-        const Pencil = "&#128393;"
-        const Lock = "&#9919;"
-        const CollapsedFolder = "&#128448;"
-        const ExpandedFolder = "&#128449;"
-        const Save = "&#128427;"
-        const Delete = "&#10005;"
-        const Reset = "&#9100;"
-        const Warning = "&#9888;"
-        const Stop = "&#11203;"
-        const Reload = "&#10226;"
-        const DocText = "&#128441;"
-        const DocPic = "&#128443;"
-        const Circle = "&#9679;"
-        const Link = "&#11179;"
-
-        // Populate table
+        // Populate test data
         // NOTE: this date produces longest text and is used to set size for node-info column
         const special_date = new Date()
         special_date.setFullYear(2022)
@@ -67,22 +50,9 @@
             "/folder4/sub1/file4-1-3-with-a-long-long-long-long-long-name": { "timestamp": special_date.getTime() - 120 },
         }
 
-        const folders = {}    // NOTE: folders are populated during table population
-        const filesFilter = {
-            "pathRoot": "",
-            "path": "",
-            "locked": undefined,
-            "flocked": undefined,
-            "changed": undefined,
-            "open": undefined,
-            "fav": undefined,
-            "outdate": undefined,
-            "errors": undefined,
-            "folders": undefined,
-            "union": true,
-        }
-
         function getPath(el) {
+           // Helper to get associated file/folder path for HTML element
+           // If data-path is not set on element, then check parent and so on
             while (true) {
                 let path = el.getAttribute("data-path")
                 if (path !== null) {
@@ -94,6 +64,17 @@
                 el = el.parentNode
             }
             return null
+        }
+
+        // Feedback on user interaction
+        function toggleFolder(el) {
+            const path = getPath(el)
+            browser.toggleFolder(path)
+        }
+
+        function toggleFolderFilter(el) {
+            const path = getPath(el)
+            browser.toggleFolderFilter(path)
         }
 
         function toggleFav(el) {
@@ -161,537 +142,21 @@
             alert("openNodeLink:" + path)
         }
 
-        function toggleFolder(el) {
-            const path = getPath(el)
-            if (folders[path].expanded) {
-                folders[path].expanded = false
-            } else {
-                folders[path].expanded = true
-            }
-            refreshView(filez, folders, filesFilter)
-        }
-
-        function toggleFolderFilter(el) {
-            const path = getPath(el)
-            const filter = document.getElementById("filePathFilter")
-            if (filesFilter.pathRoot == path) {
-                filesFilter.pathRoot = ""
-            } else {
-                filesFilter.pathRoot = path
-            }
-            filter.value = ""
-            onFilterPathChange(filter.value)
-        }
-
-        function getFilterRow() {
-            return document.getElementById('filtersRow')
-        }
-
-        function toggleAllFolder(el) {
-            const fr = getFilterRow()
-            let expanded = fr.getAttribute("data-folder-expanded") == "true"
-            expanded = !expanded
-            toggleFolderExpanded(expanded)
-            fr.setAttribute("data-folder-expanded", "" + expanded)
-            refreshView(filez, folders, filesFilter)
-        }
-
-        function toggleFolderExpanded(expanded) {
-            for (const [folderPath, value] of Object.entries(folders)) {
-                value.expanded = expanded
-            }
-        }
-
-        function toggleFilter(filterField, filterAttribute) {
-            const fr = getFilterRow()
-            let value = fr.getAttribute(filterAttribute) == "true"
-            value = !value
-            if (value) {
-                filesFilter[filterField] = true
-            } else {
-                filesFilter[filterField] = undefined
-            }
-            fr.setAttribute(filterAttribute, "" + value)
-            updateFilter(filez, folders, filesFilter)
-            refreshView(filez, folders, filesFilter)
-        }
-
-        function populate(table, filez, folders) {
-            const foldersList = []
-            for (const [filePath, value] of Object.entries(filez)) {
-                value.path = filePath
-                value.id = "file-" + filePath
-                value.visible = true
-
-                let folderPath = filePath.split('/').slice(0, -1).join('/')
-                let folder = null
-                if (folders[folderPath] === undefined) {
-                    folders[folderPath] = {
-                        "path": folderPath, "id": "folder-" + folderPath,
-                        "filez": {}, "folders": {}, "folder": null, visible: true, "expanded": false
-                    }
-                    if (folderPath == "") {
-                        folders[folderPath].expanded = true
-                    }
-                    foldersList.push(folderPath)
-                    folder = folders[folderPath]
-                    // Add folder row
-                    if (folderPath != "") {
-                        let folderRow = table.insertRow()
-                        folder.row = folderRow
-                        folderRow.setAttribute("data-folder", "true")
-                        folderRow.setAttribute("data-path", folderPath)
-                        folderRow.classList.add("shown")
-                        folderRow.id = folder.id + "-row"
-                        let cell = null
-
-                        cell = folderRow.insertCell()
-                        cell.innerHTML = '<button id="' + folder.id + '-icon" title="Collapse/Expand" class="tool-icon f-theme tool-icon-folder" onclick="toggleFolder(this)"></button>'
-
-                        cell = folderRow.insertCell()
-                        let folderName = folderPath.split("/").slice(-1)
-                        let folderLocation = folderPath.split("/").slice(0, -1).join("/") + "/"
-                        let folderMargin = folderPath.split("/").length - 2
-                        let folderMarginContent = ""
-                        for (let i = 0; i < folderMargin; i++) {
-                            folderMarginContent += "M"
-                        }
-
-                        cell.innerHTML =
-                            '<button id="' + folder.id + '-main" title="Click to change focus\nFull path: ' + folderPath + '"\
- class="tool b-t tool-status-color" onclick="toggleFolderFilter(this)">\
-<span class="path-margin">'+ folderMarginContent + '</span>\
-<span class="path-location">' + folderLocation + '</span><span>' + folderName + '</span></button>'
-                        // TODO: +   '<button id="' + folder.id + '-enter" title="Enter folder" class="tool bf-t tool-folder-entry" onclick="enterFolder(this)">&#8628;</button>'
-
-                        cell = folderRow.insertCell()
-                        cell.innerHTML = '<button id="' + folder.id + '-status" title="Status" class="tool tool-f-status tool-status-color""></button>'
-                        folder.stat_but = document.getElementById(folder.id + "-status")
-
-                        cell = folderRow.insertCell()
-                        cell.id = folder.id + "-nodeOps"
-                        cell.innerHTML = "<span class='node-info'>\
-<button class='tool tool-f-added'>A</button>\
-<button class='tool tool-f-modified'>M</button>\
-<button class='tool tool-f-renamed'>R</button>\
-<button class='tool tool-f-removed'>D</button>\
-</span>\
-<span   id='" + folder.id + "-toolbox' class='toolbox'>" + '\
-<button id="' + folder.id + '-add"     class="tool-icon x-add     " title="Add"              onclick="addNode(this)">&#128932;</button>\
-<button id="' + folder.id + '-delete"  class="tool-icon x-delete  " title="Remove Folder"    onclick="deleteNode(this)">&#10005;</button>\
-<button id="' + folder.id + '-rename"  class="tool-icon x-rename  " title="Move/Rename"      onclick="renameNode(this)">&#128393;</button>\
-<button id="' + folder.id + '-save"    class="tool-icon x-save    " title="Save changes"     onclick="saveChanges(this)">&#128427;</button>\
-<button id="' + folder.id + '-reset"   class="tool-icon x-reset   " title="Reset changes"    onclick="resetChanges(this)"></button>\
-<button id="' + folder.id + '-lock"    class="tool-icon x-lock    " title="Lock"             onclick="lockNode(this)">&#9919;</button>\
-' + "</span>"
-
-                        cell = folderRow.insertCell()
-                        cell.innerHTML = '\
-<button id="' + folder.id + '-fav"     class="tool-icon tool-fav     " title="Favorite"         onclick="favNode(this)">&#9733;</button>'
-                        folder.fav_cell = cell
-
-                        cell = folderRow.insertCell()
-                        cell.innerHTML = '\
-<button id="' + folder.id + '-error"   class="tool-icon tool-error   " title="Errors"        onclick="showNodeErrors(this)">&#9888;</button>'
-                        folder.err_but = document.getElementById(folder.id + "-error")
-
-                        cell = folderRow.insertCell()
-                    }
-                } else {
-                    folder = folders[folderPath]
-                }
-
-                value.folder = folder
-                folder.filez[filePath] = value
-
-                // Add file row
-                let fileRow = table.insertRow()
-                value.row = fileRow
-                fileRow.setAttribute("data-file", "true")
-                fileRow.setAttribute("data-path", filePath)
-                fileRow.classList.add("shown")
-                fileRow.id = value.id + "-row"
-                let cell = null
-
-                cell = fileRow.insertCell()
-                cell.innerHTML = '<button id="' + value.id + '-icon" title="Focus Tab" class="tool-icon f-theme tool-icon-file" onclick="focusTab(this)"></button>'
-
-                cell = fileRow.insertCell()
-                let fileName = filePath.split("/").slice(-1)
-                let fileLocation = filePath.split("/").slice(0, -1).join("/") + "/"
-                let fileMargin = filePath.split("/").length - 2
-                let fileMarginContent = ""
-                for (let i = 0; i < fileMargin; i++) {
-                    fileMarginContent += "M"
-                }
-
-                cell.innerHTML =
-                    '<button id="' + value.id + '-main" title="Click to toggle Tab\nFull path: ' + filePath + '"\
- class="tool b-t tool-text tool-status-color" onclick="toggleTab(this)">\
- <span class="path-margin">'+ fileMarginContent + '</span>\
- <span class=path-location>' + fileLocation + '</span><span>' + fileName + '</span></button>'
-
-                cell = fileRow.insertCell()
-                cell.innerHTML = '<button id="' + value.id + '-status" title="Status" class="tool tool-status tool-status-color""></button>'
-                value.stat_but = document.getElementById(value.id + "-status")
-
-                cell = fileRow.insertCell()
-                cell.id = value.id + "-nodeOps"
-                cell.innerHTML = "<span class='node-info f-greyed'>" + new Date(value.timestamp).toLocaleString() + "</span>\
-<span   id='" + value.id + "-toolbox' class='toolbox'>" + '\
-<button id="' + value.id + '-add"     class="tool-icon x-add     " title="Add"              onclick="addNode(this)">&#128932;</button>\
-<button id="' + value.id + '-delete"  class="tool-icon x-delete  " title="Remove"           onclick="deleteNode(this)">&#10005;</button>\
-<button id="' + value.id + '-rename"  class="tool-icon x-rename  " title="Move/Rename"      onclick="renameNode(this)">&#128393;</button>\
-<button id="' + value.id + '-save"    class="tool-icon x-save    " title="Save changes"     onclick="saveChanges(this)">&#128427;</button>\
-<button id="' + value.id + '-reset"   class="tool-icon x-reset   " title="Reset changes"    onclick="resetChanges(this)"></button>\
-<button id="' + value.id + '-lock"    class="tool-icon x-lock    " title="Lock"             onclick="lockNode(this)">&#9919;</button>\
-' + "</span>"
-
-                cell = fileRow.insertCell()
-                cell.innerHTML = '\
-<button id="' + value.id + '-fav"     class="tool-icon tool-fav     " title="Favorite"      onclick="favNode(this)">&#9733;</button>'
-                value.fav_cell = cell
-
-                cell = fileRow.insertCell()
-                cell.innerHTML = '\
-<button id="' + value.id + '-error"   class="tool-icon tool-error   " title="Errors"        onclick="showNodeErrors(this)">&#9888;</button>'
-                value.err_but = document.getElementById(value.id + "-error")
-
-                cell = fileRow.insertCell()
-                cell.innerHTML = '\
-<button id="' + value.id + '-link"    class="tool-icon tool-link    " title="Open Schematic" onclick="openNodeLink(this)">&#11179;</button>'
-            }
-
-            // After all folders are populated it's time to link subfolders to their parents
-            foldersList.forEach(folderPath => {
-                let parentPath = folderPath
-                while (parentPath.length > 0) {
-                    parentPath = parentPath.split('/').slice(0, -1).join('/')
-                    if (folders[parentPath] == undefined) {
-                        continue
-                    }
-                    folders[folderPath].folder = folders[parentPath]
-                    folders[parentPath].folders[folderPath] = folders[folderPath]
-                    break
-                }
-            })
-        }
-
-        function parentIsCollapsed(node, filters) {
-            if (node.folder == null) {
-                return false;
-            } else {
-                if (filters.pathRoot == node.folder.path || (filters.path.length > 0 && filters.path[0] != "/")) {
-                    return false;
-                } else if (!node.folder.expanded) {
-                    return true;
-                } else {
-                    return parentIsCollapsed(node.folder, filters)
-                }
-            }
-        }
-
-        const fileStatus = ["outdate", "flocked", "locked", "added", "modified", "removed", "renamed",]
-        const fileStatusChanged = ["added", "modified", "removed", "renamed",]
-
-        function updateAttributes(filez, folders) {
-            // Reset then update folder statuses
-            for (const [folderPath, value] of Object.entries(folders)) {
-                value.attributes = { "status": {}, "folder-expanded": "true", "fav": "folder", "errors": [], "modified": [] }
-                // Apply expanded property only, other are defined by files
-                if (!value.expanded) {
-                    value.attributes["folder-expanded"] = "false"
-                }
-            }
-            // Reset then update files statuses and statuses of their folders
-            for (const [filePath, value] of Object.entries(filez)) {
-                value.attributes = { "status": {}, "file-open": "false", "fav": "false", "errors": [] }
-                if (value.open) {
-                    value.attributes["file-open"] = "true"
-                }
-                if (value.fav) {
-                    value.attributes.fav = "true"
-                    value.folder.attributes.fav = "true"
-                }
-                let ch = false
-                fileStatus.forEach(stat => {
-                    if (value[stat]) {
-                        value.attributes.status[stat] = true
-                        value.folder.attributes.status[stat] = true
-                        if (!ch && fileStatusChanged.indexOf(stat) >= 0) {
-                            ch = true
-                            value.attributes.status["changes"] = true
-                            value.folder.attributes.status["changes"] = true
-                            value.folder.attributes.modified.push(filePath)
-                        }
-                    }
-                })
-                let err = false
-                if (value.errors !== undefined && value.errors !== null && value.errors.length > 0) {
-                    value.attributes.status.errors = true
-                    value.folder.attributes.status.errors = true
-                    value.attributes.errors = value.attributes.errors.concat(value.errors)
-                    value.folder.attributes.errors.push(filePath)
-                    err = true
-                }
-                if (value.outdate) {
-                    value.attributes.status.errors = true
-                    value.folder.attributes.status.errors = true
-                    value.attributes.errors.push("Source changed on server")
-                    if (!err) {
-                        value.folder.attributes.errors.push(filePath)
-                    }
-                }
-            }
-            // Propagate folder's statuses to parents
-            // Start from leaf folders
-            let currentFolders = []
-            for (const [folderPath, value] of Object.entries(folders)) {
-                if ((Object.keys(value.folders)).length > 0) {
-                    // skip non leaf folders
-                    continue
-                }
-                currentFolders.push(value)
-            }
-            // Walk up to the root aggregating stats along the way
-            while (currentFolders.length > 0) {
-                let parentFolders = []
-                currentFolders.forEach(current => {
-                    let parent = current.folder
-                    if (parent !== undefined && parent !== null) {
-
-                        fileStatus.forEach(stat => {
-                            if (current.attributes.status[stat]) {
-                                parent.attributes.status[stat] = true
-                            }
-                        })
-                        if (current.attributes.fav == "true") {
-                            if (parent.attributes.fav == "folder") {
-                                parent.attributes.fav = "nested"
-                            }
-                        }
-                        if (current.attributes.errors.length > 0) {
-                            parent.attributes.errors = parent.attributes.errors.concat(current.attributes.errors)
-                        }
-                        parentFolders.push(current.folder)
-                    }
-                })
-                currentFolders = parentFolders
-            }
-        }
-
-        function applyAttributes(node) {
-            if (node.row === undefined && node.row === null) {
-                return
-            }
-            if (node.attributes !== undefined) {
-                for (const [attr, value] of Object.entries(node.attributes)) {
-                    if (attr == "status") {
-                        node.row.setAttribute("data-status", Object.keys(value).join(" "))
-                        node.stat_but.title = Object.keys(value).join("\n") // TODO: describe status better
-                    } else if (attr == "errors") {
-                        if (value.length > 0) {
-                            node.row.setAttribute("data-errors", "true")
-                            node.err_but.title = value.join("\n")
-                        } else {
-                            node.row.setAttribute("data-errors", "false")
-                        }
-                    } else if (attr == "modified") {
-                        node.stat_but.title = value.join("\n")
-                    } else {
-                        node.row.setAttribute("data-" + attr, value)
-                    }
-                    if (node.attributes.fav == "false") {
-                        node.fav_cell.classList.add("no-fav")
-                    } else {
-                        node.fav_cell.classList.remove("no-fav")
-                    }
-                }
-            }
-        }
-
-        function refreshView(filez, folders, filters) {
-            updateAttributes(filez, folders)
-            for (const [filePath, value] of Object.entries(filez)) {
-                if (!value.visible || (!filters.folders && (!value.folder.visible || parentIsCollapsed(value, filters)))) {
-                    value.row.classList.add("hidden")
-                    value.row.classList.remove("shown")
-                } else {
-                    value.row.classList.add("shown")
-                    value.row.classList.remove("hidden")
-                    applyAttributes(value)
-                }
-            }
-            for (const [folderPath, value] of Object.entries(folders)) {
-                if (value.row !== undefined) {
-                    if ((filters.folders || !value.visible || parentIsCollapsed(value, filters)) && filters.pathRoot != value.path) {
-                        value.row.classList.add("hidden")
-                        value.row.classList.remove("shown")
-                    } else {
-                        value.row.classList.add("shown")
-                        value.row.classList.remove("hidden")
-                        applyAttributes(value)
-                    }
-                }
-            }
-        }
-
-        const PathStartsWidth = 0
-        const PathContains = 1
-        const PathAny = -1
-
-        function pathMatch(matchType, path, pattern) {
-            return matchType == PathAny
-                || (matchType == PathStartsWidth && path.startsWith(pattern.substring(1)))
-                || (matchType == PathContains && path.search(pattern) >= 0)
-        }
-
-        const filterSet = {
-            "full": ["locked", "flocked", "open", "fav", "outdate", "errors", "changed"],
-            "compact": ["fav", "errors", "open", "changed"],
-            "tiny": ["changed", "open"]
-        }
-
-        const filterStraight = {
-            "full": ["locked", "flocked", "open", "fav", "outdate"],
-            "compact": ["fav", "open"],
-            "tiny": ["open"]
-        }
-
-        const views = ["tiny", "compact", "full"]
-        let view = "tiny"
-
-        function toggleView(value) {
-            if (value === undefined) {
-                if (view == "tiny") {
-                    view = "compact"
-                } else if (view == "compact") {
-                    view = "full"
-                } else {
-                    view = "tiny"
-                }
-            } else {
-                if (views.includes(value)) {
-                    view = value
-                } else {
-                    return view
-                }
-            }
-            let t = document.getElementById("filesBrowser")
-            if (view == "full") {
-                t.classList.add("tool-full")
-                t.classList.remove("tool-tiny")
-                t.classList.remove("tool-compact")
-            } else if (view == "compact") {
-                t.classList.add("tool-compact")
-                t.classList.remove("tool-tiny")
-                t.classList.remove("tool-full")
-            } else {
-                t.classList.add("tool-tiny")
-                t.classList.add("tool-compact")
-                t.classList.remove("tool-full")
-
-            }
-            updateFilter(filez, folders, filesFilter)
-            return view
-        }
-
-        function updateFilter(filez, folders, filter) {
-            if (true) {
-                let default_show = true;
-                const union = filter.union | view != "full"
-                if (union) {
-                    filterSet[view].forEach(field => {
-                        if (filter[field]) {
-                            default_show = false;
-                        }
-                    })
-                }
-                for (const [filePath, value] of Object.entries(filez)) {
-                    let skip = false
-                    if (filter.pathRoot != "") {
-                        if (filePath.indexOf(filter.pathRoot) != 0) {
-                            skip = true
-                        }
-                    }
-
-                    let show = default_show
-
-                    if (skip) {
-                        show = false
-                    } else {
-                        filterStraight[view].forEach(field => {
-                            if (filter[field] !== undefined) {
-                                if (union) {
-                                    show |= (value[field] == filter[field])
-                                } else {
-                                    show &= (value[field] == filter[field])
-                                }
-                            }
-                        })
-
-                        if (view != "tiny" && ((show && !union) || (!show && union)) && filter.errors) {
-                            if (!union) {
-                                if (value.errors === undefined || value.errors === null || value.errors.length == 0) {
-                                    show = false
-                                }
-                            } else {
-                                if (value.errors !== undefined && value.errors !== null && value.errors.length > 0) {
-                                    show = true
-                                }
-                            }
-                        }
-
-                        if (((show && !union) || (!show && union)) && filter.changed) {
-                            if (union) {
-                                show |= value.added | value.modified | value.removed | value.renamed
-                            } else {
-                                show &= value.added | value.modified | value.removed | value.renamed
-                            }
-                        }
-
-                        if (show) {
-                            const matchType = filter.path === undefined || filter.path === "" ? PathAny :
-                                filter.path[0] == "^" ? PathStartsWidth : PathContains
-                            let matchString = filePath
-                            if (filter.pathRoot != "") {
-                                matchString = filePath.substring(filter.pathRoot.length)
-                            }
-                            show &= pathMatch(matchType, matchString, filter.path)
-                        }
-                    }
-                    value.visible = show
-                }
-                for (const [folderPath, value] of Object.entries(folders)) {
-                    value.visible = false
-                    for (const [filePath, fileValue] of Object.entries(value.filez)) {
-                        if (fileValue.visible) {
-                            value.visible = true
-                            break
-                        }
-                    }
-                }
-            }
-
-            refreshView(filez, folders, filter)
-        }
-
-        function onFilterPathChange(value) {
-            filesFilter.path = value
-            updateFilter(filez, folders, filesFilter)
-        }
-
         function createOption(selector, text, value) {
             let opt = document.createElement("option");
             opt.value = value;
             opt.text = text;
             selector.options.add(opt);
         }
+
+        function onFilterPathChange(value) {
+            browser.updatePathFilter(value)
+        }
     </script>
 
     <div id="domainsSelector">
         Data domain: <select id="domains" class="tool" onchange="console.log(this.value)"></select>
-        View: <button class="tool b-t" onclick="this.innerHTML = toggleView()">tiny</button>
+        View: <button class="tool b-t" onclick="this.innerHTML = browser.toggleView()">tiny</button>
     </div>
 
     <div id="filesBrowserPlaceholder">
@@ -703,7 +168,7 @@
                     data-filter-fav="false" data-filter-errors="false">
                     <th style="width: 34px;">
                         <button id="but-collapse" title="Expand All" class="tool-icon f-theme tool-icon-folder"
-                            onclick="toggleAllFolder(this)"></button>
+                            onclick="browser.toggleAllFolder()"></button>
                     </th>
                     <th>
                         <!-- TODO: fill-in with static path like shown below
@@ -718,17 +183,17 @@
                             <span style="width: 4px">&nbsp;</span>
                             <button id="but-dontDisaplyFolders" title="Don't display folders" style="width: 26px;"
                                 class="tool-icon tool-dont-display-folders"
-                                onclick="toggleFilter('folders', 'data-dont-display-folders')">&#128448;</button>
+                                onclick="browser.toggleFilter('folders', 'data-dont-display-folders')">&#128448;</button>
                             <span style="width: 4px">&nbsp;</span>
                             <button id="but-filterOpen" title="Display open files"
                                 class="tool-icon tool-filter-open-color"
-                                onclick="toggleFilter('open', 'data-filter-open')">&#128441;</button>
+                                onclick="browser.toggleFilter('open', 'data-filter-open')">&#128441;</button>
                         </div>
                     </th>
                     <th style="width: 34px">
                         <button id="but-filterChanged" title="Display changed files"
                             class="tool bf-t tool-filter-changed-color"
-                            onclick="toggleFilter('changed', 'data-filter-changed')">&#9679;</button>
+                            onclick="browser.toggleFilter('changed', 'data-filter-changed')">&#9679;</button>
                     </th>
                     <th style="width: 180px">
                         <!-- TODO: HidePath in names:   Path\ -->
@@ -736,24 +201,24 @@
                         <!-- TODO: SortByDate: &#128467; &#8645; &#8613; &#8615; -->
                         <button id="but-filterLocked" title="Display locked files"
                             class="tool-icon tool-filter-locked-color"
-                            onclick="toggleFilter('locked', 'data-filter-locked')">&#9919;</button>
+                            onclick="browser.toggleFilter('locked', 'data-filter-locked')">&#9919;</button>
                         <button id="but-filterFlocked" title="Display files locked by someone else"
                             class="tool-icon tool-filter-flocked-color"
-                            onclick="toggleFilter('flocked', 'data-filter-flocked')">&#9919;</button>
+                            onclick="browser.toggleFilter('flocked', 'data-filter-flocked')">&#9919;</button>
                         <button id="but-filterOutdate" title="Display outdated files"
                             class="tool-icon tool-filter-outdate-color"
-                            onclick="toggleFilter('outdate', 'data-filter-outdate')">&#10226;</button>
+                            onclick="browser.toggleFilter('outdate', 'data-filter-outdate')">&#10226;</button>
                         <button id="but-filterUnion" title="Join filtered" class="tool-icon tool-filter-union-color"
-                            onclick="toggleFilter('union', 'data-filter-union')">&#10756;</button>
+                            onclick="browser.toggleFilter('union', 'data-filter-union')">&#10756;</button>
                     </th>
                     <th style="width: 20px">
-                        <button id="but-filterStarred" title="Display starred files" class="tool-icon tool-filter-fav-color"
-                            onclick="toggleFilter('fav', 'data-filter-fav')">&#9733;</button>
+                        <button id="but-filterStarred" title="Display starred files"
+                            class="tool-icon tool-filter-fav-color"
+                            onclick="browser.toggleFilter('fav', 'data-filter-fav')">&#9733;</button>
                     </th>
                     <th style="width: 20px">
-                        <button id="but-filterErrors" title="Display errors"
-                            class="tool-icon tool-filter-errors-color"
-                            onclick="toggleFilter('errors', 'data-filter-errors')">&#9888;</button>
+                        <button id="but-filterErrors" title="Display errors" class="tool-icon tool-filter-errors-color"
+                            onclick="browser.toggleFilter('errors', 'data-filter-errors')">&#9888;</button>
                     </th>
                     <th>
                         <select id="viewer" title="Tool to draw schematic" class="tool"
@@ -776,8 +241,15 @@
 
         document.getElementById("domains").value = "test"
 
-        populate(document.getElementById("filesBrowser"), filez, folders)
-        updateFilter(filez, folders, filesFilter)
+        const browser = new Browser(
+            filez,
+            {"locked": undefined, "flocked": undefined, "outdate": undefined},
+            "tiny"
+        )
+
+        browser.populate(document.getElementById("filesBrowser"))
+        browser.update()
+        browser.toggleView(browser.view)
     </script>
 
 </body>
