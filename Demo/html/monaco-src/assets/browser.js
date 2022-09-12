@@ -53,6 +53,7 @@ class Browser {
     folders = {}
     filesFilter = {}
     view = "tiny"
+    uiFeedback = ""
 
     // IDs to reference HTML items.
     // Could be overriden on per instance basis
@@ -60,9 +61,10 @@ class Browser {
     filtersRowId = "filtersRow"
     filesBrowserId = "filesBrowser"
 
-    constructor(filez, filterCommonFields, view) {
+    constructor(filez, filterCommonFields, view, uiFeedback) {
         this.filez = filez
         this.folders = {}
+        this.uiFeedback = uiFeedback
         this.filesFilter = {
             "pathRoot": "",
             "path": "",
@@ -184,7 +186,7 @@ class Browser {
                     let cell = null
 
                     cell = folderRow.insertCell()
-                    cell.innerHTML = '<button id="' + folder.id + '-icon" title="Collapse/Expand" class="tool-icon f-theme tool-icon-folder" onclick="toggleFolder(this)"></button>'
+                    cell.innerHTML = '<button id="' + folder.id + '-icon" title="Collapse/Expand" class="tool-icon f-theme tool-icon-folder" onclick="' + this.uiFeedback + '.toggleFolder(this)"></button>'
 
                     cell = folderRow.insertCell()
                     let folderName = folderPath.split("/").slice(-1)
@@ -197,7 +199,7 @@ class Browser {
 
                     cell.innerHTML =
                         '<button id="' + folder.id + '-main" title="Click to change focus\nFull path: ' + folderPath + '"\
-class="tool b-t tool-status-color" onclick="toggleFolderFilter(this)">\
+class="tool b-t tool-status-color" onclick="' + this.uiFeedback + '.toggleFolderFilter(this)">\
 <span class="path-margin">'+ folderMarginContent + '</span>\
 <span class="path-location">' + folderLocation + '</span><span>' + folderName + '</span></button>'
                     // TODO: +   '<button id="' + folder.id + '-enter" title="Enter folder" class="tool bf-t tool-folder-entry" onclick="enterFolder(this)">&#8628;</button>'
@@ -215,22 +217,22 @@ class="tool b-t tool-status-color" onclick="toggleFolderFilter(this)">\
 <button class='tool tool-f-removed'>D</button>\
 </span>\
 <span   id='" + folder.id + "-toolbox' class='toolbox'>" + '\
-<button id="' + folder.id + '-add"     class="tool-icon x-add     " title="Add"              onclick="addNode(this)">&#128932;</button>\
-<button id="' + folder.id + '-delete"  class="tool-icon x-delete  " title="Remove Folder"    onclick="deleteNode(this)">&#10005;</button>\
-<button id="' + folder.id + '-rename"  class="tool-icon x-rename  " title="Move/Rename"      onclick="renameNode(this)">&#128393;</button>\
-<button id="' + folder.id + '-save"    class="tool-icon x-save    " title="Save changes"     onclick="saveChanges(this)">&#128427;</button>\
-<button id="' + folder.id + '-reset"   class="tool-icon x-reset   " title="Reset changes"    onclick="resetChanges(this)"></button>\
-<button id="' + folder.id + '-lock"    class="tool-icon x-lock    " title="Lock"             onclick="lockNode(this)">&#9919;</button>\
+<button id="' + folder.id + '-add"     class="tool-icon x-add     " title="Add"              onclick="' + this.uiFeedback + '.addNode(this)">&#128932;</button>\
+<button id="' + folder.id + '-delete"  class="tool-icon x-delete  " title="Remove Folder"    onclick="' + this.uiFeedback + '.deleteNode(this)">&#10005;</button>\
+<button id="' + folder.id + '-rename"  class="tool-icon x-rename  " title="Move/Rename"      onclick="' + this.uiFeedback + '.renameNode(this)">&#128393;</button>\
+<button id="' + folder.id + '-save"    class="tool-icon x-save    " title="Save changes"     onclick="' + this.uiFeedback + '.saveChanges(this)">&#128427;</button>\
+<button id="' + folder.id + '-reset"   class="tool-icon x-reset   " title="Reset changes"    onclick="' + this.uiFeedback + '.resetChanges(this)"></button>\
+<button id="' + folder.id + '-lock"    class="tool-icon x-lock    " title="Lock"             onclick="' + this.uiFeedback + '.lockNode(this)">&#9919;</button>\
 ' + "</span>"
 
                     cell = folderRow.insertCell()
                     cell.innerHTML = '\
-<button id="' + folder.id + '-fav"     class="tool-icon tool-fav     " title="Favorite"         onclick="favNode(this)">&#9733;</button>'
+<button id="' + folder.id + '-fav"     class="tool-icon tool-fav     " title="Favorite"         onclick="' + this.uiFeedback + '.favNode(this)">&#9733;</button>'
                     folder.fav_cell = cell
 
                     cell = folderRow.insertCell()
                     cell.innerHTML = '\
-<button id="' + folder.id + '-error"   class="tool-icon tool-error   " title="Errors"        onclick="showNodeErrors(this)">&#9888;</button>'
+<button id="' + folder.id + '-error"   class="tool-icon tool-error   " title="Errors"        onclick="' + this.uiFeedback + '.showNodeErrors(this)">&#9888;</button>'
                     folder.err_but = document.getElementById(folder.id + "-error")
 
                     cell = folderRow.insertCell()
@@ -252,7 +254,7 @@ class="tool b-t tool-status-color" onclick="toggleFolderFilter(this)">\
             let cell = null
 
             cell = fileRow.insertCell()
-            cell.innerHTML = '<button id="' + value.id + '-icon" title="Focus Tab" class="tool-icon f-theme tool-icon-file" onclick="focusTab(this)"></button>'
+            cell.innerHTML = '<button id="' + value.id + '-icon" title="Focus Tab" class="tool-icon f-theme tool-icon-file" onclick="' + this.uiFeedback + '.focusTab(this)"></button>'
 
             cell = fileRow.insertCell()
             let fileName = filePath.split("/").slice(-1)
@@ -265,7 +267,7 @@ class="tool b-t tool-status-color" onclick="toggleFolderFilter(this)">\
 
             cell.innerHTML =
                 '<button id="' + value.id + '-main" title="Click to toggle Tab\nFull path: ' + filePath + '"\
-class="tool b-t tool-text tool-status-color" onclick="toggleTab(this)">\
+class="tool b-t tool-text tool-status-color" onclick="' + this.uiFeedback + '.toggleTab(this)">\
 <span class="path-margin">'+ fileMarginContent + '</span>\
 <span class=path-location>' + fileLocation + '</span><span>' + fileName + '</span></button>'
 
@@ -277,27 +279,27 @@ class="tool b-t tool-text tool-status-color" onclick="toggleTab(this)">\
             cell.id = value.id + "-nodeOps"
             cell.innerHTML = "<span class='node-info f-greyed'>" + new Date(value.timestamp).toLocaleString() + "</span>\
 <span   id='" + value.id + "-toolbox' class='toolbox'>" + '\
-<button id="' + value.id + '-add"     class="tool-icon x-add     " title="Add"              onclick="addNode(this)">&#128932;</button>\
-<button id="' + value.id + '-delete"  class="tool-icon x-delete  " title="Remove"           onclick="deleteNode(this)">&#10005;</button>\
-<button id="' + value.id + '-rename"  class="tool-icon x-rename  " title="Move/Rename"      onclick="renameNode(this)">&#128393;</button>\
-<button id="' + value.id + '-save"    class="tool-icon x-save    " title="Save changes"     onclick="saveChanges(this)">&#128427;</button>\
-<button id="' + value.id + '-reset"   class="tool-icon x-reset   " title="Reset changes"    onclick="resetChanges(this)"></button>\
-<button id="' + value.id + '-lock"    class="tool-icon x-lock    " title="Lock"             onclick="lockNode(this)">&#9919;</button>\
+<button id="' + value.id + '-add"     class="tool-icon x-add     " title="Add"              onclick="' + this.uiFeedback + '.addNode(this)">&#128932;</button>\
+<button id="' + value.id + '-delete"  class="tool-icon x-delete  " title="Remove"           onclick="' + this.uiFeedback + '.deleteNode(this)">&#10005;</button>\
+<button id="' + value.id + '-rename"  class="tool-icon x-rename  " title="Move/Rename"      onclick="' + this.uiFeedback + '.renameNode(this)">&#128393;</button>\
+<button id="' + value.id + '-save"    class="tool-icon x-save    " title="Save changes"     onclick="' + this.uiFeedback + '.saveChanges(this)">&#128427;</button>\
+<button id="' + value.id + '-reset"   class="tool-icon x-reset   " title="Reset changes"    onclick="' + this.uiFeedback + '.resetChanges(this)"></button>\
+<button id="' + value.id + '-lock"    class="tool-icon x-lock    " title="Lock"             onclick="' + this.uiFeedback + '.lockNode(this)">&#9919;</button>\
 ' + "</span>"
 
             cell = fileRow.insertCell()
             cell.innerHTML = '\
-<button id="' + value.id + '-fav"     class="tool-icon tool-fav     " title="Favorite"      onclick="favNode(this)">&#9733;</button>'
+<button id="' + value.id + '-fav"     class="tool-icon tool-fav     " title="Favorite"      onclick="' + this.uiFeedback + '.favNode(this)">&#9733;</button>'
             value.fav_cell = cell
 
             cell = fileRow.insertCell()
             cell.innerHTML = '\
-<button id="' + value.id + '-error"   class="tool-icon tool-error   " title="Errors"        onclick="showNodeErrors(this)">&#9888;</button>'
+<button id="' + value.id + '-error"   class="tool-icon tool-error   " title="Errors"        onclick="' + this.uiFeedback + '.showNodeErrors(this)">&#9888;</button>'
             value.err_but = document.getElementById(value.id + "-error")
 
             cell = fileRow.insertCell()
             cell.innerHTML = '\
-<button id="' + value.id + '-link"    class="tool-icon tool-link    " title="Open Schematic" onclick="openNodeLink(this)">&#11179;</button>'
+<button id="' + value.id + '-link"    class="tool-icon tool-link    " title="Open Schematic" onclick="' + this.uiFeedback + '.openNodeLink(this)">&#11179;</button>'
         }
 
         // After all folders are populated it's time to link subfolders to their parents

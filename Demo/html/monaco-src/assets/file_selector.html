@@ -67,79 +67,81 @@
         }
 
         // Feedback on user interaction
-        function toggleFolder(el) {
-            const path = getPath(el)
-            browser.toggleFolder(path)
-        }
+        class UI_Feedback {
+            toggleFolder = function (el) {
+                const path = getPath(el)
+                browser.toggleFolder(path)
+            }
 
-        function toggleFolderFilter(el) {
-            const path = getPath(el)
-            browser.toggleFolderFilter(path)
-        }
+            toggleFolderFilter = function (el) {
+                const path = getPath(el)
+                browser.toggleFolderFilter(path)
+            }
 
-        function toggleFav(el) {
-            const path = getPath(el)
-            alert("toggleFav:" + path)
-        }
+            toggleFav = function (el) {
+                const path = getPath(el)
+                alert("toggleFav:" + path)
+            }
 
-        function toggleTab(el) {
-            const path = getPath(el)
-            alert("toggleTab:" + path)
-        }
+            toggleTab = function (el) {
+                const path = getPath(el)
+                alert("toggleTab:" + path)
+            }
 
-        function focusTab(el) {
-            const path = getPath(el)
-            alert("focusTab:" + path)
-        }
+            focusTab = function (el) {
+                const path = getPath(el)
+                alert("focusTab:" + path)
+            }
 
-        function saveChanges(el) {
-            const path = getPath(el)
-            alert("saveChanges:" + path)
-        }
+            saveChanges = function (el) {
+                const path = getPath(el)
+                alert("saveChanges:" + path)
+            }
 
-        function resetChanges(el) {
-            const path = getPath(el)
-            alert("resetChanges:" + path)
-        }
+            resetChanges = function (el) {
+                const path = getPath(el)
+                alert("resetChanges:" + path)
+            }
 
-        function addNode(el) {
-            const path = getPath(el)
-            alert("addNode:" + path)
-        }
+            addNode = function (el) {
+                const path = getPath(el)
+                alert("addNode:" + path)
+            }
 
-        function renameNode(el) {
-            const path = getPath(el)
-            alert("renameNode:" + path)
-        }
+            renameNode = function (el) {
+                const path = getPath(el)
+                alert("renameNode:" + path)
+            }
 
-        function deleteNode(el) {
-            const path = getPath(el)
-            alert("deleteNode:" + path)
-        }
+            deleteNode = function (el) {
+                const path = getPath(el)
+                alert("deleteNode:" + path)
+            }
 
-        function reloadNode(el) {
-            const path = getPath(el)
-            alert("reloadNode:" + path)
-        }
+            reloadNode = function (el) {
+                const path = getPath(el)
+                alert("reloadNode:" + path)
+            }
 
-        function lockNode(el) {
-            const path = getPath(el)
-            alert("lockNode:" + path)
-        }
+            lockNode = function (el) {
+                const path = getPath(el)
+                alert("lockNode:" + path)
+            }
 
-        function favNode(el) {
-            const path = getPath(el)
-            alert("favNode:" + path)
-        }
+            favNode = function (el) {
+                const path = getPath(el)
+                alert("favNode:" + path)
+            }
 
-        function showNodeErrors(el) {
-            const path = getPath(el)
-            alert("showNodeErrors:" + path)
-        }
+            showNodeErrors = function (el) {
+                const path = getPath(el)
+                alert("showNodeErrors:" + path)
+            }
 
-        function openNodeLink(el) {
-            const path = getPath(el)
-            alert("openNodeLink:" + path)
+            openNodeLink = function (el) {
+                const path = getPath(el)
+                alert("openNodeLink:" + path)
+            }
         }
 
         function createOption(selector, text, value) {
@@ -241,10 +243,13 @@
 
         document.getElementById("domains").value = "test"
 
+        const uiFeedback = new UI_Feedback()
+
         const browser = new Browser(
             filez,
             {"locked": undefined, "flocked": undefined, "outdate": undefined},
-            "tiny"
+            "tiny",
+            "uiFeedback"
         )
 
         browser.populate(document.getElementById("filesBrowser"))
