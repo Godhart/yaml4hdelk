@@ -9,7 +9,7 @@
     <script type="text/javascript" src="./browser.js"></script>
 </head>
 
-<body class="tool">
+<body class="tool" style="margin:0;padding:0">
 
     <script>
         // Populate test data
@@ -158,6 +158,8 @@
 
     <div id="domainsSelector">
         Data domain: <select id="domains" class="tool" onchange="console.log(this.value)"></select>
+    </div>
+    <div>
         View: <button class="tool b-t" onclick="this.innerHTML = browser.toggleView()">tiny</button>
     </div>
 
