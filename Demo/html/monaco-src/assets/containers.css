@@ -5,7 +5,9 @@ body {
     margin: 0;
     padding: 0;
     text-align: center;
-    background: #F9F9F9;
+    color: #222;
+    border-color: #222;
+    background: #222;
 }
 
 body {
@@ -17,26 +19,41 @@ body {
     display: flex;
 
     /* Misc */
-    border: 1px solid #cbd5e0;
-    /* height: 32rem; */
+    /* border: 1px solid #4b4b4b; */
+    border-style: none;
     width: 100%;
 }
 
 .resizer[data-direction='horizontal'] {
-    background-color: #cbd5e0;
+    background-color: #4b4b4b;
     cursor: ew-resize;
     height: 100%;
-    width: 4px;
+    width: 6px;
 }
 
 .resizer[data-direction='vertical'] {
-    background-color: #cbd5e0;
+    background-color: #4b4b4b;
     cursor: ns-resize;
-    height: 4px;
+    height: 6px;
     width: 100%;
 }
 
+.resizer:hover {
+    background-color: rgb(20, 110, 110);
+}
+
 .container__left {
+    /* Initially, the left takes 220px */
+    width: 290px;
+
+    /* Misc */
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.container__middle {
     /* Initially, the left takes 1/2 width */
     width: 50%;
 
@@ -68,7 +85,7 @@ body {
     justify-content: center;
 }
 
-.container__tr {
+.container__tm {
     /* Initial height */
     height: 6rem;
 
@@ -78,7 +95,27 @@ body {
     justify-content: center;
 }
 
+.container__tr {
+    /* Initial height */
+    height: 2rem;
+
+    /* Misc */
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
 .container__bl {
+    /* Take the remaining height */
+    flex: 1;
+
+    /* Misc */
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.container__bm {
     /* Take the remaining height */
     flex: 1;
 
@@ -98,6 +135,10 @@ body {
     justify-content: center;
 }
 
+.browser {
+    height: 100%;
+    width: 100%;
+}
 .editor {
     height: 100%;
     width: 100%;

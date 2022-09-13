@@ -30,6 +30,9 @@
 
         function reloadIframes() {
             // Load iframes (NOTE: timestamp is used to avoid caching. In production timestamp is set to a const)
+            const browser_url = iframeDomain + "/monaco/assets/file_selector.html" + "?timestamp=" + timestamp;
+            document.getElementById("browser").src = browser_url;
+
             const editor_url = iframeDomain + "/monaco/index.html" + "?timestamp=" + timestamp;
             document.getElementById("editor").src = editor_url;
 
@@ -99,7 +102,7 @@
     </div>
     -->
 
-    <!-- PopUp for files operations -->
+    <!-- PopUp for modal dialogs -->
     <div class="hover_bkgr_fricc">
         <span class="helper"></span>
         <div>
@@ -110,20 +113,26 @@
 
     <!-- Main layout (containers) -->
     <div class="container">
+        <!-- File Browser -->
         <div class="container__left">
-            <!-- Files operations -->
-            <div class="container__tl">
-                <a class="trigger_popup_fricc">Click here to show the popup</a>
-            </div>
-            <!-- Editor -->
-            <iframe class="container__bl" name="editor" id="editor" width="100%"></iframe>
+            <iframe class="container__bl" name="browser" id="browser" width="100%" scrolling="no"></iframe>
+            <!-- <div class="container__bl" with="100%">Browser</div> -->
+        </div>
+        <div class="resizer" data-direction="horizontal"></div>
+        <!-- Editor -->
+        <div class="container__middle">
+            <iframe class="container__bm" name="editor" id="editor" width="100%"></iframe>
+            <!-- <div class="container__bm" with="100%">Editor</div> -->
         </div>
         <div class="resizer" data-direction="horizontal"></div>
         <div class="container__right">
             <!-- Preview selector -->
-            <div class="container__tr">Top Right</div>
+            <div class="container__tr" with="100%" style="color: #ddd">Diagram picker</div>
             <!-- Preview itself -->
-            <iframe class="container__br" name="preview" id="preview" width="100%"></iframe>
+            <iframe class="container__br" name="preview" id="preview" width="100%"
+            style="filter: invert(100%) hue-rotate(180deg); color: #fff"
+            ></iframe>
+            <!-- <div class="container__br" with="100%">Diagram</div> -->
         </div>
     </div>
 
@@ -216,6 +225,8 @@
         });
     </script>
 
+    <!-- TODO: use following for modal dialogs
+    <a class="trigger_popup_fricc">Click here to show the popup</a>
     <script>
         // Setup popup actions
         $(window).load(function () {
@@ -234,6 +245,8 @@
             });
         });
     </script>
+    -->
+
 </body>
 
 </html>
