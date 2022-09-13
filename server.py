@@ -25,7 +25,7 @@ from server_data import new_domain, DataDomain
 #   https://stackoverflow.com/questions/13318608/streaming-connection-using-python-bottle-multiprocessing-and-gevent
 
 
-_VERSION = "1.4a0.0"
+_VERSION = "1.4a2.0"
 _VERSION_HISTORY = {
     "1.4": "added RESTful interface",
     "1.3": "supported changes in view/edit templates (svg styling)",
@@ -39,6 +39,9 @@ _versions = {
     "server_version": _VERSION,
 }
 
+_no_cache = os.environ.get("YAML4SCHM_NO_CACHE", None) == "TRUE"
+if _no_cache:
+    print("NOTE: Static files caching is disabled")
 
 _DOMAINS = {}
 
@@ -501,22 +504,35 @@ def test(tool):
 @app.route('/js/<path:path>')
 def js(path):
     """ Static Javascript Files """
-
-    return static_file(path, root="Demo/html/js")
+    response = static_file(path, root="Demo/html/js")
+    if _no_cache:
+        response.set_header("Cache-Control", "no-cache")
+    return response
 
 
 @app.route('/css/<path:path>')
 def css(path):
     """ Static CSS Files """
+    response = static_file(path, root="Demo/html/css")
+    if _no_cache:
+        response.set_header("Cache-Control", "no-cache")
+    return response
 
-    return static_file(path, root="Demo/html/css")
-
+@app.route('/monaco/assets/<path:path>')
+def monaco(path):
+    """ Monaco editor complementary """
+    response = static_file(path, root="Demo/html/monaco-src/assets")
+    if _no_cache:
+        response.set_header("Cache-Control", "no-cache")
+    return response
 
 @app.route('/monaco/<path:path>')
 def monaco(path):
-    """ Static TTF Files """
-
-    return static_file(path, root="Demo/html/monaco")
+    """ Monaco editor """
+    response = static_file(path, root="Demo/html/monaco")
+    if _no_cache:
+        response.set_header("Cache-Control", "no-cache")
+    return response
 
 
 @app.route('/rest/1.0/domains/domainsList')
