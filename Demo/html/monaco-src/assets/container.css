@@ -28,13 +28,13 @@ body {
     background-color: #4b4b4b;
     cursor: ew-resize;
     height: 100%;
-    width: 6px;
+    width: 4px;
 }
 
 .resizer[data-direction='vertical'] {
     background-color: #4b4b4b;
     cursor: ns-resize;
-    height: 6px;
+    height: 4px;
     width: 100%;
 }
 
@@ -113,6 +113,7 @@ body {
     align-items: center;
     display: flex;
     justify-content: center;
+    border-style: none;
 }
 
 .container__bm {
@@ -123,6 +124,7 @@ body {
     align-items: center;
     display: flex;
     justify-content: center;
+    border-style: none;
 }
 
 .container__br {
@@ -133,6 +135,7 @@ body {
     align-items: center;
     display: flex;
     justify-content: center;
+    border-style: none;
 }
 
 .browser {
