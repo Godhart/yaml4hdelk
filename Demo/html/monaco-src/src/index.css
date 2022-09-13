@@ -56,7 +56,7 @@ main {
   display: flex;
   flex: 1 1 auto;
   flex-flow: column;
-  margin: 1.5rem;
+  /* margin: 1.5rem; */
 }
 
 #schema-selection {
