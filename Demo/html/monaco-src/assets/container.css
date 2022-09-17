@@ -24,6 +24,10 @@ body {
     width: 100%;
 }
 
+.resizer {
+    transition-duration: 0.5s;
+}
+
 .resizer[data-direction='horizontal'] {
     background-color: #4b4b4b;
     cursor: ew-resize;
