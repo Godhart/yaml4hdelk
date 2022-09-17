@@ -179,6 +179,9 @@ class DataDomain:
         """
         lock = self._lock_hash(secret)
 
+        if file_path == "test":
+            return lock, None
+
         current_lock = self._file_lock(file_path, custom_data)
         if current_lock is None:
             return None, f"File '{file_path}' is not found in domain '{self.name}'"
