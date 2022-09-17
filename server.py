@@ -622,9 +622,9 @@ def get_files(domain):
     """ Gets data for specified files """
     response.content_type = 'application/json'
 
-    print(f"save_rest({domain})")
+    print(f"get_files({domain})")
 
-    fields = request.get("fields", [])
+    fields = request.json.get("fields", [])
 
     common = {"domain": domain, "fields": fields}
 
@@ -632,8 +632,8 @@ def get_files(domain):
     if error is not None:
         return _error(error, common)
 
-    if len(fields == 0):
-        return _error("fields is not provided!", common)
+    if len(fields) == 0:
+        return _error("fields are not provided!", common)
 
     files = request.json.get("filesList", None)
     if files is None:
@@ -652,12 +652,12 @@ def _get_files(domain: DataDomain, files, fields):
     result = {"data": {}}
 
     if len(fields) > 0:
-        for k in files.keys():
+        for k in files:
             file_data, error = domain.get_file(k, fields)
             if error is not None:
-                result["files"][k] = {"ERROR": "Error getting file: " + error}
+                result["data"][k] = {"ERROR": "Error getting file: " + error}
             else:
-                result["files"][k] = {**file_data}
+                result["data"][k] = {**file_data}
 
     return result, None
 
@@ -669,8 +669,8 @@ def save_rest(domain):
 
     print(f"save_rest({domain})")
 
-    fields = request.get("fields", [])
-    dry_run = request.get("dry_run", [])
+    fields = request.json.get("fields", [])
+    dry_run = request.json.get("dry_run", [])
 
     common = {"domain": domain, "fields": fields, "dry_run": dry_run}
 
