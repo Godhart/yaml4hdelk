@@ -4,8 +4,8 @@ class FileData {
     problemsEditor = 0  // Amount of problems detected by editor
     problemsRemote = 0  // Amount of problems detected by server
     source = null       // Initial value, that were received from server on checkout
-    source_timestamp = 0// Initial value timestamp, that were received from server on checkout
-    source_hash = null  // Hash that were received from server on checkout
+    sourceTimestamp = 0// Initial value timestamp, that were received from server on checkout
+    sourceHash = null  // Hash that were received from server on checkout
     timestamp = 0       // Last modification timestamp
 }
 
@@ -182,8 +182,8 @@ class LocalData {
                     this.filesData[filePath] = Object.assign(new FileData(), {
                         "currentValue": source,
                         "source": source,
-                        "source_timestamp": timestamp,
-                        "source_hash": hash,
+                        "sourceTimestamp": timestamp,
+                        "sourceHash": hash,
                         "timestamp": timestamp,
                     });
                     return this._store(FILES_DATA, this.filesData)
@@ -220,10 +220,10 @@ class LocalData {
                         f.source = source
                     }
                     if (hash !== undefined && hash !== null) {
-                        f.source_hash = hash
+                        f.sourceHash = hash
                     }
                     if (timestamp !== undefined && hash !== null) {
-                        f.source_timestamp = timestamp
+                        f.sourceTimestamp = timestamp
                     }
                     return this._store(FILES_DATA, this.filesData)
                 } else {
@@ -353,6 +353,31 @@ class LocalData {
                 console.error("LocalData.updateProblemsRemote(): File " + data.path + " is not in database");
                 throw Error("File " + data.path + " is not in database");
             })
+    }
+
+    exportData = function (filePathPrefix, data) {
+        if (filePathPrefix === undefined) {
+            filePathPrefix = ""
+        }
+        for(const [filePath, value] of Object.entries(this.filesData)) {
+            let key = filePathPrefix + filePath
+            if (data[key] === undefined){
+                data[key] = {"added": true, "timestamp": value.timestamp}
+            } else {
+                let fileData = data[key]
+                // TODO: fav
+                if (this.activeTabs.includes(filePath)){
+                    fileData.open = true
+                }
+                if (value.source /= value.currentValue){
+                    fileData.modified = true
+                    fileData.timestamp = value.timestamp
+                }
+                if (value.sourceHash /= fileData.hash) {
+                    fileData.outdate = true
+                }
+            }
+        }
     }
 
 }

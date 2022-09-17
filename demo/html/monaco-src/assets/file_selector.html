@@ -12,7 +12,7 @@
 <body class="tool" style="margin:0;padding:0">
 
     <script>
-        const demo = true
+        const demo = false
         let filez = {}
 
         if (demo) {
@@ -261,14 +261,12 @@
         const uiFeedback = new UI_Feedback()
 
         const browser = new Browser(
-            filez,
             { "locked": undefined, "flocked": undefined, "outdate": undefined },
             "tiny",
             "uiFeedback"
         )
 
-        browser.populate(document.getElementById("filesBrowser"))
-        browser.update()
+        browser.reload(filez)
         browser.toggleView(browser.view)
 
         // Inter-frame communications

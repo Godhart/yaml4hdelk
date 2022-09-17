@@ -60,10 +60,9 @@ class Browser {
     filePathFilterId = "filePathFilter"
     filtersRowId = "filtersRow"
     filesBrowserId = "filesBrowser"
+    filesListId = "filesList"
 
-    constructor(filez, filterCommonFields, view, uiFeedback) {
-        this.filez = filez
-        this.folders = {}
+    constructor(filterCommonFields, view, uiFeedback) {
         this.uiFeedback = uiFeedback
         this.filesFilter = {
             "pathRoot": "",
@@ -92,6 +91,15 @@ class Browser {
                 this.view = "tiny"
             }
         }
+    }
+
+    reload(filez) {
+        this.filez = filez
+        this.folders = {}
+
+        document.getElementById(this.filesListId).innerHTML=""
+        this.populate(document.getElementById(this.filesBrowserId))
+        this.update()
     }
 
     getFilterRow = function () {

@@ -54,4 +54,22 @@ class RemoteData {
             })
     }
 
+    exportData = function (filePathPrefix, data) {
+        if (filePathPrefix === undefined) {
+            filePathPrefix = ""
+        }
+        this.files.forEach(filePath => {
+            let key = filePathPrefix + filePath
+            if (data[key] === undefined){
+                data[key] = {}
+            }
+            let value = data[key]
+            let meta = this.filesMeta[filePath]
+            value.timestamp = meta.timestamp
+            value.hash = meta.hash
+            value.lock = meta.lock
+        })
+    }
+
+
 }

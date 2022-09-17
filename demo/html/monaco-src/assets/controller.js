@@ -69,6 +69,9 @@ class Controller {
         - same as change domain
     */
 
+    editorFrame = "editor"
+    browserFrame = "browser"
+
     constructor(editorDomain, browserDomain, remoteFiles, remoteData, localData) {
         this.editorDomain = editorDomain;
         this.browserDomain = browserDomain;
@@ -104,6 +107,33 @@ class Controller {
         this._start()
     }
 
+    editor = function(method, args, callback) {
+        iframeCall(this.editorFrame, {
+            "obj": "worker",
+            "method": method,
+            "args": args,
+            "callback": callback
+        }, this.editorDomain);
+    }
+
+    editorSettings = function(method, args, callback) {
+        iframeCall(this.editorFrame, {
+            "obj": "settings",
+            "method": method,
+            "args": args,
+            "callback": callback
+        }, this.editorDomain);
+    }
+
+    browser = function(method, args, callback) {
+        iframeCall(this.browserFrame, {
+            "obj": "browser",
+            "method": method,
+            "args": args,
+            "callback": callback
+        }, this.editorDomain);
+    }
+
     _start() {
         // Don't start unless all start conditions are met
         if ((this.localData == null)
@@ -119,17 +149,20 @@ class Controller {
             return;
         }
 
-        // Reopen tabs
         let filesCount = 0; // Amount of locally saved files
         let lastFile = "";  // Last file is used to activate certain tab
         const localData = this.localData;
+
+        // Load data into browser
+        let filesData = {}
+        this.remoteData.exportData("/", filesData)
+        this.localData.exportData("/", filesData)
+        this.browser("reload", [filesData])
+
+        // Reopen tabs
         localData.activeTabs.forEach(key => {
             if ((localData.filesData[key] !== undefined) && (localData.filesData[key] !== null)) {
-                iframeCall("editor", {
-                    "obj": "worker",
-                    "method": "contextAdd",
-                    "args": [key, localData.filesData[key].currentValue]
-                }, this.editorDomain);
+                this.editor("contextAdd", [key, localData.filesData[key].currentValue]);
                 filesCount += 1;
                 lastFile = key;
             }
@@ -140,19 +173,11 @@ class Controller {
             lastFile = localData.currentTab;
         }
         if (lastFile !== "") {
-            iframeCall("editor", {
-                "obj": "worker",
-                "method": "contextSwitch",
-                "args": [lastFile]
-            }, this.editorDomain);
+            this.editor("contextSwitch", [lastFile]);
         }
 
         // Subscribe to editor changes
-        iframeCall("editor", {
-            "obj": "settings",
-            "method": "onChangeListenerSet",
-            "args": ["controller"]
-        }, this.editorDomain);
+        this.editorSettings("onChangeListenerSet", ["controller"]);
 
         /*
         NOTE: Welcome page, disabled
@@ -187,18 +212,17 @@ class Controller {
     }
 
     onEditorChange(filePath) {
+        console.warn("onEditorChange should be reworked!")
+        return
         // TODO: this should be reworked since currently it's too heavy for simple reaction on editor changes
         this.localData.switchTab(filePath)
-        iframeCall("editor", {
-            "obj": "worker",
-            "method": "contextDump",
-            "args": [],
-            "callback": {
+        // TODO: this most probably should be reworked
+        this.editor("contextDump", [],
+            {
                 "func": "call",
                 "obj": "localData",
                 "method": "updateFilesAndTabs",
-            }
-        }, this.editorDomain);
+            })
         // TODO: schedule preview update after some time
     }
 
