@@ -12,47 +12,54 @@
 <body class="tool" style="margin:0;padding:0">
 
     <script>
-        // Populate test data
-        // NOTE: this date produces longest text and is used to set size for node-info column
-        const special_date = new Date()
-        special_date.setFullYear(2022)
-        special_date.setMonth(11)
-        special_date.setDate(30)
-        special_date.setHours(22)
-        special_date.setMinutes(59)
-        special_date.setSeconds(59)
+        const demo = true
+        let filez = {}
 
-        const filez = {
-            "/file1": { "added": true, "timestamp": special_date.getTime() },
-            "/folder0/file0-1": { "timestamp": special_date.getTime() - 60 },
-            "/folder1/file1-1": { "modified": true, "fav": true, "timestamp": special_date.getTime() - 60 },
-            "/folder1/file1-2": { "removed": true, "timestamp": special_date.getTime() - 120 },
-            "/folder1/file1-3": { "renamed": true, "timestamp": special_date.getTime() - 240 },
-            "/folder1/sub1/file1-1-1": { "timestamp": special_date.getTime() - 60 },
-            "/folder1/sub2/file1-2-1": { "added": true, "fav": true, "timestamp": special_date.getTime() - 120 },
-            "/folder2/file2-1": { "locked": true, "timestamp": special_date.getTime() - 300 },
-            "/folder2/file2-2": { "flocked": true, "timestamp": special_date.getTime() - 360 },
-            "/folder2/file2-3": { "locked": true, "modified": true, "outdate": true, "timestamp": special_date.getTime() },
-            "/folder3/file3-1": { "added": true, "errors": ["Some error"], "timestamp": special_date.getTime() - 60 },
-            "/folder3/file3-2": { "locked": true, "removed": true, "timestamp": special_date.getTime() - 120 },
-            "/folder3/file3-2": { "flocked": true, "modified": true, "timestamp": special_date.getTime() - 120 },
-            "/folder3/file3-3": { "locked": true, "modified": true, "open": true, "timestamp": special_date.getTime() - 240 },
-            "/folder3/sub1/file3-1-1": { "open": true, "timestamp": special_date.getTime() - 60 },
-            "/folder3/sub2/file3-2-1": { "fav": true, "timestamp": special_date.getTime() - 120 },
-            "/folder4/file1-1": { "timestamp": special_date.getTime() - 300 },
-            "/folder4/file1-2": { "errors": ["Error 1-2 1"], "timestamp": special_date.getTime() - 360 },
-            "/folder4/file1-3": { "errors": ["Error 1-3 1", "Error 1-3 2"], "timestamp": special_date.getTime() - 360 },
-            "/folder4/file1-4": { "timestamp": special_date.getTime() - 360 },
-            "/folder4/file1-5": { "timestamp": special_date.getTime() - 360 },
-            "/folder4/file1-6": { "timestamp": special_date.getTime() - 360 },
-            "/folder4/sub1/file4-1-1": { "errors": ["Error 4-1-1 1"], "timestamp": special_date.getTime() - 60 },
-            "/folder4/sub1/file4-1-2": { "errors": ["Error 4-1-1 2"], "timestamp": special_date.getTime() - 120 },
-            "/folder4/sub1/file4-1-3-with-a-long-long-long-long-long-name": { "timestamp": special_date.getTime() - 120 },
+        if (demo) {
+            // Populate test data
+            // NOTE: this date produces longest text and is used to set size for node-info column
+            const special_date = new Date()
+            special_date.setFullYear(2022)
+            special_date.setMonth(11)
+            special_date.setDate(30)
+            special_date.setHours(22)
+            special_date.setMinutes(59)
+            special_date.setSeconds(59)
+
+            filez = {
+                "/file1": { "added": true, "timestamp": special_date.getTime() },
+                "/folder0/file0-1": { "timestamp": special_date.getTime() - 60 },
+                "/folder1/file1-1": { "modified": true, "fav": true, "timestamp": special_date.getTime() - 60 },
+                "/folder1/file1-2": { "removed": true, "timestamp": special_date.getTime() - 120 },
+                "/folder1/file1-3": { "renamed": true, "timestamp": special_date.getTime() - 240 },
+                "/folder1/sub1/file1-1-1": { "timestamp": special_date.getTime() - 60 },
+                "/folder1/sub2/file1-2-1": { "added": true, "fav": true, "timestamp": special_date.getTime() - 120 },
+                "/folder2/file2-1": { "locked": true, "timestamp": special_date.getTime() - 300 },
+                "/folder2/file2-2": { "flocked": true, "timestamp": special_date.getTime() - 360 },
+                "/folder2/file2-3": { "locked": true, "modified": true, "outdate": true, "timestamp": special_date.getTime() },
+                "/folder3/file3-1": { "added": true, "errors": ["Some error"], "timestamp": special_date.getTime() - 60 },
+                "/folder3/file3-2": { "locked": true, "removed": true, "timestamp": special_date.getTime() - 120 },
+                "/folder3/file3-2": { "flocked": true, "modified": true, "timestamp": special_date.getTime() - 120 },
+                "/folder3/file3-3": { "locked": true, "modified": true, "open": true, "timestamp": special_date.getTime() - 240 },
+                "/folder3/sub1/file3-1-1": { "open": true, "timestamp": special_date.getTime() - 60 },
+                "/folder3/sub2/file3-2-1": { "fav": true, "timestamp": special_date.getTime() - 120 },
+                "/folder4/file1-1": { "timestamp": special_date.getTime() - 300 },
+                "/folder4/file1-2": { "errors": ["Error 1-2 1"], "timestamp": special_date.getTime() - 360 },
+                "/folder4/file1-3": { "errors": ["Error 1-3 1", "Error 1-3 2"], "timestamp": special_date.getTime() - 360 },
+                "/folder4/file1-4": { "timestamp": special_date.getTime() - 360 },
+                "/folder4/file1-5": { "timestamp": special_date.getTime() - 360 },
+                "/folder4/file1-6": { "timestamp": special_date.getTime() - 360 },
+                "/folder4/sub1/file4-1-1": { "errors": ["Error 4-1-1 1"], "timestamp": special_date.getTime() - 60 },
+                "/folder4/sub1/file4-1-2": { "errors": ["Error 4-1-1 2"], "timestamp": special_date.getTime() - 120 },
+                "/folder4/sub1/file4-1-3-with-a-long-long-long-long-long-name": { "timestamp": special_date.getTime() - 120 },
+            }
+        } else {
+            filez = {}
         }
 
         function getPath(el) {
-           // Helper to get associated file/folder path for HTML element
-           // If data-path is not set on element, then check parent and so on
+            // Helper to get associated file/folder path for HTML element
+            // If data-path is not set on element, then check parent and so on
             while (true) {
                 let path = el.getAttribute("data-path")
                 if (path !== null) {
@@ -243,17 +250,19 @@
     </div>
 
     <script>
-        ["demo", "test"].forEach(item => {
-            createOption(document.getElementById("domains"), item, item)
-        })
+        if (demo) {
+            ["demo", "test"].forEach(item => {
+                createOption(document.getElementById("domains"), item, item)
+            })
 
-        document.getElementById("domains").value = "test"
+            document.getElementById("domains").value = "test"
+        }
 
         const uiFeedback = new UI_Feedback()
 
         const browser = new Browser(
             filez,
-            {"locked": undefined, "flocked": undefined, "outdate": undefined},
+            { "locked": undefined, "flocked": undefined, "outdate": undefined },
             "tiny",
             "uiFeedback"
         )
@@ -261,6 +270,75 @@
         browser.populate(document.getElementById("filesBrowser"))
         browser.update()
         browser.toggleView(browser.view)
+
+        // Inter-frame communications
+        const controller = "controller"
+
+        window.addEventListener('message', (event) => {
+            console.log("Browser received message: " + JSON.stringify(event), "\n origin - " + JSON.stringify(event.origin), "\n data   - " + JSON.stringify(event.data));
+
+            /* TODO: if (event.origin !== my_domain) {
+              return null;
+            } */
+            if (event.data.func === 'call') {
+                if (event.data.obj === undefined) {
+                    return null;
+                }
+                if (event.data.method === undefined) {
+                    return null;
+                }
+                if (event.data.args === undefined) {
+                    return null;
+                }
+                if (event.data.obj !== undefined) {
+                    let obj = null;
+                    if (event.data.obj === 'browser') {
+                        obj = browser;
+                    }
+                    if (obj == null) {
+                        return null;
+                    }
+                    if (obj[event.data.method] !== undefined) {
+                        const result = obj[event.data.method](...event.data.args);
+                        if (event.data.callback !== undefined) {
+                            let callback = event.data.callback;
+                            window.parent.postMessage({
+                                'func': callback.func,
+                                'obj': callback.obj,
+                                'method': callback.method,
+                                'args': [result],
+                                'callback': undefined,
+                            }, callback.origin);
+                        }
+                    }
+                } else {
+                    return null;
+                }
+            }
+        });
+
+        function callParent(obj, method, args, callback) {
+            if (args === undefined) {
+                args = []
+            }
+            window.parent.postMessage({
+                'func': 'call',
+                'obj': obj,
+                'method': method,
+                'args': args,
+                'callback': callback
+            }, '*')
+        }
+
+        // Notify parent frame that browser is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.parent === undefined || window.parent == null) {
+                return null;
+            }
+            console.log("Browser frame loaded");
+            callParent(controller, 'onBrowserCreated')
+        });
+
     </script>
 
 </body>
