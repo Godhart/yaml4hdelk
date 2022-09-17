@@ -51,7 +51,7 @@ _GET = "GET"
 
 def get_domains():
     if len(_DOMAINS) == 0:
-        _DOMAINS["Demo"] = new_domain("Demo", "./Demo")
+        _DOMAINS["demo"] = new_domain("demo", "./demo")
         env = [*os.environ.keys()]
         domain_prefix = "YAML4SCHM_FILES_DOMAIN_"
         for k in env:
@@ -133,7 +133,7 @@ def _file_content(file_path):
 
 svg_style = {
     TOOL_HDELK: "",
-    TOOL_D3HW: _file_content("Demo/html/css/d3/d3-hwschematic.css")
+    TOOL_D3HW: _file_content("demo/html/css/d3/d3-hwschematic.css")
 }
 
 renderers = {}
@@ -155,7 +155,7 @@ def _internal_path(path):
         raise ValueError(
             "<pre>Hierarchy ('..' items) in the file path is not supported!<pre>")
     if path_items[0] == "demo":
-        files_domain = "Demo"
+        files_domain = "demo"
     else:
         files_domain = os.environ.get(
             "YAML4SCHM_FILES_DOMAIN_"+path_items[0].upper(), None)
@@ -512,7 +512,7 @@ def test(tool):
 @app.route('/js/<path:path>')
 def js(path):
     """ Static Javascript Files """
-    response = static_file(path, root="Demo/html/js")
+    response = static_file(path, root="demo/html/js")
     if _no_cache:
         response.set_header("Cache-Control", "no-cache")
     return response
@@ -521,7 +521,7 @@ def js(path):
 @app.route('/css/<path:path>')
 def css(path):
     """ Static CSS Files """
-    response = static_file(path, root="Demo/html/css")
+    response = static_file(path, root="demo/html/css")
     if _no_cache:
         response.set_header("Cache-Control", "no-cache")
     return response
@@ -529,7 +529,7 @@ def css(path):
 @app.route('/monaco/assets/<path:path>')
 def monaco(path):
     """ Monaco editor complementary """
-    response = static_file(path, root="Demo/html/monaco-src/assets")
+    response = static_file(path, root="demo/html/monaco-src/assets")
     if _no_cache:
         response.set_header("Cache-Control", "no-cache")
     return response
@@ -537,7 +537,7 @@ def monaco(path):
 @app.route('/monaco/<path:path>')
 def monaco(path):
     """ Monaco editor """
-    response = static_file(path, root="Demo/html/monaco")
+    response = static_file(path, root="demo/html/monaco")
     if _no_cache:
         response.set_header("Cache-Control", "no-cache")
     return response
