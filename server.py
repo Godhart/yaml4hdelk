@@ -82,6 +82,14 @@ def index():
     return "It Works!"
 
 
+@app.route('/favicon.ico')
+def favicon():
+    response = static_file("favicon.png", root=".")
+    if _no_cache:
+        response.set_header("Cache-Control", "no-cache")
+    return response
+
+
 _allowed_tools = (TOOL_D3HW, TOOL_HDELK)
 
 
