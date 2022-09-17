@@ -163,6 +163,14 @@
         View: <button class="tool b-t" onclick="this.innerHTML = browser.toggleView()">tiny</button>
     </div>
 
+    <input id="filePathFilter" title="File path filter" class="tool" style="width: 100%; flex:1;" value=""
+        onchange="onFilterPathChange(this.value)" onkeyup="onFilterPathChange(this.value)"
+        onkeypress="if (event.keyCode == 13) {return false}"></input>
+
+    <!-- TODO: Keep header on scrolling
+        https://www.w3docs.com/snippets/html/how-to-create-a-table-with-a-fixed-header-and-scrollable-body.html
+        https://stackoverflow.com/questions/13959500/how-to-keep-table-headers-fixed-while-scrolling-down-a-table
+    -->
     <div id="filesBrowserPlaceholder">
         <table class="tool tool-compact tool-tiny" id="filesBrowser">
             <thead>
@@ -180,10 +188,6 @@
                         <button class="tool b-but tool-folder-static-path">/sub1</button>
                         -->
                         <div style="width: 100%; display:flex; flex-direction:row;">
-                            <input id="filePathFilter" title="File path filter" class="tool"
-                                style="width: 100%; flex:1;" value="" onchange="onFilterPathChange(this.value)"
-                                onkeyup="onFilterPathChange(this.value)"
-                                onkeypress="if (event.keyCode == 13) {return false}"></input>
                             <span style="width: 4px">&nbsp;</span>
                             <button id="but-dontDisaplyFolders" title="Don't display folders" style="width: 26px;"
                                 class="tool-icon tool-dont-display-folders"
