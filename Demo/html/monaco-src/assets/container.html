@@ -11,9 +11,13 @@
     <script src="/monaco/assets/controller.js"></script>
     <script src="/monaco/assets/localdata.js"></script>
     <script src="/monaco/assets/servertalk.js"></script>
+    <script src="/monaco/assets/remotefiles.js"></script>
+    <script src="/monaco/assets/remotedata.js"></script>
     <link href="/monaco/assets/container.css" rel="stylesheet">
     <link href="/monaco/assets/popup.css" rel="stylesheet">
 </head>
+
+<!-- TODO: may be replace with https://github.com/bootrino/reactoxide already -->
 
 <body>
     <script>
@@ -21,12 +25,41 @@
         const iframeDomain = "http://127.0.0.1:8089";   // TODO: It's UGLY, do better
         const timestamp = new Date().getTime();         // NOTE: set to const when done with iframes. Currently fresh timestamp is required to avoid iframes caching.
 
-        const server = new ServerTalk(serverDomain);
-        const remoteFiles = new RemoteFiles(server);
-        const localData = new LocalData("demo");
-        let   dataDomain = localData.dataDomain;
-        const remoteData = new RemoteData(remoteFiles, dataDomain);
-        const controller = new Controller(iframeDomain, remoteFiles, remoteData, localData);
+        const server = new ServerTalk(serverDomain);    // Provides IO with server
+        const remoteFiles = new RemoteFiles(server);    // Abstraction above IO to operate with files
+
+        // Controller provides glue layer between UI items and storage, implements complex operations
+        const controller = new Controller(iframeDomain, iframeDomain, remoteFiles, null, null);
+
+        // Local storage data access
+        let localData = null;
+
+        // Remote storage data access
+        let remoteData = null;
+
+        // Current domain
+        let domain = null
+        // TODO: show dialog to select domain and load local data exactly for selected domain
+
+        function switchDomain(new_domain) {
+            return new Promise((resolve, reject) => {resolve(true)})
+            .then(() => {
+                let _localData = new LocalData(new_domain);
+                let _remoteData = new RemoteData(remoteFiles, new_domain);
+                return _localData.ifCreated
+                    .then(_ => _remoteData.ifCreated)
+                    .then(_ => { localData = _localData; remoteData = _remoteData })
+                    .then(_ => controller.attachData(remoteData, localData))
+                    .then(_ => setCurrentDomain(new_domain))
+                    .then(_ => domain = new_domain)
+                // TODO: reaction on error
+            })
+        }
+
+        getCurrentDomain().then(
+            (value) => switchDomain(value),
+            (err) => switchDomain("demo")
+        )
 
         function reloadIframes() {
             // Load iframes (NOTE: timestamp is used to avoid caching. In production timestamp is set to a const)
@@ -40,6 +73,7 @@
             document.getElementById("preview").src = preview_url;
         }
 
+        // Inter-iframe communications
         window.addEventListener('message', (event) => {
             console.log("Container received message: " + JSON.stringify(event), "\n origin - " + JSON.stringify(event.origin), "\n data   - " + JSON.stringify(event.data));
             if (event.origin !== iframeDomain) {
@@ -130,8 +164,7 @@
             <div class="container__tr" with="100%" style="color: #ddd">Diagram picker</div>
             <!-- Preview itself -->
             <iframe class="container__br" name="preview" id="preview" width="100%"
-            style="filter: invert(100%) hue-rotate(180deg)"
-            ></iframe>
+                style="filter: invert(100%) hue-rotate(180deg)"></iframe>
             <!-- <div class="container__br" with="100%">Diagram</div> -->
         </div>
     </div>

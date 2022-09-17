@@ -7,12 +7,16 @@ class ServerTalk {
         this.serverUrl = serverUrl;
     }
 
-    fullUrl(url) {
-        return this.serverUrl + "/" + url
+    fullUrl = function (url) {
+        if (url[0] != "/") {
+            return this.serverUrl + "/" + url
+        } else {
+            return this.serverUrl + url
+        }
     }
 
-    postJson(url, json) {
-        return new Promise(function (resolve, reject) {
+    postJson = function (url, json) {
+        return new Promise((resolve, reject) => {
             const xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function (e) {
                 if (xhttp.readyState === 4) {
@@ -32,8 +36,8 @@ class ServerTalk {
         })
     }
 
-    get(url) {
-        return new Promise(function (resolve, reject) {
+    get = function (url) {
+        return new Promise((resolve, reject) => {
             const xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function (e) {
                 if (xhttp.readyState === 4) {

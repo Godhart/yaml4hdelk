@@ -7,50 +7,51 @@ class RemoteData {
     files = []          // list with file paths
     filesMeta = {}      // dict, key is file path
     lock = null         // value for files locks when they are locked by me
+    ifCreated = null
 
     constructor(remoteFiles, dataDomain) {
-        this.remoteFiles = remoteFiles;
-        this.switchDomain(dataDomain);
-        this.remoteFiles.remoteLock(this.dataDomain, "test", False, True)
-            .then(
-                (lock) => this.lock = lock
-            )
+        this.ifCreated = new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                this.remoteFiles = remoteFiles;
+                return this.switchDomain(dataDomain)
+                    .then(_ => this.remoteFiles.remoteLock(this.dataDomain, "test", false, true))
+                    .then(lock => this.lock = lock)
+            })
     }
 
-    switchDomain(dataDomain) {
-        this.dataDomain = dataDomain;
-        this.updateAll()
+    switchDomain = function (dataDomain) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                this.dataDomain = dataDomain;
+                return this.updateAll()
+            })
     }
 
-    updateAll() {
-        this.domains = []
-        this.files = []
-        this.filesMeta = {}
-        this.remoteFiles.remoteDomainsList()
-            .then(
-                (domains) => { this.domains = domains }
-            )
-            .then(
-                () => { return this.remoteFiles.remoteFilesList(this.dataDomain) }
-            )
-            .then(
-                (files) => { this.files = files; this.quickUpdate(this.files) }
-            )
+    updateAll = function () {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                this.domains = []
+                this.files = []
+                this.filesMeta = {}
+                return this.remoteFiles.remoteDomainsList()
+                    .then((domains) => { this.domains = domains })
+                    .then(_ => this.remoteFiles.remoteFilesList(this.dataDomain))
+                    .then((files) => { this.files = files })
+                    .then(_ => this.quickUpdate(this.files))
+            })
     }
 
-    quickUpdate(files) {
-        this.remoteFiles.getFiles(this.dataDomain, files, ["hash", "lock", "timestamp"])
-        .then(
-            (data) => {
+    quickUpdate = function (files) {
+        return this.remoteFiles.getFiles(this.dataDomain, files, ["hash", "lock", "timestamp"])
+            .then((data) => {
                 files.forEach(item => {
                     if (data[item] !== undefined) {
                         this.filesMeta[item] = data[item]
                     } else {
-                        this.filesMeta[item] = {"hash": null, "lock": null, "timestamp": null}
+                        this.filesMeta[item] = { "hash": null, "lock": null, "timestamp": null }
                     }
-                });
-            }
-        )
+                })
+            })
     }
 
 }

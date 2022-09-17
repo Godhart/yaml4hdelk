@@ -18,9 +18,14 @@ class Controller {
 
     editorCreated = false;
     editorDomain = null;
+
+    browserCreated = false;
+    browserDomain = null;
+
     remoteFiles = null;
     remoteData = null;
     localData = null;
+    _started = 0;
 
     /*  TODO:
         x. Get Files list from server
@@ -42,16 +47,77 @@ class Controller {
         8. Store actions on preview to update
     */
 
-    constructor(editorDomain, remoteFiles, remoteData, localData) {
+    /* TODO:
+        op chains
+        On Open
+        - get domains list
+        - restore domain
+        - restore local data
+        - update remote data (files hash, content of opened, not edited and remotely changes files etc.)
+        - populate files browser (convert files info)
+        - restore tabs
+        - update preview
+
+        Change domain
+        - flush data
+        - clean tabs
+        - clean browser
+        - change domain
+        - repeat open
+
+        Refresh
+        - same as change domain
+    */
+
+    constructor(editorDomain, browserDomain, remoteFiles, remoteData, localData) {
         this.editorDomain = editorDomain;
+        this.browserDomain = browserDomain;
+
         this.remoteFiles = remoteFiles;
+
+        if (remoteData !== undefined) {
+            this.remoteData = remoteData;
+        }
+        if (localData !== undefined) {
+            this.localData = localData;
+        }
+    }
+
+    attachData(remoteData, localData) {
+        if ((this.remoteData !== null || this.localData !== null)) {
+            throw Error("Data is already attached!")
+        }
         this.remoteData = remoteData;
         this.localData = localData;
+        this._start();
     }
 
     onEditorCreated() {
         this.editorCreated = true;
         console.log("Container: editor creation confirmed!");
+        this._start()
+    }
+
+    onBrowserCreated() {
+        this.browserCreated = true;
+        console.log("Container: browser creation confirmed!");
+        this._start()
+    }
+
+    _start() {
+        // Don't start unless all start conditions are met
+        if ((this.localData == null)
+        || (this.remoteData == null)
+        || (!this.editorCreated)
+        || (!this.browserCreated)
+        ) {
+            return;
+        }
+
+        // Protect from coincident start
+        if (++this._started != 1) {
+            return;
+        }
 
         // Reopen tabs
         let filesCount = 0; // Amount of locally saved files
@@ -117,6 +183,7 @@ class Controller {
             }, this.editorDomain);
         }
         */
+
     }
 
     onEditorChange(filePath) {

@@ -10,384 +10,349 @@ class FileData {
 }
 
 
+getCurrentDomain = function () {
+    return new Promise((resolve, reject) => {
+        let domain = localStorage.getItem("yaml4schm-monaco-domain")
+        if (domain !== null) {
+            resolve(domain)
+        } else {
+            reject("Currently no domain")
+        }
+    })
+}
+
+setCurrentDomain = function (value) {
+    return new Promise((resolve, reject) => {
+        localStorage.setItem("yaml4schm-monaco-domain", value)
+        resolve(true)
+    })
+}
+
+const SESSION = "session"
+const FILES_DATA = "filesData"
+const CURRENT_TAB = "currentTab"
+const ACTIVE_TABS = "activeTabs"
+
 class LocalData {
     /* Local data storage */
 
     session = null      // Current session timestamp. Used to understand if session is outdated
-                        // (detect if another session were opened on other browser tab)
+    // (detect if another session were opened on other browser tab)
     filesData = {}      // Dict with file data. Key is file path, value is FileData instance
     activeTabs = []     // List of active tabs, that should be displayed in editor. Value is file path
     currentTab = ""     // Currently selected tab. Value is file path
     dataDomain = ""     // Current data domain
     co = {}
+    ifCreated = null
 
-    constructor(fallbackDomain) {
-        if (dataDomain === undefined) {
-            this._restore("yaml4schm-monaco-domain")
-            .then(
-                (domain)    => { dataDomain = domain },
-                ()          => { dataDomain = fallbackDomain}
-            )
-        }
-        this.switchDomain(dataDomain);
+    constructor(domain) {
+        this.ifCreated = this.switchDomain(domain)
     }
 
-    switchDomain(dataDomain) {
+    switchDomain = function (dataDomain) {
         // Switches current active domain to work with
-        if (this.dataDomain !== "") {
-            this.storeAll();
-        }
-        if (this.session !== null) {
-            this.releaseSession();
-        }
-        this.dataDomain = dataDomain;
-        this._store("yaml4schm-monaco-domain", dataDomain);
-        this.co = {
-            "session": "yaml4schm-monaco-" + dataDomain + "-session",
-            "filesData": "yaml4schm-monaco-" + dataDomain + "-filesData",
-            "currentTab": "yaml4schm-monaco-" + dataDomain + "-currentTab",
-            "activeTabs": "yaml4schm-monaco-" + dataDomain + "-activeTabs",
-        }
-        this.newSession()
-            .then(
-                (session) => { return this.reload() }
-            )
-    }
-
-    _store(key, value) {
-        return new Promise((resolve, reject) => {
-            if (JSON.parse(localStorage.getItem(this.co.session)) === this.session) {
-                localStorage.setItem(this.co[key], JSON.stringify(value));
-                resolve("Success!")
-            } else {
-                reject("Session changed")
-            }
-        })
-    }
-
-    _restore(key) {
-        return new Promise((resolve, reject) => {
-            if (localStorage.getItem(this.co.session) === this.session) {
-                let value = localStorage.getItem(this.co[key]);
-                if (value) {
-                    resolve(JSON.parse(value))
-                } else {
-                    reject(undefined)
-                }
-            } else {
-                reject(null)
-            }
-        })
-    }
-
-    newSession() {
-        return new Promise((resolve, reject) => {
-            this.session = new Date().getTime()
-            localStorage.setItem(this.co.session, JSON.stringify(this.session));
-            // TODO: ask if it"s ok to drop previous session
-            resolve(this.session)
-        })
-    }
-
-    releaseSession() {
-        return new Promise((resolve, reject) => {
-            this._store(this.co.session, null)
-                .then(
-                    () => { this.session = null; resolve("Success!") },
-                    () => { this.session = null; resolve("Session changed!") }
-                )
-        })
-    }
-
-    reload() {
-        return new Promise((resolve, reject) => {
-            this.filesData = {};
-            this.activeTabs = [];
-            this.currentTab = "";
-
-            this._restore(this.co.filesData)
-                .then(
-                    (data) => {
-                        this.filesData = {};
-                        for (const [key, value] of Object.entries(data)) {
-                            this.filesData[key] = Object.assign(new FileData(), value);
-                        }
-                    },
-                    (value) => {
-                        if (value === undefined) {
-                            //
-                        } else {
-                            reject("Session changed!");
-                        }
-                    }
-                );
-
-            this._restore(this.co.activeTabs)
-                .then(
-                    (activeTabs) => {
-                        activeTabs.forEach(tab => {
-                            if (this.filesData[tab] !== undefined) {
-                                this.activeTabs.push(tab);
-                            }
-                        })
-                    },
-                    (value) => {
-                        if (value === undefined) {
-                            //
-                        } else {
-                            reject("Session changed!");
-                        }
-                    }
-                )
-
-            this._restore(this.co.currentTab)
-                .then(
-                    (currentTab) => { this.currentTab = currentTab },
-                    (value) => {
-                        if (value === undefined) {
-                            //
-                        } else {
-                            reject("Session changed!");
-                        }
-                    }
-                )
-
-            if (!this.activeTabs.includes(this.currentTab)) {
-                if (this.activeTabs.length > 0) {
-                    this.currentTab = this.activeTabs[0];
-                } else {
-                    this.currentTab = "";
-                }
-            }
-
-            resolve("Success");
-        })
-    }
-
-    storeAll() {
-        return new Promise((resolve, reject) => {
-            this._store(this.co.filesData, this.filesData)
-                .then(
-                    () => { return this._store(this.co.activeTabs, this.activeTabs) },
-                    () => { reject("Session changed!"); }
-                )
-                .then(
-                    () => { return this._store(this.co.currentTab, this.currentTab) },
-                    () => { reject("Session changed!"); }
-                )
-                .then(
-                    () => resolve("Success!"),
-                    () => { reject("Session changed!"); }
-                )
-        })
-    }
-
-    addFile(filePath, source, hash, timestamp) {
-        return new Promise((resolve, reject) => {
-            if (this.filesData[filePath] === undefined) {
-                this.filesData[filePath] = Object.assign(new FileData(), {
-                    "currentValue": source,
-                    "source": source,
-                    "source_timestamp": timestamp,
-                    "source_hash": hash,
-                    "timestamp": timestamp,
-                });
-                this._store(this.co.filesData, this.filesData)
-                    .then(
-                        () => { resolve("Success") },
-                        () => { reject("Session changed!") }
-                    )
-            } else {
-                console.error("LocalData.addFile(): File " + filePath + " is already in database");
-                reject("File " + filePath + " is already in database");
-            }
-        })
-    }
-
-    addTab(filePath) {
-        return new Promise((resolve, reject) => {
-            if (this.filesData[filePath] !== undefined) {
-                if (this.activeTabs.includes(filePath)) {
-                    console.error("LocalData.addTab(): Tab is already in list");
-                    reject("Tab is already in list");
-                } else {
-                    this.activeTabs.push(filePath);
-                    this._store(this.co.activeTabs, this.activeTabs)
-                        .then(
-                            () => { resolve("Success") },
-                            () => { reject("Session changed!") }
-                        )
-                }
-            } else {
-                console.error("LocalData.addTab(): No file " + filePath + " for tab in database");
-                reject("No file " + filePath + " for tab in database");
-            }
-        })
-    }
-
-    updateFileStatics(filePath, source, hash, timestamp) {
-        return new Promise((resolve, reject) => {
-            if (this.filesData[filePath] !== undefined) {
-                let f = this.filesData[filePath];
-                if (source !== undefined && source !== null) {
-                    f.source = source
-                }
-                if (hash !== undefined && hash !== null) {
-                    f.source_hash = hash
-                }
-                if (timestamp !== undefined && hash !== null) {
-                    f.source_timestamp = timestamp
-                }
-                this._store(this.co.filesData, this.filesData)
-                    .then(
-                        () => { resolve("Success") },
-                        () => { reject("Session changed!") }
-                    )
-            } else {
-                console.error("LocalData.updateFileStatics(): File " + filePath + "is not in database");
-                reject("File " + filePath + " is not in database");
-            }
-        })
-    }
-
-    updateFileValue(filePath, value) {
-        return new Promise((resolve, reject) => {
-            if (this.filesData[filePath] !== undefined) {
-                let f = this.filesData[filePath];
-                f.currentValue = value;
-                f.timestamp = new Date().getTime();
-                this._store(this.co.filesData, this.filesData)
-                    .then(
-                        () => { resolve("Success") },
-                        () => { reject("Session changed!") }
-                    )
-            } else {
-                console.error("LocalData.updateFileValue(): File " + filePath + "is not in database");
-                reject("File " + filePath + " is not in database");
-            }
-        })
-    }
-
-    removeFile(filePath) {
-        return new Promise((resolve, reject) => {
-            if (this.filesData[filePath] !== undefined) {
-                this.removeTab(filePath);
-                delete this.filesData[filePath];
-                this._store(this.co.filesData, this.filesData)
-                    .then(
-                        () => { resolve(this.currentTab) },
-                        () => { reject("Session changed!") }
-                    )
-            } else {
-                console.error("LocalData.removeFile(): File " + filePath + "is not in database");
-                reject("File " + filePath + " is not in database");
-            }
-        })
-    }
-
-    removeTab(filePath) {
-        return new Promise((resolve, reject) => {
-            let tabs = [];
-            let previousTab = "";
-            let nextTab = "";
-            this.activeTabs.forEach(tab => {
-                if (tab !== filePath) {
-                    previousTab = tab;
-                    tabs.push(tab);
-                } else {
-                    nextTab = previousTab;
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                if (this.dataDomain !== "" && this.dataDomain !== undefined && this.dataDomain !== null) {
+                    return this.storeAll();
                 }
             })
-            this.activeTabs = tabs;
-            if (filePath == this.currentTab) {
-                this.currentTab = nextTab;
-            }
-            this._store(this.co.activeTabs, this.activeTabs)
-                .then(
-                    () => { return this._store(this.co.currentTab, this.currentTab) },
-                    () => { reject("Session changed!") }
-                )
-                .then(
-                    () => { resolve(this.currentTab) },
-                    () => { reject("Session changed!") }
-                )
-        })
+            .then(() => {
+                if (this.session !== null) {
+                    return this.releaseSession();
+                }
+            })
+            .then(() => {
+                this.dataDomain = dataDomain;
+                this.co = {}
+                this.co[SESSION] = "yaml4schm-monaco-" + dataDomain + "-session"
+                this.co[FILES_DATA] = "yaml4schm-monaco-" + dataDomain + "-filesData"
+                this.co[CURRENT_TAB] = "yaml4schm-monaco-" + dataDomain + "-currentTab"
+                this.co[ACTIVE_TABS] = "yaml4schm-monaco-" + dataDomain + "-activeTabs"
+            })
+            .then(_ => this.newSession())
+            .then(_ => this.reload())
     }
 
-    switchTab(filePath) {
+    _check_session = function (force) {
         return new Promise((resolve, reject) => {
-            if (this.filesData[filePath] !== undefined) {
-                this._store(this.co.currentTab, filePath)
-                    .then(
-                        () => { this.currentTab = filePath; resolve("Success") },
-                        () => { reject("Session changed!") }
-                    )
+            if (force === true) {
+                resolve(true)
+            }
+            let session = null
+            try {
+                session = JSON.parse(localStorage.getItem(this.co.session))
+            } catch (e) {
+                reject("Failed to read session from local storage due to exception " + e)
+            }
+            if (session === this.session) {
+                resolve(session)
             } else {
-                console.error("LocalData.currentTabSet(): File " + filePath + " is not in database");
-                reject("File " + filePath + " is not in database");
+                reject("Session changed ( " + this.session + " => " + session + " )")
             }
-        });
-    }
-
-    updateFilesAndTabs(data) {
-        return new Promise((resolve, reject) => {
-            this.activeTabs = []
-            for (const [key, value] of Object.entries(data)) {
-                if (this.filesData[key] === undefined) {
-                    this.filesData[key] = new FileData();
-                }
-                this.activeTabs.push(key);
-                this.filesData[key].currentValue = value;
-            }
-            if (!this.activeTabs.includes(this.currentTab)) {
-                if (this.activeTabs.length > 0) {
-                    this.currentTab = this.activeTabs[0]
-                } else {
-                    this.currentTab = "";
-                }
-            }
-            this._store(this.co.filesData, this.filesData)
-                .then(
-                    () => { return this._store(this.co.activeTabs, this.activeTabs) },
-                    () => { reject("Session changed!") }
-                )
-                .then(
-                    () => { resolve("Success") },
-                    () => { reject("Session changed!") }
-                )
-        });
-    }
-
-    updateProblemsEditor(data) {
-        return new Promise((resolve, reject) => {
-            const filePath = data.path.substring(1);
-            if (this.filesData[filePath] !== undefined) {
-                this.filesData[filePath].problemsEditor = data.problemsCount;
-                this._store(this.co.filesData, this.filesData)
-                    .then(
-                        () => { resolve("Success") },
-                        () => { reject("Session changed!") }
-                    )
-            }
-            console.error("LocalData.updateProblemsEditor(): File " + data.path + " is not in database");
-            reject("File " + data.path + " is not in database");
-        });
-    }
-
-    updateProblemsRemote(data) {
-        return new Promise((resolve, reject) => {
-            const filePath = data.filePath;
-            if (this.filesData[filePath] !== undefined) {
-                this.filesData[filePath].problemsRemote = data.problemsCount;
-                this._store(this.co.filesData, this.filesData)
-                    .then(
-                        () => { resolve("Success") },
-                        () => { reject("Session changed!") }
-                    )
-            }
-            console.error("LocalData.updateProblemsRemote(): File " + data.path + " is not in database");
-            reject("File " + data.path + " is not in database");
         })
+    }
+
+    _store = function (key, value, force) {
+        return this._check_session(force)
+            .then(
+                () => { localStorage.setItem(this.co[key], JSON.stringify(value)); }
+            )
+    }
+
+    _restore = function (key, fallback, force) {
+        return this._check_session(force)
+            .then(() => {
+                let value = localStorage.getItem(this.co[key]);
+                try {
+                    if (fallback !== undefined && value === null) {
+                        return fallback
+                    } else {
+                        value = JSON.parse(value)
+                        return value
+                    }
+                } catch (e) {
+                    throw Error("Failed to parse value due to exception: " + e)
+                }
+            },
+            (err) => {console.log("Error when restoring data '"+key+"': "+err); throw err})
+    }
+
+    newSession = function () {
+        this.session = new Date().getTime()
+        return this._store(SESSION, this.session, true);
+    }
+
+    releaseSession = function () {
+        return this._store(SESSION, null);
+    }
+
+    reload = function () {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                this.filesData = {};
+                this.activeTabs = [];
+                this.currentTab = "";
+            })
+            .then(_ => this._restore(FILES_DATA, {}))
+            .then(
+                (data) => {
+                    for (const [key, value] of Object.entries(data)) {
+                        this.filesData[key] = Object.assign(new FileData(), value);
+                    }
+                }
+            )
+            .then(_ => this._restore(ACTIVE_TABS, []))
+            .then(
+                (activeTabs) => {
+                    activeTabs.forEach(tab => {
+                        if (this.filesData[tab] !== undefined) {
+                            this.activeTabs.push(tab);
+                        }
+                    })
+                },
+                (err) => { this.filesData = {}; throw err }
+            )
+            .then(_ => this._restore(CURRENT_TAB, ""))
+            .then(
+                (currentTab) => { this.currentTab = currentTab },
+                (err) => { this.filesData = {}; this.activeTabs = []; throw err; }
+            )
+            .then(() => {
+                if (!this.activeTabs.includes(this.currentTab)) {
+                    if (this.activeTabs.length > 0) {
+                        this.currentTab = this.activeTabs[0];
+                    } else {
+                        this.currentTab = "";
+                    }
+                }
+            })
+    }
+
+    storeAll = function () {
+        return this._store(FILES_DATA, this.filesData)
+            .then(_ => this._store(ACTIVE_TABS, this.activeTabs))
+            .then(_ => this._store(CURRENT_TAB, this.currentTab))
+    }
+
+    addFile = function (filePath, source, hash, timestamp) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                if (this.filesData[filePath] === undefined) {
+                    this.filesData[filePath] = Object.assign(new FileData(), {
+                        "currentValue": source,
+                        "source": source,
+                        "source_timestamp": timestamp,
+                        "source_hash": hash,
+                        "timestamp": timestamp,
+                    });
+                    return this._store(FILES_DATA, this.filesData)
+                } else {
+                    console.error("LocalData.addFile(): File " + filePath + " is already in database");
+                    throw Error("File " + filePath + " is already in database");
+                }
+            })
+    }
+
+    addTab = function (filePath) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                if (this.filesData[filePath] !== undefined) {
+                    if (this.activeTabs.includes(filePath)) {
+                        console.error("LocalData.addTab(): Tab is already in list");
+                        throw Error("Tab is already in list");
+                    }
+                    this.activeTabs.push(filePath);
+                } else {
+                    console.error("LocalData.addTab(): No file " + filePath + " for tab in database");
+                    throw Error("No file " + filePath + " for tab in database");
+                }
+            })
+            .then(_ => this._store(ACTIVE_TABS, this.activeTabs))
+    }
+
+    updateFileStatics = function (filePath, source, hash, timestamp) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                if (this.filesData[filePath] !== undefined) {
+                    let f = this.filesData[filePath];
+                    if (source !== undefined && source !== null) {
+                        f.source = source
+                    }
+                    if (hash !== undefined && hash !== null) {
+                        f.source_hash = hash
+                    }
+                    if (timestamp !== undefined && hash !== null) {
+                        f.source_timestamp = timestamp
+                    }
+                    return this._store(FILES_DATA, this.filesData)
+                } else {
+                    console.error("LocalData.updateFileStatics(): File " + filePath + "is not in database");
+                    throw Error("File " + filePath + " is not in database");
+                }
+            })
+    }
+
+    updateFileValue = function (filePath, value) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                if (this.filesData[filePath] !== undefined) {
+                    let f = this.filesData[filePath];
+                    f.currentValue = value;
+                    f.timestamp = new Date().getTime();
+                    return this._store(FILES_DATA, this.filesData)
+                } else {
+                    console.error("LocalData.updateFileValue(): File " + filePath + "is not in database");
+                    throw Error("File " + filePath + " is not in database");
+                }
+            })
+    }
+
+    removeFile = function (filePath) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                if (this.filesData[filePath] !== undefined) {
+                    return this.removeTab(filePath)
+                        .then(() => {
+                            delete this.filesData[filePath];
+                            return this._store(FILES_DATA, this.filesData)
+                        })
+                        .then(
+                            () => { return this.currentTab }
+                        )
+                } else {
+                    console.error("LocalData.removeFile(): File " + filePath + "is not in database");
+                    throw Error("File " + filePath + " is not in database");
+                }
+            })
+    }
+
+    removeTab = function (filePath) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                let tabs = [];
+                let previousTab = "";
+                let nextTab = "";
+                this.activeTabs.forEach(tab => {
+                    if (tab !== filePath) {
+                        previousTab = tab;
+                        tabs.push(tab);
+                    } else {
+                        nextTab = previousTab;
+                    }
+                })
+                this.activeTabs = tabs;
+                if (filePath == this.currentTab) {
+                    this.currentTab = nextTab;
+                }
+            })
+            .then(_ => this._store(ACTIVE_TABS, this.activeTabs))
+            .then(_ => this._store(CURRENT_TAB, this.currentTab))
+            .then(_ => { return this.currentTab })
+    }
+
+    switchTab = function (filePath) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                if (this.filesData[filePath] !== undefined) {
+                    return this._store(CURRENT_TAB, filePath)
+                        .then(
+                            () => { this.currentTab = filePath },
+                        )
+                } else {
+                    console.error("LocalData.currentTabSet(): File " + filePath + " is not in database");
+                    throw Error("File " + filePath + " is not in database");
+                }
+            })
+    }
+
+    updateFilesAndTabs = function (data) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                this.activeTabs = []
+                for (const [key, value] of Object.entries(data)) {
+                    if (this.filesData[key] === undefined) {
+                        this.filesData[key] = new FileData();
+                    }
+                    this.activeTabs.push(key);
+                    this.filesData[key].currentValue = value;
+                }
+                if (!this.activeTabs.includes(this.currentTab)) {
+                    if (this.activeTabs.length > 0) {
+                        this.currentTab = this.activeTabs[0]
+                    } else {
+                        this.currentTab = "";
+                    }
+                }
+            })
+            .then(_ => this._store(FILES_DATA, this.filesData))
+            .then(_ => this._store(ACTIVE_TABS, this.activeTabs))
+    }
+
+    updateProblemsEditor = function (data) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                const filePath = data.path.substring(1);
+                if (this.filesData[filePath] !== undefined) {
+                    this.filesData[filePath].problemsEditor = data.problemsCount;
+                    return this._store(FILES_DATA, this.filesData)
+                }
+                console.error("LocalData.updateProblemsEditor(): File " + data.path + " is not in database");
+                throw Error("File " + data.path + " is not in database");
+            })
+    }
+
+    updateProblemsRemote = function (data) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                const filePath = data.filePath;
+                if (this.filesData[filePath] !== undefined) {
+                    this.filesData[filePath].problemsRemote = data.problemsCount;
+                    return this._store(FILES_DATA, this.filesData)
+                }
+                console.error("LocalData.updateProblemsRemote(): File " + data.path + " is not in database");
+                throw Error("File " + data.path + " is not in database");
+            })
     }
 
 }

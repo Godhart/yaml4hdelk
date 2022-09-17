@@ -5,92 +5,66 @@ class RemoteFiles {
     secret = null
 
     constructor(serverTalk) {
-        this.serverTalk = serverTalk;
+        this.serverTalk = serverTalk
         let secret = localStorage.getItem("yaml4schm-monaco-secret")
-        if (secret === undefined) {
-            secret = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        if (secret === null) {
+            secret = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
             localStorage.setItem("yaml4schm-monaco-secret", secret)
         }
         this.secret = secret
     }
 
-    async remoteDomainsList() {
+    remoteDomainsList = async function () {
         // Returns available remote domains list
-        return new Promise((resolve, reject) => {
-            const response = JSON.parse(await this.serverTalk.get(
-                "rest/1.0/domains/domainsList"
-            ).catch(function (e) {
-                console.error('RemoteFiles.remoteFilesList() exception:', e);
-                reject(e)
-            })
-            );
-            if (!response.SUCCESS) {
-                console.error("RemoteFiles.remoteDomainsList() failed due to reason:" + response.ERROR)
-                reject(response.ERROR)
-            }
-            resolve(response.domains)
-        });
+        const response = JSON.parse(await this.serverTalk.get("rest/1.0/domains/domainsList"))
+        if (!response.SUCCESS) {
+            console.error("RemoteFiles.remoteDomainsList() failed due to reason:" + response.ERROR)
+            throw Error(response.ERROR)
+        }
+        return response.domains
     }
 
-    async remoteFilesList(dataDomain) {
+    remoteFilesList = async function (dataDomain) {
         // Returns remote files list for specified domain as an Array
-        return new Promise((resolve, reject) => {
-            const response = JSON.parse(await this.serverTalk.get(
-                "rest/1.0/domain/" + dataDomain + "/filesList"
-            ).catch(function (e) {
-                console.error('RemoteFiles.remoteFilesList() exception:', e);
-                reject(e)
-            })
-            );
-            if (!response.SUCCESS) {
-                console.error("RemoteFiles.remoteFilesList() failed due to reason:" + response.ERROR)
-                reject(response.ERROR)
-            }
-            resolve(response.files)
-        });
+        const response = JSON.parse(await this.serverTalk.get(
+            "rest/1.0/domain/" + dataDomain + "/filesList"
+        ))
+        if (!response.SUCCESS) {
+            console.error("RemoteFiles.remoteFilesList() failed due to reason:" + response.ERROR)
+            throw Error(response.ERROR)
+        }
+        return response.files
     }
 
-    async remoteLock(dataDomain, filePath, force, test) {
+    remoteLock = async function (dataDomain, filePath, force, test) {
         // Returns lock id for specified remote files a Dictionary
-        return new Promise((resolve, reject) => {
-            const response = JSON.parse(await this.serverTalk.postJson(
-                "rest/1.0/domain/" + dataDomain + "/lock/" + filePath,
-                { "set": True, "secret": this.secret, "force": force, "test": test}
-            ).catch(function (e) {
-                console.error('RemoteFiles.remoteLock() exception:', e);
-                reject(e)
-            })
-            );
-            if (response.SUCCESS) {
-                resolve(response.lock);
-            } else {
-                console.error("RemoteFiles.remoteLock() failed due to reason:" + response.ERROR)
-                reject(null);
-            }
-        });
+        const response = JSON.parse(await this.serverTalk.postJson(
+            "rest/1.0/domain/" + dataDomain + "/lock/" + filePath,
+            { "set": true, "secret": this.secret, "force": force, "test": test }
+        ))
+        if (response.SUCCESS) {
+            return response.lock
+        } else {
+            console.error("RemoteFiles.remoteLock() failed due to reason:" + response.ERROR)
+            throw Error(response.ERROR)
+        }
     }
 
-    async remoteUnlock(dataDomain, filePath) {
+    remoteUnlock = async function (dataDomain, filePath) {
         // Returns lock id for specified remote files a Dictionary
-        return new Promise((resolve, reject) => {
-            const response = JSON.parse(await this.serverTalk.postJson(
-                "rest/1.0/domain/" + dataDomain + "/unlock/" + filePath,
-                { "secret": this.secret }
-            ).catch(function (e) {
-                console.error('RemoteFiles.remoteUnlock() exception:', e);
-                reject(e)
-            })
-            );
-            if (response.SUCCESS) {
-                resolve(response.lock);
-            } else {
-                console.error("RemoteFiles.remoteUnlock() failed due to reason:" + response.ERROR)
-                reject(null);
-            }
-        });
+        const response = JSON.parse(await this.serverTalk.postJson(
+            "rest/1.0/domain/" + dataDomain + "/unlock/" + filePath,
+            { "secret": this.secret }
+        ))
+        if (response.SUCCESS) {
+            return response.lock
+        } else {
+            console.error("RemoteFiles.remoteUnlock() failed due to reason:" + response.ERROR)
+            throw Error(response.ERROR)
+        }
     }
 
-    async getFiles(dataDomain, filesList, fields) {
+    getFiles = async function (dataDomain, filesList, fields) {
         /*
         Returns remote files content and meta for specified domain as an dictionary
         filesList is expected to be a list with files paths
@@ -104,27 +78,21 @@ class RemoteFiles {
         if (fields === undefined) {
             fields = ["content", "hash", "lock", "timestamp"]
         }
-        return new Promise((resolve, reject) => {
-            const response = JSON.parse(await this.serverTalk.post(
-                "rest/1.0/domain/" + dataDomain + "/get",
-                {
-                    "filesList": filesList,
-                    "fields": ["content", "hash", "lock", "timestamp"]
-                }
-            ).catch(function (e) {
-                console.error('RemoteFiles.getFiles() exception:', e);
-                reject(e)
-            })
-            );
-            if (!response.SUCCESS) {
-                console.error("RemoteFiles.getFiles() failed due to reason:" + response.ERROR)
-                reject(response.ERROR)
+        const response = JSON.parse(await this.serverTalk.postJson(
+            "rest/1.0/domain/" + dataDomain + "/get",
+            {
+                "filesList": filesList,
+                "fields": fields
             }
-            resolve(response.data);
-        });
+        ))
+        if (!response.SUCCESS) {
+            console.error("RemoteFiles.getFiles() failed due to reason:" + response.ERROR)
+            throw Error(response.ERROR)
+        }
+        return response.data
     }
 
-    async saveFiles(dataDomain, filesData) {
+    saveFiles = async function (dataDomain, filesData) {
         /*
         Saves content of specified files
         fileData should be a dict with file path as key and dict with following fields as value:
@@ -132,44 +100,32 @@ class RemoteFiles {
         - hash from previous read file operation
         - secret to unlock locked file
         */
-        return new Promise((resolve, reject) => {
-            const response = JSON.parse(await this.serverTalk.postJson(
-                "rest/1.0/domain/" + dataDomain + "/save/",
-                {
-                    "data": filesData,
-                    "fields": ["content", "hash", "timestamp"]
-                }
-            ).catch(function (e) {
-                console.error('RemoteFiles.saveFiles() exception:', e);
-                reject(e)
-            })
-            );
-            if (response.SUCCESS) {
-                resolve(response.data)
-            } else {
-                console.error("RemoteFiles.saveFiles() failed due to reason:" + response.ERROR)
-                reject(null);
+        const response = JSON.parse(await this.serverTalk.postJson(
+            "rest/1.0/domain/" + dataDomain + "/save/",
+            {
+                "data": filesData,
+                "fields": ["content", "hash", "timestamp"]
             }
-        });
+        ))
+        if (response.SUCCESS) {
+            return response.data
+        } else {
+            console.error("RemoteFiles.saveFiles() failed due to reason:" + response.ERROR)
+            throw Error(null)
+        }
     }
 
-    async diagramData(dataDomain, filePath, alteredContent, tool) {
+    diagramData = async function (dataDomain, filePath, alteredContent, tool) {
         // Loads diagram for specified file
-        return new Promise((resolve, reject) => {
-            const response = JSON.parse(await this.serverTalk.postJson(
-                "rest/1.0/domain/" + dataDomain + "/dia/" + filePath,
-                { "tool": tool, "alteredContent": alteredContent }
-            ).catch(function (e) {
-                console.error('RemoteFiles.remoteFilesHash() exception:', e);
-                reject(e)
-            })
-            );
-            if (response.SUCCESS) {
-                resolve(response.dia)
-            } else {
-                console.error("RemoteFiles.diagramData() failed due to reason:" + response.ERROR)
-                reject(null);
-            }
-        });
+        const response = JSON.parse(await this.serverTalk.postJson(
+            "rest/1.0/domain/" + dataDomain + "/dia/" + filePath,
+            { "tool": tool, "alteredContent": alteredContent }
+        ))
+        if (response.SUCCESS) {
+            return response.dia
+        } else {
+            console.error("RemoteFiles.diagramData() failed due to reason:" + response.ERROR)
+            throw Error(response.ERROR)
+        }
     }
 }
