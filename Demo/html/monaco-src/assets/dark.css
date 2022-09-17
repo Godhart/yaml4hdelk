@@ -258,7 +258,7 @@ button.tool-icon:hover{
 
 .tool-full th:nth-of-type(2),
 .tool-full td:nth-of-type(2) {
-    width: none;
+    width: 500px;
 }
 
 .tool-compact th:nth-of-type(2),
