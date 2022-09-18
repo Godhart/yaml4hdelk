@@ -117,7 +117,7 @@ class LocalData {
                     throw Error("Failed to parse value due to exception: " + e)
                 }
             },
-            (err) => {console.log("Error when restoring data '"+key+"': "+err); throw err})
+                (err) => { console.log("Error when restoring data '" + key + "': " + err); throw err })
     }
 
     newSession = function () {
