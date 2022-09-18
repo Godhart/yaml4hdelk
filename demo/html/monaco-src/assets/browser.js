@@ -18,6 +18,9 @@ const DocPic = "&#128443;"
 const Circle = "&#9679;"
 const Link = "&#11179;"
 
+const IsFile = "f"
+const IsFolder = "d"
+
 // All the possible file statuses except errors
 const fileStatus = ["outdate", "flocked", "locked", "added", "modified", "removed", "renamed",]
 // TODO: outdate, flocked, locked are custom and should be specified on per instance basis
@@ -235,7 +238,7 @@ class="tool b-t tool-status-color" onclick="' + this.uiFeedback + '.toggleFolder
 
                     cell = folderRow.insertCell()
                     cell.innerHTML = '\
-<button id="' + folder.id + '-fav"     class="tool-icon tool-fav     " title="Favorite"         onclick="' + this.uiFeedback + '.favNode(this)">&#9733;</button>'
+<button id="' + folder.id + '-fav"     class="tool-icon tool-fav     " title="Favorite"         onclick="' + this.uiFeedback + '.toggleFav(this)">&#9733;</button>'
                     folder.fav_cell = cell
 
                     cell = folderRow.insertCell()
@@ -297,7 +300,7 @@ class="tool b-t tool-text tool-status-color" onclick="' + this.uiFeedback + '.to
 
             cell = fileRow.insertCell()
             cell.innerHTML = '\
-<button id="' + value.id + '-fav"     class="tool-icon tool-fav     " title="Favorite"      onclick="' + this.uiFeedback + '.favNode(this)">&#9733;</button>'
+<button id="' + value.id + '-fav"     class="tool-icon tool-fav     " title="Favorite"      onclick="' + this.uiFeedback + '.toggleFav(this)">&#9733;</button>'
             value.fav_cell = cell
 
             cell = fileRow.insertCell()
@@ -610,6 +613,159 @@ class="tool b-t tool-text tool-status-color" onclick="' + this.uiFeedback + '.to
         // then filters data and refreshes view
         this.filesFilter.path = value
         this.updateFilter(this.filez, this.folders, this.filesFilter)
+    }
+
+    isOpen = function(path) {
+        return this.filez[path].open === true
+    }
+
+    isOpen = function(path) {
+        return this.filez[path].open === true
+    }
+
+    isFav = function(path) {
+        return this.filez[path].fav === true
+    }
+
+    ifLocked = function(path) {
+        return this.filez[path].locked === true || this.filez[path].flocked === true
+    }
+
+    checkPath = function(path) {
+        if (this.filez[path] === undefined) {
+            if (this.folders[path] === undefined) {
+                return false
+            } else {
+                return IsFolder
+            }
+        } else {
+            return IsFile
+        }
+    }
+
+    getNode = function(path) {
+        let pathKind = checkPath(path)
+        if (!pathKind) {
+            return null
+        }
+        if (pathKind == IsFile) {
+            return this.filez[path]
+        } else {
+            return this.folders[path]
+        }
+    }
+
+    asRoot = function(path) {
+        let pathKind = checkPath(path)
+        if (!pathKind) {
+            return
+        }
+        if (pathKind == IsFile) {
+            let root = {"filez": {}, "folders": {}}
+            root.filez[path] = this.filez[path]
+            return root
+        } else {
+            return this.folders[path]
+        }
+    }
+
+    setField = function(path, field, value) {
+        this._setField(asRoot(path), field, value)
+    }
+
+    _setField = function(root, field, value) {
+        for (const [key, item] of Object.entries(root.filez)) {
+            item[field] = value
+        }
+        for (const [key, item] of Object.entries(root.folders)) {
+            this._setField(item, field, value)
+        }
+    }
+
+    toggleFav = function(path, value) {
+        this.setField(this.asRoot(path), "fav", value)
+        this.updateFilter(this.filez, this.folders, this.filesFilter)
+    }
+
+    toggleTab = function(path, value) {
+        this.setField(this.asRoot(path), "open", value)
+        this.updateFilter(this.filez, this.folders, this.filesFilter)
+    }
+
+    saveChanges = function(path) {
+        let node = this.getNode(path)
+        let parent = null
+        if (node !== null) {
+            parent = node.folder
+        }
+        this._removeFiles(this.asRoot(path))
+        if (parent !== null && parent !== undefined) {
+            this._cleanupFolders(parent)
+        }
+        this.setField(asRoot(path), "modified", false)
+        this.updateFilter(this.filez, this.folders, this.filesFilter)
+    }
+
+    resetChanges = function(path) {
+        this.setField(asRoot(path), "modified", false)
+        this.setField(asRoot(path), "removed", false)
+        this.updateFilter(this.filez, this.folders, this.filesFilter)
+    }
+
+    resetChanges = function(path) {
+        this.setField(asRoot(path), "modified", false)
+        this.updateFilter(this.filez, this.folders, this.filesFilter)
+    }
+
+    addNode = function(path) {
+        alert("Browser: addNode isn't supported yet! Reload page")
+    }
+
+    renameNode = function(path) {
+        alert("Browser: renameNode isn't supported yet! Reload page")
+    }
+
+    deleteNode = function(path) {
+        this.setField(asRoot(path), "removed", false)
+        this.updateFilter(this.filez, this.folders, this.filesFilter)
+    }
+
+    reloadNode = function(path) {
+        this.setField(asRoot(path), "modified", false)
+        this.setField(asRoot(path), "removed", false)
+        this.setField(asRoot(path), "outdate", false)
+        this.updateFilter(this.filez, this.folders, this.filesFilter)
+    }
+
+    lockNode = function(path, value) {
+        this.setField(asRoot(path), "locked", value)
+        this.updateFilter(this.filez, this.folders, this.filesFilter)
+    }
+
+    _removeFiles = function(root) {
+        for (const [key, item] of Object.entries(root.filez)) {
+            if (item.removed) {
+                if (item.row !== undefined) {
+                    item.row.remove()
+                }
+                delete item.folder.filez[item.path]
+            }
+        }
+        for (const [key, item] of Object.entries(root.folders)) {
+            this._deleteNodes(item, affectedFolders)
+        }
+    }
+
+    _cleanupFolders = function(root) {
+        for (const [key, value] of Object.entries(root.folders)) {
+            this._cleanupFolders(value)
+        }
+        if (Object.keys(root.filez).length == 0 && Object.keys(root.folders).length == 0) {
+            if (root.row !== undefined) {
+                root.row.remove()
+            }
+            delete root.folder.folders[root.path]
+        }
     }
 
 }
