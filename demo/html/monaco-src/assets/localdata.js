@@ -240,9 +240,11 @@ class LocalData {
             .then(() => {
                 if (this.filesData[filePath] !== undefined) {
                     let f = this.filesData[filePath];
-                    f.currentValue = value;
-                    f.timestamp = new Date().getTime();
-                    return this._store(FILES_DATA, this.filesData)
+                    if (f.currentValue !== value) {
+                        f.currentValue = value;
+                        f.timestamp = new Date().getTime();
+                        return this._store(FILES_DATA, this.filesData)
+                    }
                 } else {
                     console.error("LocalData.updateFileValue(): File " + filePath + "is not in database");
                     throw Error("File " + filePath + " is not in database");
@@ -313,11 +315,13 @@ class LocalData {
             .then(() => {
                 this.activeTabs = []
                 for (const [key, value] of Object.entries(data)) {
-                    if (this.filesData[key] === undefined) {
-                        this.filesData[key] = new FileData();
+                    if (this.filesData[key] !== undefined) {
+                        this.activeTabs.push(key);
+                        if (this.filesData[key].currentValue != value) {
+                            this.filesData[key].currentValue = value;
+                            this.filesData[key].timestamp = new Date().getTime();
+                        }
                     }
-                    this.activeTabs.push(key);
-                    this.filesData[key].currentValue = value;
                 }
                 if (!this.activeTabs.includes(this.currentTab)) {
                     if (this.activeTabs.length > 0) {
