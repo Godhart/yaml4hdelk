@@ -1,12 +1,14 @@
 class FileData {
     /* Class to store misc file related data */
-    currentValue = ""   // Current value
-    problemsEditor = 0  // Amount of problems detected by editor
-    problemsRemote = 0  // Amount of problems detected by server
-    source = null       // Initial value, that were received from server on checkout
-    sourceTimestamp = 0// Initial value timestamp, that were received from server on checkout
-    sourceHash = null  // Hash that were received from server on checkout
-    timestamp = 0       // Last modification timestamp
+    currentValue = ""       // Current value
+    problemsEditor = 0      // Amount of problems detected by editor
+    problemsRemote = 0      // Amount of problems detected by server
+    source = null           // Initial value, that were received from server on checkout
+    sourceTimestamp = 0     // Initial value timestamp, that were received from server on checkout
+    sourceHash = null       // Hash that were received from server on checkout
+    timestamp = 0           // Last modification timestamp
+    fav = false             // Favorite mark
+    pendingRemove = false   // If file is going to be removed
 }
 
 
@@ -359,25 +361,46 @@ class LocalData {
         if (filePathPrefix === undefined) {
             filePathPrefix = ""
         }
-        for(const [filePath, value] of Object.entries(this.filesData)) {
+        for (const [filePath, value] of Object.entries(this.filesData)) {
             let key = filePathPrefix + filePath
-            if (data[key] === undefined){
-                data[key] = {"added": true, "timestamp": value.timestamp}
+            if (data[key] === undefined) {
+                data[key] = { "added": true, "timestamp": value.timestamp }
+                if (value.pendingRemove) {
+                    data[key].removed = true
+                } else {
+                    if (value.fav) {
+                        data[key].fav = true
+                    }
+                    if (this.activeTabs.includes(filePath)) {
+                        fileData.open = true
+                    }
+                }
             } else {
                 let fileData = data[key]
-                // TODO: fav
-                if (this.activeTabs.includes(filePath)){
-                    fileData.open = true
-                }
-                if (value.source /= value.currentValue){
-                    fileData.modified = true
+                if (value.source != value.currentValue || value.pendingRemove) {
+                    if (value.pendingRemove) {
+                        fileData.removed = true
+                    } else {
+                        fileData.modified = true
+                    }
                     fileData.timestamp = value.timestamp
+                    if (value.sourceHash != fileData.hash) {
+                        fileData.outdate = true
+                    }
                 }
-                if (value.sourceHash /= fileData.hash) {
-                    fileData.outdate = true
+                if (!value.pendingRemove) {
+                    if (value.fav) {
+                        fileData.fav = true
+                    }
+                    if (this.activeTabs.includes(filePath)) {
+                        fileData.open = true
+                    }
                 }
             }
         }
     }
+
+    // TODO: remove files data that are not changed and not in tabs
+
 
 }
