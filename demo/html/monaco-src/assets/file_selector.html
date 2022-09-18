@@ -87,67 +87,123 @@
 
             toggleFav = function (el) {
                 const path = getPath(el)
-                alert("toggleFav:" + path)
+                callParent(controller, 'toggleFav', [path, !browser.isFav(path)],
+                    {
+                        "func": "call",
+                        "obj": "browser",
+                        "method": "toggleFav",
+                        "args": [path, !browser.isFav(path)]
+                    })
             }
 
             toggleTab = function (el) {
                 const path = getPath(el)
-                alert("toggleTab:" + path)
+                callParent(controller, 'toggleTab', [path, !browser.isOpen(path)],
+                    {
+                        "func": "call",
+                        "obj": "browser",
+                        "method": "toggleTab",
+                        "args": [path, !browser.isOpen(path)]
+                    })
             }
 
             focusTab = function (el) {
                 const path = getPath(el)
-                alert("focusTab:" + path)
+                callParent(controller, 'focusTab', [path])
             }
 
             saveChanges = function (el) {
                 const path = getPath(el)
-                alert("saveChanges:" + path)
+                callParent(controller, 'saveChanges', [path],
+                    {
+                        "func": "call",
+                        "obj": "browser",
+                        "method": "saveChanges",
+                        "args": [path]
+                    }
+                )
             }
 
             resetChanges = function (el) {
                 const path = getPath(el)
-                alert("resetChanges:" + path)
+                callParent(controller, 'resetChanges', [path],
+                    {
+                        "func": "call",
+                        "obj": "browser",
+                        "method": "resetChanges",
+                        "args": [path]
+                    }
+                )
             }
 
             addNode = function (el) {
                 const path = getPath(el)
-                alert("addNode:" + path)
+                callParent(controller, 'addNode', [path],
+                    {
+                        "func": "call",
+                        "obj": "browser",
+                        "method": "addNode",
+                        "args": ["<newPath>"]
+                    }
+                )
             }
 
             renameNode = function (el) {
                 const path = getPath(el)
-                alert("renameNode:" + path)
+                callParent(controller, 'renameNode', [path],
+                    {
+                        "func": "call",
+                        "obj": "browser",
+                        "method": "renameNode",
+                        "args": ["<newPath>"]
+                    }
+                )
             }
 
             deleteNode = function (el) {
                 const path = getPath(el)
-                alert("deleteNode:" + path)
+                callParent(controller, 'deleteNode', [path],
+                    {
+                        "func": "call",
+                        "obj": "browser",
+                        "method": "deleteNode",
+                        "args": [path]
+                    }
+                )
             }
 
             reloadNode = function (el) {
                 const path = getPath(el)
-                alert("reloadNode:" + path)
+                callParent(controller, 'reloadNode', [path],
+                    {
+                        "func": "call",
+                        "obj": "browser",
+                        "method": "reloadNode",
+                        "args": [path]
+                    }
+                )
             }
 
             lockNode = function (el) {
                 const path = getPath(el)
-                alert("lockNode:" + path)
-            }
-
-            favNode = function (el) {
-                const path = getPath(el)
-                alert("favNode:" + path)
+                callParent(controller, 'lockNode', [path, !browser.isLocked(path)],
+                    {
+                        "func": "call",
+                        "obj": "browser",
+                        "method": "lockNode",
+                        "args": [path, !browser.isLocked(path)]
+                    }
+                )
             }
 
             showNodeErrors = function (el) {
                 const path = getPath(el)
-                alert("showNodeErrors:" + path)
+                callParent(controller, 'showNodeErrors', [path])
             }
 
             openNodeLink = function (el) {
                 const path = getPath(el)
-                alert("openNodeLink:" + path)
+                callParent(controller, 'openNodeLink', [path])
             }
         }
 
