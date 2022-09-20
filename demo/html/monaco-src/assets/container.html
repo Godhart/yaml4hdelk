@@ -42,18 +42,18 @@
         // TODO: show dialog to select domain and load local data exactly for selected domain
 
         function switchDomain(new_domain) {
-            return new Promise((resolve, reject) => {resolve(true)})
-            .then(() => {
-                let _localData = new LocalData(new_domain);
-                let _remoteData = new RemoteData(remoteFiles, new_domain);
-                return _localData.ifCreated
-                    .then(_ => _remoteData.ifCreated)
-                    .then(_ => { localData = _localData; remoteData = _remoteData })
-                    .then(_ => controller.attachData(remoteData, localData))
-                    .then(_ => setCurrentDomain(new_domain))
-                    .then(_ => domain = new_domain)
-                // TODO: reaction on error
-            })
+            return new Promise((resolve, reject) => { resolve(true) })
+                .then(() => {
+                    let _localData = new LocalData(new_domain);
+                    let _remoteData = new RemoteData(remoteFiles, new_domain);
+                    return _localData.ifCreated
+                        .then(_ => _remoteData.ifCreated)
+                        .then(_ => { localData = _localData; remoteData = _remoteData; localData.remoteData = _remoteData; })
+                        .then(_ => controller.attachData(remoteData, localData))
+                        .then(_ => setCurrentDomain(new_domain))
+                        .then(_ => domain = new_domain)
+                    // TODO: reaction on error
+                })
         }
 
         getCurrentDomain().then(
