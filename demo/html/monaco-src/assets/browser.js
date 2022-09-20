@@ -644,7 +644,7 @@ class="tool b-t tool-text tool-status-color" onclick="' + this.uiFeedback + '.to
     }
 
     getNode = function(path) {
-        let pathKind = checkPath(path)
+        let pathKind = this.checkPath(path)
         if (!pathKind) {
             return null
         }
@@ -656,7 +656,7 @@ class="tool b-t tool-text tool-status-color" onclick="' + this.uiFeedback + '.to
     }
 
     asRoot = function(path) {
-        let pathKind = checkPath(path)
+        let pathKind = this.checkPath(path)
         if (!pathKind) {
             return
         }
@@ -670,7 +670,7 @@ class="tool b-t tool-text tool-status-color" onclick="' + this.uiFeedback + '.to
     }
 
     setField = function(path, field, value) {
-        this._setField(asRoot(path), field, value)
+        this._setField(this.asRoot(path), field, value)
     }
 
     _setField = function(root, field, value) {
@@ -683,12 +683,12 @@ class="tool b-t tool-text tool-status-color" onclick="' + this.uiFeedback + '.to
     }
 
     toggleFav = function(path, value) {
-        this.setField(this.asRoot(path), "fav", value)
+        this.setField(path, "fav", value)
         this.updateFilter(this.filez, this.folders, this.filesFilter)
     }
 
     toggleTab = function(path, value) {
-        this.setField(this.asRoot(path), "open", value)
+        this.setField(path, "open", value)
         this.updateFilter(this.filez, this.folders, this.filesFilter)
     }
 
@@ -702,18 +702,18 @@ class="tool b-t tool-text tool-status-color" onclick="' + this.uiFeedback + '.to
         if (parent !== null && parent !== undefined) {
             this._cleanupFolders(parent)
         }
-        this.setField(asRoot(path), "modified", false)
+        this.setField(path, "modified", false)
         this.updateFilter(this.filez, this.folders, this.filesFilter)
     }
 
     resetChanges = function(path) {
-        this.setField(asRoot(path), "modified", false)
-        this.setField(asRoot(path), "removed", false)
+        this.setField(path, "modified", false)
+        this.setField(path, "removed", false)
         this.updateFilter(this.filez, this.folders, this.filesFilter)
     }
 
     resetChanges = function(path) {
-        this.setField(asRoot(path), "modified", false)
+        this.setField(path, "modified", false)
         this.updateFilter(this.filez, this.folders, this.filesFilter)
     }
 
@@ -726,19 +726,19 @@ class="tool b-t tool-text tool-status-color" onclick="' + this.uiFeedback + '.to
     }
 
     deleteNode = function(path) {
-        this.setField(asRoot(path), "removed", false)
+        this.setField(path, "removed", false)
         this.updateFilter(this.filez, this.folders, this.filesFilter)
     }
 
     reloadNode = function(path) {
-        this.setField(asRoot(path), "modified", false)
-        this.setField(asRoot(path), "removed", false)
-        this.setField(asRoot(path), "outdate", false)
+        this.setField(path, "modified", false)
+        this.setField(path, "removed", false)
+        this.setField(path, "outdate", false)
         this.updateFilter(this.filez, this.folders, this.filesFilter)
     }
 
     lockNode = function(path, value) {
-        this.setField(asRoot(path), "locked", value)
+        this.setField(path, "locked", value)
         this.updateFilter(this.filez, this.folders, this.filesFilter)
     }
 
