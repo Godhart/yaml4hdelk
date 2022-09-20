@@ -1,9 +1,9 @@
 class FileData {
     /* Class to store misc file related data */
-    currentValue = ""       // Current value
+    currentValue = undefined  // Current value. if undefined then value weren't loaded/set yet for optimization purposes
     problemsEditor = 0      // Amount of problems detected by editor
     problemsRemote = 0      // Amount of problems detected by server
-    source = null           // Initial value, that were received from server on checkout
+    source = undefined      // Initial value, that were received from server on checkout. if undefined then value weren't loaded/set yet for optimization purposes
     sourceTimestamp = 0     // Initial value timestamp, that were received from server on checkout
     sourceHash = null       // Hash that were received from server on checkout
     timestamp = 0           // Last modification timestamp
@@ -46,6 +46,7 @@ class LocalData {
     dataDomain = ""     // Current data domain
     co = {}
     ifCreated = null
+    remoteData = null
 
     constructor(domain) {
         this.ifCreated = this.switchDomain(domain)
@@ -361,7 +362,19 @@ class LocalData {
             })
     }
 
-    exportData = function (filePathPrefix, data) {
+    updateFromRemote = function (filePath) {
+        return new Promise((resolve, reject) => {resolve (true)})
+        .then(_ => {
+            if (this.remoteData === null) {
+                throw Error("No remote data attached!")
+            }
+            let fileMeta = this.remoteData.filesMeta[filePath]
+            if (fileMeta === undefined) {
+                throw Error("File '" + filePath + "' is not found!")
+            }
+            return this.addFile(filePath, undefined, fileMeta.hash, fileMeta.timestamp)
+        })
+    }    exportData = function (filePathPrefix, data) {
         if (filePathPrefix === undefined) {
             filePathPrefix = ""
         }
@@ -381,7 +394,8 @@ class LocalData {
                 }
             } else {
                 let fileData = data[key]
-                if (value.source != value.currentValue || value.pendingRemove) {
+                if (value.source !== undefined && value.currentValue !== undefined &&
+                    (value.source != value.currentValue || value.pendingRemove)) {
                     if (value.pendingRemove) {
                         fileData.removed = true
                     } else {
