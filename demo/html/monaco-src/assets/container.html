@@ -100,16 +100,19 @@
                         return null;
                     }
                     if (obj[event.data.method] !== undefined) {
-                        const result = obj[event.data.method](...event.data.args);
+                        let result = obj[event.data.method](...event.data.args);
+                        if (!Array.isArray(result)) {
+                            result = [result]
+                        }
                         if (event.data.callback !== undefined) {
                             const callback = event.data.callback;
-                            // TODO: window.parent.postMessage({
-                            //     'func': callback.func,
-                            //     'obj': callback.obj,
-                            //     'method': callback.method,
-                            //     'args': result,
-                            //     'callback': undefined,
-                            // }, callback.origin);
+                            event.source.postMessage({
+                                'func': callback.func,
+                                'obj': callback.obj,
+                                'method': callback.method,
+                                'args': result,
+                                'callback': undefined,
+                            }, callback.origin);
                         }
                     }
                 } else {

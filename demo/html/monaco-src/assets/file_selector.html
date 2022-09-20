@@ -353,14 +353,17 @@
                         return null;
                     }
                     if (obj[event.data.method] !== undefined) {
-                        const result = obj[event.data.method](...event.data.args);
+                        let result = obj[event.data.method](...event.data.args);
+                        if (!Array.isArray(result)) {
+                            result = [result]
+                        }
                         if (event.data.callback !== undefined) {
                             let callback = event.data.callback;
-                            window.parent.postMessage({
+                            event.source.postMessage({
                                 'func': callback.func,
                                 'obj': callback.obj,
                                 'method': callback.method,
-                                'args': [result],
+                                'args': result,
                                 'callback': undefined,
                             }, callback.origin);
                         }
