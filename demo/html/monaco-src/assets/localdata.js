@@ -374,7 +374,36 @@ class LocalData {
             }
             return this.addFile(filePath, undefined, fileMeta.hash, fileMeta.timestamp)
         })
-    }    exportData = function (filePathPrefix, data) {
+    }
+
+    toggleFav = function (filePath, value) {
+        // TODO: seems to be overcomplicated for simple toggle fav ?
+        return new Promise((resolve, reject) => {
+            let context = { "filePath": filePath, "initialFilePath": filePath, "value": value }
+            resolve(context)
+        })
+            .then((context) => {
+                if (context.filePath[0] == "/") {
+                    context.filePath = context.filePath.substr(1)
+                }
+                if (this.filesData[context.filePath] === undefined) {
+                    return this.updateFromRemote(context.filePath)
+                        .then((_) => { return context })
+                } else {
+                    return context
+                }
+            })
+            .then((context) => {
+                if (context.value === undefined) {
+                    context.value = !this.fileData[filePath].fav
+                }
+                this.filesData[context.filePath].fav = context.value
+                return this.storeAll()
+                    .then(_ => { return [context.initialFilePath, context.value] })
+            })
+    }
+
+    exportData = function (filePathPrefix, data) {
         if (filePathPrefix === undefined) {
             filePathPrefix = ""
         }
