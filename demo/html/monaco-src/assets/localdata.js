@@ -131,6 +131,8 @@ class LocalData {
     }
 
     reload = function () {
+        // TODO: remove obsolete files (that were deleted on server and not changed)
+        // TODO: mark changed files that were deleted on server
         return new Promise((resolve, reject) => { resolve(true) })
             .then(() => {
                 this.filesData = {};
