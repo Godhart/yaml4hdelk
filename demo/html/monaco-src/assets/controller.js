@@ -230,6 +230,10 @@ class Controller {
         this.localData.updateProblemsEditor(info)
     }
 
+    toggleFav(filePath, value) {
+        return this.localData.toggleFav(filePath, value)
+    }
+
     addTab(filePath) {
         return new Promise((resolve, reject) => {
             let fileContent = "";
