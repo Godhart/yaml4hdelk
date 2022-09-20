@@ -135,6 +135,19 @@
     <div id="problems"></div>
   </main>
   <script>
+    const callbackHandler = function (callback, retArgs) {
+      if (!Array.isArray(retArgs)) {
+        retArgs = [retArgs]
+      }
+      event.source.postMessage({
+        'func': callback.func,
+        'obj': callback.obj,
+        'method': callback.method,
+        'args': retArgs,
+        'callback': undefined,
+      }, callback.origin);
+    }
+
     window.addEventListener('message', (event) => {
       console.log("Editor received message: " + JSON.stringify(event), "\n origin - " + JSON.stringify(event.origin), "\n data   - " + JSON.stringify(event.data));
 
@@ -163,18 +176,12 @@
           }
           if (obj[event.data.method] !== undefined) {
             let result = obj[event.data.method](...event.data.args);
-            if (!Array.isArray(result)) {
-                result = [result]
-            }
             if (event.data.callback !== undefined) {
-              let callback = event.data.callback;
-              event.source.postMessage({
-                'func': callback.func,
-                'obj': callback.obj,
-                'method': callback.method,
-                'args': result,
-                'callback': undefined,
-              }, callback.origin);
+              if (result instanceof Promise) {
+                result.then(retArgs => callbackHandler(event.data.callback, retArgs))
+              } else {
+                callbackHandler(event.data.callback, result)
+              }
             }
           }
         } else {
