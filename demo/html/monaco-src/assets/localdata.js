@@ -1,14 +1,14 @@
 class FileData {
     /* Class to store misc file related data */
-    currentValue = undefined  // Current value. if undefined then value weren't loaded/set yet for optimization purposes
-    problemsEditor = 0      // Amount of problems detected by editor
-    problemsRemote = 0      // Amount of problems detected by server
-    source = undefined      // Initial value, that were received from server on checkout. if undefined then value weren't loaded/set yet for optimization purposes
-    sourceTimestamp = 0     // Initial value timestamp, that were received from server on checkout
-    sourceHash = null       // Hash that were received from server on checkout
-    timestamp = 0           // Last modification timestamp
-    fav = false             // Favorite mark
-    pendingRemove = false   // If file is going to be removed
+    currentValue = undefined    // Current value. if undefined then value weren't loaded/set yet for optimization purposes
+    problemsEditor = 0          // Amount of problems detected by editor
+    problemsRemote = 0          // Amount of problems detected by server
+    checkoutValue = undefined   // Initial value, that were received from server on checkout. if undefined then value weren't loaded/set yet for optimization purposes
+    checkoutTimestamp = 0       // Initial value timestamp, that were received from server on checkout
+    checkoutHash = null         // Hash that were received from server on checkout
+    currentTimestamp = 0        // Last modification timestamp
+    isFav = false               // Favorite mark
+    pendingRemove = false       // If file is going to be removed
 }
 
 
@@ -47,6 +47,7 @@ class LocalData {
     co = {}
     ifCreated = null
     remoteData = null
+    remoteFiles = null
 
     constructor(domain) {
         this.ifCreated = this.switchDomain(domain)
@@ -180,20 +181,20 @@ class LocalData {
             .then(_ => this._store(CURRENT_TAB, this.currentTab))
     }
 
-    addFile = function (filePath, source, hash, timestamp) {
+    checkoutFileData = function (filePath, source, hash, timestamp) {
         return new Promise((resolve, reject) => { resolve(true) })
             .then(() => {
                 if (this.filesData[filePath] === undefined) {
                     this.filesData[filePath] = Object.assign(new FileData(), {
                         "currentValue": source,
-                        "source": source,
-                        "sourceTimestamp": timestamp,
-                        "sourceHash": hash,
-                        "timestamp": timestamp,
+                        "checkoutValue": source,
+                        "checkoutTimestamp": timestamp,
+                        "checkoutHash": hash,
+                        "currentTimestamp": timestamp,
                     });
                     return this._store(FILES_DATA, this.filesData)
                 } else {
-                    console.error("LocalData.addFile(): File " + filePath + " is already in database");
+                    console.error("LocalData.checkoutFileData(): File " + filePath + " is already in database");
                     throw Error("File " + filePath + " is already in database");
                 }
             })
@@ -216,23 +217,23 @@ class LocalData {
             .then(_ => this._store(ACTIVE_TABS, this.activeTabs))
     }
 
-    updateFileStatics = function (filePath, source, hash, timestamp) {
+    updateFileData = function (filePath, source, hash, timestamp) {
         return new Promise((resolve, reject) => { resolve(true) })
             .then(() => {
                 if (this.filesData[filePath] !== undefined) {
                     let f = this.filesData[filePath];
                     if (source !== undefined && source !== null) {
-                        f.source = source
+                        f.checkoutValue = source
                     }
                     if (hash !== undefined && hash !== null) {
-                        f.sourceHash = hash
+                        f.checkoutHash = hash
                     }
                     if (timestamp !== undefined && hash !== null) {
-                        f.sourceTimestamp = timestamp
+                        f.checkoutTimestamp = timestamp
                     }
                     return this._store(FILES_DATA, this.filesData)
                 } else {
-                    console.error("LocalData.updateFileStatics(): File " + filePath + "is not in database");
+                    console.error("LocalData.updateFileData(): File " + filePath + "is not in database");
                     throw Error("File " + filePath + " is not in database");
                 }
             })
@@ -245,7 +246,7 @@ class LocalData {
                     let f = this.filesData[filePath];
                     if (f.currentValue !== value) {
                         f.currentValue = value;
-                        f.timestamp = new Date().getTime();
+                        f.currentTimestamp = new Date().getTime();
                         return this._store(FILES_DATA, this.filesData)
                     }
                 } else {
@@ -322,7 +323,7 @@ class LocalData {
                         this.activeTabs.push(key);
                         if (this.filesData[key].currentValue != value) {
                             this.filesData[key].currentValue = value;
-                            this.filesData[key].timestamp = new Date().getTime();
+                            this.filesData[key].currentTimestamp = new Date().getTime();
                         }
                     }
                 }
@@ -341,7 +342,7 @@ class LocalData {
     updateProblemsEditor = function (data) {
         return new Promise((resolve, reject) => { resolve(true) })
             .then(() => {
-                const filePath = data.path.substring(1);
+                const filePath = data.path;
                 if (this.filesData[filePath] !== undefined) {
                     this.filesData[filePath].problemsEditor = data.problemsCount;
                     return this._store(FILES_DATA, this.filesData)
@@ -364,44 +365,94 @@ class LocalData {
             })
     }
 
-    updateFromRemote = function (filePath) {
-        return new Promise((resolve, reject) => {resolve (true)})
-        .then(_ => {
-            if (this.remoteData === null) {
-                throw Error("No remote data attached!")
-            }
-            let fileMeta = this.remoteData.filesMeta[filePath]
-            if (fileMeta === undefined) {
-                throw Error("File '" + filePath + "' is not found!")
-            }
-            return this.addFile(filePath, undefined, fileMeta.hash, fileMeta.timestamp)
-        })
+    ensureFileData = function (filePath, wantContent) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(_ => {
+                if (this.filesData[filePath] === undefined) {
+                    return this.updateFromRemote(filePath)
+                }
+            })
+            .then(_ => {
+                if (wantContent === true) {
+                    return this.updateContent(filePath)
+                }
+            })
     }
 
-    toggleFav = function (filePath, value) {
-        // TODO: seems to be overcomplicated for simple toggle fav ?
-        return new Promise((resolve, reject) => {
-            let context = { "filePath": filePath, "initialFilePath": filePath, "value": value }
-            resolve(context)
-        })
-            .then((context) => {
-                if (context.filePath[0] == "/") {
-                    context.filePath = context.filePath.substr(1)
+    updateFromRemote = function (filePath) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(_ => {
+                if (this.remoteData === null) {
+                    throw Error("No remote data attached!")
                 }
-                if (this.filesData[context.filePath] === undefined) {
-                    return this.updateFromRemote(context.filePath)
-                        .then((_) => { return context })
-                } else {
+                let fileMeta = this.remoteData.filesMeta[filePath]
+                if (fileMeta === undefined) {
+                    throw Error("File '" + filePath + "' is not found!")
+                }
+                return this.checkoutFileData(filePath, undefined, fileMeta.hash, fileMeta.timestamp)
+            })
+    }
+
+    updateContent = function (filePath, force) {
+        return new Promise((resolve, reject) => { resolve({ "needContent": false }) })
+            .then(context => {
+                let fileData = this.filesData[filePath]
+                if (fileData === undefined) {
+                    throw Error("File '" + filePath + "' is not found!")
+                }
+                if (this.remoteData === null) {
+                    throw Error("No remote data attached!")
+                }
+                if (this.remoteFiles === null) {
+                    throw Error("No remote files attached!")
+                }
+                if (force === true) {
+                    context.needContent = true
+                    return context
+                }
+                if (fileData.currentValue === undefined) {
+                    // No content in local storage at all
+                    context.needContent = true
+                    return context
+                }
+                if (fileData.currentValue === fileData.checkoutValue
+                    // Content is same as were on checkout but remote hash is different
+                    && fileData.checkoutHash !== this.remoteData.filesMeta[filePath].hash) {
+                    context.needContent = true
                     return context
                 }
             })
-            .then((context) => {
-                if (context.value === undefined) {
-                    context.value = !this.fileData[filePath].fav
+            .then(context => {
+                if (context.needContent) {
+                    return this.remoteFiles.getFiles(this.dataDomain, [filePath], ["content", "hash", "timestamp"])
+                        .then(remoteData => {
+                            let fileData = this.filesData[filePath]
+                            fileData.currentValue = remoteData.content
+                            fileData.currentTimestamp = remoteData.timestamp
+                            fileData.checkoutValue = remoteData.content
+                            fileData.checkoutHash = remoteData.hash
+                            fileData.checkoutTimestamp = remoteData.timestamp
+                        })
                 }
-                this.filesData[context.filePath].fav = context.value
+            })
+    }
+
+    currentValue = function (filePath) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(_ => this.ensureFileData(filePath, true))
+            .then(_ => { return this.filesData[filePath].currentValue })
+    }
+
+    toggleFav = function (filePath, value) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(_ => this.ensureFileData(filePath))
+            .then(_ => {
+                if (value === undefined) {
+                    value = !this.filesData[filePath].isFav
+                }
+                this.filesData[filePath].isFav = value
                 return this.storeAll()
-                    .then(_ => { return [context.initialFilePath, context.value] })
+                    .then(_ => { return [filePath, value] })
             })
     }
 
@@ -416,8 +467,8 @@ class LocalData {
                 if (value.pendingRemove) {
                     data[key].removed = true
                 } else {
-                    if (value.fav) {
-                        data[key].fav = true
+                    if (value.isFav) {
+                        data[key].isFav = true
                     }
                     if (this.activeTabs.includes(filePath)) {
                         fileData.open = true
@@ -425,21 +476,21 @@ class LocalData {
                 }
             } else {
                 let fileData = data[key]
-                if (value.source !== undefined && value.currentValue !== undefined &&
-                    (value.source != value.currentValue || value.pendingRemove)) {
+                if (value.checkoutValue !== undefined && value.currentValue !== undefined &&
+                    (value.checkoutValue != value.currentValue || value.pendingRemove)) {
                     if (value.pendingRemove) {
                         fileData.removed = true
                     } else {
                         fileData.modified = true
                     }
-                    fileData.timestamp = value.timestamp
-                    if (value.sourceHash != fileData.hash) {
+                    fileData.timestamp = value.currentTimestamp
+                    if (value.checkoutHash != fileData.hash) {
                         fileData.outdate = true
                     }
                 }
                 if (!value.pendingRemove) {
-                    if (value.fav) {
-                        fileData.fav = true
+                    if (value.isFav) {
+                        fileData.isFav = true
                     }
                     if (this.activeTabs.includes(filePath)) {
                         fileData.open = true
