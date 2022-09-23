@@ -107,7 +107,7 @@ class Controller {
         this._start()
     }
 
-    editor = function(method, args, callback) {
+    editor = function (method, args, callback) {
         iframeCall(this.editorFrame, {
             "obj": "worker",
             "method": method,
@@ -116,7 +116,7 @@ class Controller {
         }, this.editorDomain);
     }
 
-    editorSettings = function(method, args, callback) {
+    editorSettings = function (method, args, callback) {
         iframeCall(this.editorFrame, {
             "obj": "settings",
             "method": method,
@@ -125,7 +125,7 @@ class Controller {
         }, this.editorDomain);
     }
 
-    browser = function(method, args, callback) {
+    browser = function (method, args, callback) {
         iframeCall(this.browserFrame, {
             "obj": "browser",
             "method": method,
@@ -137,9 +137,9 @@ class Controller {
     _start() {
         // Don't start unless all start conditions are met
         if ((this.localData == null)
-        || (this.remoteData == null)
-        || (!this.editorCreated)
-        || (!this.browserCreated)
+            || (this.remoteData == null)
+            || (!this.editorCreated)
+            || (!this.browserCreated)
         ) {
             return;
         }
@@ -212,8 +212,7 @@ class Controller {
     }
 
     onEditorChange(filePath) {
-        console.warn("onEditorChange should be reworked!")
-        return
+        throw Error("onEditorChange should be reworked!")
         // TODO: this should be reworked since currently it's too heavy for simple reaction on editor changes
         this.localData.switchTab(filePath)
         // TODO: this most probably should be reworked
@@ -294,8 +293,8 @@ class Controller {
         })
     }
 
-    switchTab(filePath) {
-        this.localData.switchTab(filePath)
+    focusTab(filePath) {
+        this.localData.focusTab(filePath)
             .then(
                 () => {
                     iframeCall("editor", {
