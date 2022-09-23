@@ -682,6 +682,51 @@ class="tool b-t tool-text tool-status-color" onclick="' + this.uiFeedback + '.to
         }
     }
 
+    getField = function(path, field) {
+        let node = self.filez[path]
+        if (node !== undefined) {
+            return node[field]
+        }
+        node = self.folders[path]
+        if (node !== undefined) {
+            return node[field]
+        }
+        throw Error("Path '" + path + "' not found!")
+    }
+
+    getAggregatedBoolField = function(path, field, defaultValue) {
+        this._getAggregatedBoolField(this.asRoot(path), field, defaultValue)
+    }
+
+    _getAggregatedBoolField = function(root, field, defaultValue) {
+        if (defaultValue !== true) {
+            defaultValue = false
+        }
+        let value = defaultValue
+        for (const [key, item] of Object.entries(root.filez)) {
+            if (value |= defaultValue) {
+                break
+            }
+            if (defaultValue === true) {
+                value &= item[field]
+            } else {
+                value |= item[field]
+            }
+        }
+        for (const [key, item] of Object.entries(root.folders)) {
+            if (value |= defaultValue) {
+                break
+            }
+            let nested = this._setField(item, field, value, defaultValue)
+            if (defaultValue === true) {
+                value &= nested
+            } else {
+                value |= nested
+            }
+        }
+        return value
+    }
+
     toggleFav = function(path, value) {
         this.setField(path, "fav", value)
         this.updateFilter(this.filez, this.folders, this.filesFilter)
