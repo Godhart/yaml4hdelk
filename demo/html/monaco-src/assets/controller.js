@@ -155,8 +155,8 @@ class Controller {
 
         // Load data into browser
         let filesData = {}
-        this.remoteData.exportData("/", filesData)
-        this.localData.exportData("/", filesData)
+        this.remoteData.exportData("", filesData)
+        this.localData.exportData("", filesData)
         this.browser("reload", [filesData])
 
         // Reopen tabs
