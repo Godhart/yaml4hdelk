@@ -57,9 +57,13 @@ class DataDomain:
 
     def _full_path(self, file_path):
         # NOTE: depends on domain kind
+        if file_path[0] == "/":
+            file_path = file_path[1:]
         return os.path.join(self.path, file_path)
 
     def _aux_path(self, file_path):
+        if file_path[0] == "/":
+            file_path = file_path[1:]
         return os.path.join(self.meta_path, file_path)
 
     def _file_exists(self, file_path, custom_data=None):
@@ -139,7 +143,8 @@ class DataDomain:
         result = []
         offs = len(root_path)
         for root, dirs, files in os.walk(root_path):
-            result += [os.path.join(root[offs:], f)
+            root_dir = "/"+root[offs:]
+            result += [os.path.join(root_dir, f)
                        for f in files if f[-4:].lower() == ".yml" or f[-5:].lower() == ".yaml"]
             if offs == len(root_path):
                 offs += 1
