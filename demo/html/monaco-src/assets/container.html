@@ -48,7 +48,12 @@
                     let _remoteData = new RemoteData(remoteFiles, new_domain);
                     return _localData.ifCreated
                         .then(_ => _remoteData.ifCreated)
-                        .then(_ => { localData = _localData; remoteData = _remoteData; localData.remoteData = _remoteData; })
+                        .then(_ => {
+                            localData = _localData;
+                            remoteData = _remoteData;
+                            localData.remoteData = _remoteData;
+                            _localData.remoteFiles = remoteFiles;
+                        })
                         .then(_ => controller.attachData(remoteData, localData))
                         .then(_ => setCurrentDomain(new_domain))
                         .then(_ => domain = new_domain)
