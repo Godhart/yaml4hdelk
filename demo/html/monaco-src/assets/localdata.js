@@ -44,10 +44,10 @@ class LocalData {
     activeTabs = []     // List of active tabs, that should be displayed in editor. Value is file path
     currentTab = ""     // Currently selected tab. Value is file path
     dataDomain = ""     // Current data domain
-    co = {}
-    ifCreated = null
-    remoteData = null
-    remoteFiles = null
+    co = {}             // Named Constants for current data domain
+    ifCreated = null    // Promise, resolved when Object creation is complete
+    remoteData = null   // Object to access remote data (file lists and metadata)
+    remoteFiles = null  // Object to load / save files to remote
 
     constructor(domain) {
         this.ifCreated = this.switchDomain(domain)
@@ -122,16 +122,23 @@ class LocalData {
                 (err) => { console.log("Error when restoring data '" + key + "': " + err); throw err })
     }
 
+    // ### General Storage related
+
     newSession = function () {
         this.session = new Date().getTime()
         return this._store(SESSION, this.session, true);
     }
 
-    releaseSession = function () {
-        return this._store(SESSION, null);
+    releaseSession = function (flush) {
+        if (flush == true) {
+            return this.storeAll().then(_ => this._store(SESSION, null));
+        } else {
+            return this._store(SESSION, null);
+        }
     }
 
     reload = function () {
+        // TODO: remove files data that are not changed and not in tabs
         // TODO: remove obsolete files (that were deleted on server and not changed)
         // TODO: mark changed files that were deleted on server
         return new Promise((resolve, reject) => { resolve(true) })
@@ -181,24 +188,111 @@ class LocalData {
             .then(_ => this._store(CURRENT_TAB, this.currentTab))
     }
 
-    checkoutFileData = function (filePath, source, hash, timestamp) {
-        return new Promise((resolve, reject) => { resolve(true) })
-            .then(() => {
-                if (this.filesData[filePath] === undefined) {
-                    this.filesData[filePath] = Object.assign(new FileData(), {
-                        "currentValue": source,
-                        "checkoutValue": source,
-                        "checkoutTimestamp": timestamp,
-                        "checkoutHash": hash,
-                        "currentTimestamp": timestamp,
-                    });
-                    return this._store(FILES_DATA, this.filesData)
+    exportData = function (filePathPrefix, data) {
+        // TODO: as option - for specified files only
+        if (filePathPrefix === undefined) {
+            filePathPrefix = ""
+        }
+        for (const [filePath, value] of Object.entries(this.filesData)) {
+            let key = filePathPrefix + filePath
+            if (data[key] === undefined) {
+                data[key] = { "added": true, "timestamp": value.timestamp }
+                if (value.pendingRemove) {
+                    data[key].removed = true
                 } else {
-                    console.error("LocalData.checkoutFileData(): File " + filePath + " is already in database");
-                    throw Error("File " + filePath + " is already in database");
+                    if (value.isFav) {
+                        data[key].isFav = true
+                    }
+                    if (this.activeTabs.includes(filePath)) {
+                        fileData.open = true
+                    }
+                }
+            } else {
+                let fileData = data[key]
+                if (value.checkoutValue !== undefined && value.currentValue !== undefined &&
+                    (value.checkoutValue != value.currentValue || value.pendingRemove)) {
+                    if (value.pendingRemove) {
+                        fileData.removed = true
+                    } else {
+                        fileData.modified = true
+                    }
+                    fileData.timestamp = value.currentTimestamp
+                    if (value.checkoutHash != fileData.hash) {
+                        fileData.outdate = true
+                    }
+                }
+                if (!value.pendingRemove) {
+                    if (value.isFav) {
+                        fileData.isFav = true
+                    }
+                    if (this.activeTabs.includes(filePath)) {
+                        fileData.open = true
+                    }
+                }
+            }
+        }
+    }
+
+    // ### General File related
+
+    ensureFileData = function (filePath, wantContent) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(_ => {
+                if (this.filesData[filePath] === undefined) {
+                    return this.updateMetaFromRemote(filePath)
+                }
+            })
+            .then(_ => {
+                if (wantContent === true) {
+                    return this.updateSourceFromRemote(filePath)
                 }
             })
     }
+
+    dropFile = function (filePath) {
+        // TODO: will that be used ? self-clean is better
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                if (this.filesData[filePath] !== undefined) {
+                    return this.removeTab(filePath)
+                        .then(() => {
+                            delete this.filesData[filePath];
+                            return this._store(FILES_DATA, this.filesData)
+                        })
+                        .then(
+                            () => { return this.currentTab }
+                        )
+                } else {
+                    console.error("LocalData.dropFile(): File " + filePath + "is not in database");
+                    throw Error("File " + filePath + " is not in database");
+                }
+            })
+    }
+
+    currentValue = function (filePath) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(_ => this.ensureFileData(filePath, true))
+            .then(_ => { return this.filesData[filePath].currentValue })
+    }
+
+    setCurrentValue = function (filePath, value) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                if (this.filesData[filePath] !== undefined) {
+                    let f = this.filesData[filePath];
+                    if (f.currentValue !== value) {
+                        f.currentValue = value;
+                        f.currentTimestamp = new Date().getTime();
+                        return this._store(FILES_DATA, this.filesData)
+                    }
+                } else {
+                    console.error("LocalData.setCurrentValue(): File " + filePath + "is not in database");
+                    throw Error("File " + filePath + " is not in database");
+                }
+            })
+    }
+
+    // ### Tabs related
 
     addTab = function (filePath) {
         return new Promise((resolve, reject) => { resolve(true) })
@@ -215,64 +309,6 @@ class LocalData {
                 }
             })
             .then(_ => this._store(ACTIVE_TABS, this.activeTabs))
-    }
-
-    updateFileData = function (filePath, source, hash, timestamp) {
-        return new Promise((resolve, reject) => { resolve(true) })
-            .then(() => {
-                if (this.filesData[filePath] !== undefined) {
-                    let f = this.filesData[filePath];
-                    if (source !== undefined && source !== null) {
-                        f.checkoutValue = source
-                    }
-                    if (hash !== undefined && hash !== null) {
-                        f.checkoutHash = hash
-                    }
-                    if (timestamp !== undefined && hash !== null) {
-                        f.checkoutTimestamp = timestamp
-                    }
-                    return this._store(FILES_DATA, this.filesData)
-                } else {
-                    console.error("LocalData.updateFileData(): File " + filePath + "is not in database");
-                    throw Error("File " + filePath + " is not in database");
-                }
-            })
-    }
-
-    updateFileValue = function (filePath, value) {
-        return new Promise((resolve, reject) => { resolve(true) })
-            .then(() => {
-                if (this.filesData[filePath] !== undefined) {
-                    let f = this.filesData[filePath];
-                    if (f.currentValue !== value) {
-                        f.currentValue = value;
-                        f.currentTimestamp = new Date().getTime();
-                        return this._store(FILES_DATA, this.filesData)
-                    }
-                } else {
-                    console.error("LocalData.updateFileValue(): File " + filePath + "is not in database");
-                    throw Error("File " + filePath + " is not in database");
-                }
-            })
-    }
-
-    removeFile = function (filePath) {
-        return new Promise((resolve, reject) => { resolve(true) })
-            .then(() => {
-                if (this.filesData[filePath] !== undefined) {
-                    return this.removeTab(filePath)
-                        .then(() => {
-                            delete this.filesData[filePath];
-                            return this._store(FILES_DATA, this.filesData)
-                        })
-                        .then(
-                            () => { return this.currentTab }
-                        )
-                } else {
-                    console.error("LocalData.removeFile(): File " + filePath + "is not in database");
-                    throw Error("File " + filePath + " is not in database");
-                }
-            })
     }
 
     removeTab = function (filePath) {
@@ -313,6 +349,8 @@ class LocalData {
                 }
             })
     }
+
+    // ### Massive value/meta update
 
     updateFilesAndTabs = function (data) {
         return new Promise((resolve, reject) => { resolve(true) })
@@ -365,21 +403,67 @@ class LocalData {
             })
     }
 
-    ensureFileData = function (filePath, wantContent) {
+    // ### Per file
+
+    toggleFav = function (filePath, value) {
         return new Promise((resolve, reject) => { resolve(true) })
+            .then(_ => this.ensureFileData(filePath))
             .then(_ => {
-                if (this.filesData[filePath] === undefined) {
-                    return this.updateFromRemote(filePath)
+                if (value === undefined) {
+                    value = !this.filesData[filePath].isFav
                 }
+                this.filesData[filePath].isFav = value
+                return this.storeAll()
+                    .then(_ => { return [filePath, value] })
             })
-            .then(_ => {
-                if (wantContent === true) {
-                    return this.updateContent(filePath)
+    }
+
+    // ## Internal interface
+
+    checkoutFileData = function (filePath, source, hash, timestamp) {
+        // Retrieves actual file content and metadata from remote
+        // TODO: get from remoteFiles
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                if (this.filesData[filePath] === undefined) {
+                    this.filesData[filePath] = Object.assign(new FileData(), {
+                        "currentValue": source,
+                        "checkoutValue": source,
+                        "checkoutTimestamp": timestamp,
+                        "checkoutHash": hash,
+                        "currentTimestamp": timestamp,
+                    });
+                    return this._store(FILES_DATA, this.filesData)
+                } else {
+                    console.error("LocalData.checkoutFileData(): File " + filePath + " is already in database");
+                    throw Error("File " + filePath + " is already in database");
                 }
             })
     }
 
-    updateFromRemote = function (filePath) {
+    updateCheckoutFileData = function (filePath, source, hash, timestamp) {
+        return new Promise((resolve, reject) => { resolve(true) })
+            .then(() => {
+                if (this.filesData[filePath] !== undefined) {
+                    let f = this.filesData[filePath];
+                    if (source !== undefined && source !== null) {
+                        f.checkoutValue = source
+                    }
+                    if (hash !== undefined && hash !== null) {
+                        f.checkoutHash = hash
+                    }
+                    if (timestamp !== undefined && hash !== null) {
+                        f.checkoutTimestamp = timestamp
+                    }
+                    return this._store(FILES_DATA, this.filesData)
+                } else {
+                    console.error("LocalData.updateFileData(): File " + filePath + "is not in database");
+                    throw Error("File " + filePath + " is not in database");
+                }
+            })
+    }
+
+    updateMetaFromRemote = function (filePath) {
         return new Promise((resolve, reject) => { resolve(true) })
             .then(_ => {
                 if (this.remoteData === null) {
@@ -393,7 +477,7 @@ class LocalData {
             })
     }
 
-    updateContent = function (filePath, force) {
+    updateSourceFromRemote = function (filePath, force) {
         return new Promise((resolve, reject) => { resolve({ "needContent": false }) })
             .then(context => {
                 let fileData = this.filesData[filePath]
@@ -436,71 +520,6 @@ class LocalData {
                 }
             })
     }
-
-    currentValue = function (filePath) {
-        return new Promise((resolve, reject) => { resolve(true) })
-            .then(_ => this.ensureFileData(filePath, true))
-            .then(_ => { return this.filesData[filePath].currentValue })
-    }
-
-    toggleFav = function (filePath, value) {
-        return new Promise((resolve, reject) => { resolve(true) })
-            .then(_ => this.ensureFileData(filePath))
-            .then(_ => {
-                if (value === undefined) {
-                    value = !this.filesData[filePath].isFav
-                }
-                this.filesData[filePath].isFav = value
-                return this.storeAll()
-                    .then(_ => { return [filePath, value] })
-            })
-    }
-
-    exportData = function (filePathPrefix, data) {
-        if (filePathPrefix === undefined) {
-            filePathPrefix = ""
-        }
-        for (const [filePath, value] of Object.entries(this.filesData)) {
-            let key = filePathPrefix + filePath
-            if (data[key] === undefined) {
-                data[key] = { "added": true, "timestamp": value.timestamp }
-                if (value.pendingRemove) {
-                    data[key].removed = true
-                } else {
-                    if (value.isFav) {
-                        data[key].isFav = true
-                    }
-                    if (this.activeTabs.includes(filePath)) {
-                        fileData.open = true
-                    }
-                }
-            } else {
-                let fileData = data[key]
-                if (value.checkoutValue !== undefined && value.currentValue !== undefined &&
-                    (value.checkoutValue != value.currentValue || value.pendingRemove)) {
-                    if (value.pendingRemove) {
-                        fileData.removed = true
-                    } else {
-                        fileData.modified = true
-                    }
-                    fileData.timestamp = value.currentTimestamp
-                    if (value.checkoutHash != fileData.hash) {
-                        fileData.outdate = true
-                    }
-                }
-                if (!value.pendingRemove) {
-                    if (value.isFav) {
-                        fileData.isFav = true
-                    }
-                    if (this.activeTabs.includes(filePath)) {
-                        fileData.open = true
-                    }
-                }
-            }
-        }
-    }
-
-    // TODO: remove files data that are not changed and not in tabs
 
 
 }
