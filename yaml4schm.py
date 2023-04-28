@@ -1438,7 +1438,8 @@ def d3hw_adaptation(data):
     _d3hw_hide_content(data)
 
 
-def tool_html(tool: str, schm: dict, header: str = "Schematic", display_customizations: str = "", snippet_name: str = None) -> str:
+def tool_html(tool: str, schm: dict, header: str = "Schematic", display_customizations: str = "", snippet_name: str = None,
+              opts: dict = None) -> str:
     """
     Generates HTML with schematic using specified tool
     :param tool: tool to be used for schematic drawing
@@ -1447,9 +1448,9 @@ def tool_html(tool: str, schm: dict, header: str = "Schematic", display_customiz
     :return: whole HTML page content as string
     """
     if tool == TOOL_D3HW:
-        return d3hw_html(schm, header, display_customizations, snippet_name)
+        return d3hw_html(schm, header, display_customizations, snippet_name, opts)
     if tool == TOOL_HDELK:
-        return hdelk_html(schm, header, display_customizations, snippet_name)
+        return hdelk_html(schm, header, display_customizations, snippet_name, opts)
     return f"""<!DOCTYPE html>
 <html>
     Not supported tool {tool}!
@@ -1458,13 +1459,16 @@ def tool_html(tool: str, schm: dict, header: str = "Schematic", display_customiz
 </html>"""
 
 
-def hdelk_html(schm: dict, header: str = "Schematic", display_customizations: str = "", snippet_name: str = None) -> str:
+def hdelk_html(schm: dict, header: str = "Schematic", display_customizations: str = "", snippet_name: str = None,
+               opts: dict = None) -> str:
     """
     Generates HTML with schematic using HDElk
     :param schm: schematics data in tool_render format (actually that is content for HDElk's graph variable)
     :param header: string to be written in header of file
     :return: whole HTML page content as string
     """
+    if opts is None:
+        opts = {}
 
     if snippet_name in (None, ""):
         snippet_name = "simple-diagram"
@@ -1507,13 +1511,32 @@ def hdelk_html(schm: dict, header: str = "Schematic", display_customizations: st
     return result
 
 
-def d3hw_html(schm: dict, header: str = "Schematic", display_customizations: str = "", snippet_name: str = None) -> str:
+def d3hw_html(schm: dict, header: str = "Schematic", display_customizations: str = "", snippet_name: str = None,
+              opts: dict = None) -> str:
     """
     Generates HTML with schematic using D3-HWSchematic
     :param schm: schematics data in tool_render format (actually that is content for D3-Hardware's graph variable)
     :param header: string to be written in header of file
     :return: whole HTML page content as string
     """
+    if opts is None:
+        opts = {}
+
+    width = opts.get("width", None)
+    if width not in ("", None):
+        if width[0] != '"':
+            width = '"'+width
+        if width[-1] != '"':
+            width = width + '"'
+
+    height = opts.get("height", None)
+    if height not in ("", None):
+        if height[0] != '"':
+            height = '"'+height
+        if height[-1] != '"':
+            height = height + '"'
+
+    zoom = opts.get("zoom", "yes").lower() not in ("no", "false")
 
     if snippet_name in (None, ""):
         snippet_name = "scheme-placeholder"
@@ -1577,15 +1600,20 @@ def d3hw_html(schm: dict, header: str = "Schematic", display_customizations: str
 
             let w = viewport();
             svg.attr("width", w.width);
-			      svg.attr("height", w.height);
+            svg.attr("height", w.height);
         }}
 """
     else:
         result += f"""
         let svg = d3.select("#{snippet_name}");
+        svg.attr("width", {width});
+        svg.attr("height", {height});
 """
     result += f"""
         let hwSchematic = new d3.HwSchematic(svg);
+"""
+    if zoom:
+        result += f"""
         let zoom = d3.zoom();
         zoom.on("zoom", function applyTransform(ev) {{
         	hwSchematic.root.attr("transform", ev.transform)
@@ -1595,7 +1623,8 @@ def d3hw_html(schm: dict, header: str = "Schematic", display_customizations: str
         // because it interferes with component expanding/collapsing
         svg.call(zoom)
            .on("dblclick.zoom", null)
-
+"""
+    result += f"""
         let display_{snippet_safe_name} = function() {{
             let  graph = {json.dumps(schm, indent=2)};
 """
@@ -1667,6 +1696,22 @@ if __name__ == "__main__":
                         dest="hdelk_custom",
                         help="HDELk customizations file path",
                         type=str)
+    parser.add_argument("--width",
+                        default="",
+                        dest="width",
+                        help="Predefine D3HW diagram area width in snippet mode",
+                        type=str)
+    parser.add_argument("--height",
+                        default="",
+                        dest="height",
+                        help="Predefine D3HW diagram area height in snippet mode",
+                        type=str)
+    parser.add_argument("--zoom",
+                        choices=("yes", "no"),
+                        default="yes",
+                        dest="zoom",
+                        help="Enable / disable zoom for D3HW diagram",
+                        type=str)
     parser.add_argument("-s", "--shell",
                         action="store_true",
                         dest="shell",
@@ -1712,8 +1757,9 @@ units:
         snippet_name = None
         if oformat == "HTML_SNIPPET":
             snippet_name = args.snippet_name
+        opts = {"width": args.width, "height": args.height, "zoom": args.zoom}
         result = tool_html(tool, schm, "Schematic of " + data["attributes"].get("type", filepath),
-                           display_customizations, snippet_name)
+                           display_customizations, snippet_name, opts)
     else:
         result = json.dumps(schm, indent=2)
 
