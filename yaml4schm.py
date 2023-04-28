@@ -1438,7 +1438,7 @@ def d3hw_adaptation(data):
     _d3hw_hide_content(data)
 
 
-def tool_html(tool: str, schm: dict, header: str = "Schematic", display_customizations: str = "") -> str:
+def tool_html(tool: str, schm: dict, header: str = "Schematic", display_customizations: str = "", snippet_name: str = None) -> str:
     """
     Generates HTML with schematic using specified tool
     :param tool: tool to be used for schematic drawing
@@ -1447,9 +1447,9 @@ def tool_html(tool: str, schm: dict, header: str = "Schematic", display_customiz
     :return: whole HTML page content as string
     """
     if tool == TOOL_D3HW:
-        return d3hw_html(schm, header, display_customizations)
+        return d3hw_html(schm, header, display_customizations, snippet_name)
     if tool == TOOL_HDELK:
-        return hdelk_html(schm, header, display_customizations)
+        return hdelk_html(schm, header, display_customizations, snippet_name)
     return f"""<!DOCTYPE html>
 <html>
     Not supported tool {tool}!
@@ -1458,32 +1458,48 @@ def tool_html(tool: str, schm: dict, header: str = "Schematic", display_customiz
 </html>"""
 
 
-def hdelk_html(schm: dict, header: str = "Schematic", display_customizations: str = "") -> str:
+def hdelk_html(schm: dict, header: str = "Schematic", display_customizations: str = "", snippet_name: str = None) -> str:
     """
     Generates HTML with schematic using HDElk
     :param schm: schematics data in tool_render format (actually that is content for HDElk's graph variable)
     :param header: string to be written in header of file
     :return: whole HTML page content as string
     """
+
+    if snippet_name in (None, ""):
+        snippet_name = "simple-diagram"
+        snippet_safe_name = "Content"
+        snippet_mode = False
+    else:
+        snippet_name = re.sub(r"\W", "-", snippet_name)
+        snippet_safe_name = re.sub(r"\W", "_", snippet_name)
+        snippet_mode = True
+
     result = f"""<!DOCTYPE html>
 <html>
 <body>
-
+"""
+    if not snippet_mode:
+        result += f"""
 <h1>{header}</h1>
 
 <script src="./js/hdelk/elk.bundled.js"></script>
 <script src="./js/hdelk/svg.min.js"></script>
 <script src="./js/hdelk/hdelk.js"></script>
-
-<div id="simple_diagram"></div>
+"""
+    result += f"""
+<div id="{snippet_name}"></div>
 
 <script type="text/javascript">
 
     {display_customizations}
 
-    var simple_graph = {json.dumps(schm, indent=2)}
+    let simple_graph = {json.dumps(schm, indent=2)}
 
-    hdelk.layout( simple_graph, "simple_diagram" );
+    let display_{snippet_safe_name} = function() {{
+        hdelk.layout( simple_graph, "{snippet_name}" );
+    }}
+    display_{snippet_safe_name}()
 </script>
 
 </body>
@@ -1491,7 +1507,7 @@ def hdelk_html(schm: dict, header: str = "Schematic", display_customizations: st
     return result
 
 
-def d3hw_html(schm: dict, header: str = "Schematic", display_customizations: str = "") -> str:
+def d3hw_html(schm: dict, header: str = "Schematic", display_customizations: str = "", snippet_name: str = None) -> str:
     """
     Generates HTML with schematic using D3-HWSchematic
     :param schm: schematics data in tool_render format (actually that is content for D3-Hardware's graph variable)
@@ -1499,29 +1515,43 @@ def d3hw_html(schm: dict, header: str = "Schematic", display_customizations: str
     :return: whole HTML page content as string
     """
 
+    if snippet_name in (None, ""):
+        snippet_name = "scheme-placeholder"
+        snippet_mode = False
+        snippet_safe_name = "Content"
+    else:
+        snippet_name = re.sub(r"\W", "-", snippet_name)
+        snippet_safe_name = re.sub(r"\W", "_", snippet_name)
+        snippet_mode = True
+
     result = f"""<!DOCTYPE html>
 <html>
-<head>
+<head>"""
+    if not snippet_mode:
+        result += f"""
   <meta charset="utf-8">
   <title>{header}</title>
   <script type="text/javascript" src="./js/d3hw/d3.js"></script>
   <!-- <script type="text/javascript" src="./js/d3hw/d3.min.js"></script>  -->
   <script type="text/javascript" src="./js/d3hw/elk.bundled.js"></script>
   <script type="text/javascript" src="./js/d3hw/d3-hwschematic.js"></script>
-  <link href="./css/d3/d3-hwschematic.css" rel="stylesheet">
+  <link href="./css/d3/d3-hwscvarhematic.css" rel="stylesheet">
   <style>
   	body {{
 	   margin: 0;
     }}
-  </style>
+  </style>"""
+    result += f"""
 </head>
 <body>
-    <svg id="scheme-placeholder"></svg>
+    <svg id="{snippet_name}"></svg>
     <script>
         // schematic rendering script
-
+"""
+    if not snippet_mode:
+        result += f""""
         function viewport() {{
-          var e = window,
+          let e = window,
             a = 'inner';
           if (!('innerWidth' in window)) {{
             a = 'client';
@@ -1533,25 +1563,30 @@ def d3hw_html(schm: dict, header: str = "Schematic", display_customizations: str
           }}
         }}
 
-        var width = viewport().width,
+        let width = viewport().width,
             height = viewport().height;
 
-        var svg = d3.select("#scheme-placeholder")
+        let svg = d3.select("#{snippet_name}")
             .attr("width", width)
             .attr("height", height);
 
-        var orig = document.body.onresize;
+        let orig = document.body.onresize;
         document.body.onresize = function(ev) {{
             if (orig)
         	    orig(ev);
 
-            var w = viewport();
+            let w = viewport();
             svg.attr("width", w.width);
 			      svg.attr("height", w.height);
         }}
-
-        var hwSchematic = new d3.HwSchematic(svg);
-        var zoom = d3.zoom();
+"""
+    else:
+        result += f"""
+        let svg = d3.select("#{snippet_name}");
+"""
+    result += f"""
+        let hwSchematic = new d3.HwSchematic(svg);
+        let zoom = d3.zoom();
         zoom.on("zoom", function applyTransform(ev) {{
         	hwSchematic.root.attr("transform", ev.transform)
         }});
@@ -1561,17 +1596,19 @@ def d3hw_html(schm: dict, header: str = "Schematic", display_customizations: str
         svg.call(zoom)
            .on("dblclick.zoom", null)
 
-    </script>
-    <script>
-          function displayContents() {{
-            var graph = {json.dumps(schm, indent=2)};
+        let display_{snippet_safe_name} = function() {{
+            let  graph = {json.dumps(schm, indent=2)};
+"""
+    if not snippet_mode:
+        result += f"""
             if (graph.hwMeta && graph.hwMeta.name)
                  document.title = graph.hwMeta.name; // #TODO: use proper field for title
+"""
+    result += f"""
             // load the data and render the elements
             hwSchematic.bindData(graph);
           }}
-
-          displayContents();
+        display_{snippet_safe_name}();
     </script>
 </body>
 </html>
@@ -1610,10 +1647,15 @@ if __name__ == "__main__":
                         type=str
                         )
     parser.add_argument("-f", "--format",
-                        choices=("HTML", "JSON"),
+                        choices=("HTML", "JSON", "HTML_SNIPPET"),
                         default="HTML",
                         dest="format",
                         help="Output format",
+                        type=str)
+    parser.add_argument("--snippet-name",
+                        default="",
+                        dest="snippet_name",
+                        help="Output snippet name (for embedding multiple snippets on a single page)",
                         type=str)
     parser.add_argument("-r", "--root",
                         default=os.getcwd(),
@@ -1666,8 +1708,12 @@ units:
     renderer(tool, schm)
     tool_adaptation(tool, schm)
     cleanup(schm)
-    if oformat == "HTML":
-        result = tool_html(tool, schm, "Schematic of " + data["attributes"].get("type", filepath), display_customizations)
+    if oformat in ("HTML", "HTML_SNIPPET"):
+        snippet_name = None
+        if oformat == "HTML_SNIPPET":
+            snippet_name = args.snippet_name
+        result = tool_html(tool, schm, "Schematic of " + data["attributes"].get("type", filepath),
+                           display_customizations, snippet_name)
     else:
         result = json.dumps(schm, indent=2)
 
