@@ -1309,6 +1309,7 @@ def _d3hw_adaptation_unit(unit):
 
 def _d3hw_hide_content(unit):
 
+    children = unit.get("children", [])
     if _rndr(unit, "hide_content"):
         if "children" in unit:
             unit["_children"] = unit["children"]
@@ -1317,7 +1318,7 @@ def _d3hw_hide_content(unit):
             unit["_edges"] = unit["edges"]
             del unit["edges"]
 
-    for u in unit.get("children", []):
+    for u in children:
         _d3hw_hide_content(u)
 
 
