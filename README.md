@@ -1,7 +1,7 @@
 # YAML4SCHM
 A helper tool to produce schematics
 with [HDElk](https://davidthings.github.io/hdelk/)
-or [d3-hwschematic](https://https://github.com/Nic30/d3-hwschematic).
+or [d3-hwschematic](https://github.com/Nic30/d3-hwschematic).
 
 Tool transforms schematic text (YAML) description into rendering tool
 compatible format then creates HTML to view the result.
