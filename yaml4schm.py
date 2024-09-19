@@ -1559,7 +1559,7 @@ def d3hw_html(schm: dict, header: str = "Schematic", display_customizations: str
   <!-- <script type="text/javascript" src="./js/d3hw/d3.min.js"></script>  -->
   <script type="text/javascript" src="./js/d3hw/elk.bundled.js"></script>
   <script type="text/javascript" src="./js/d3hw/d3-hwschematic.js"></script>
-  <link href="./css/d3/d3-hwscvarhematic.css" rel="stylesheet">
+  <link href="./css/d3/d3-hwschematic.css" rel="stylesheet">
   <style>
   	body {{
 	   margin: 0;
@@ -1573,7 +1573,7 @@ def d3hw_html(schm: dict, header: str = "Schematic", display_customizations: str
         // schematic rendering script
 """
     if not snippet_mode:
-        result += f""""
+        result += f"""
         function viewport() {{
           let e = window,
             a = 'inner';
